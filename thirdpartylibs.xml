@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<libraries>
+    <library>
+        <location>jpgraph</location>
+        <name>JpGraph</name>
+        <version>v4.3.1</version>
+        <license>GNU</license>
+        <licenseversion>3.0</licenseversion>
+    </library>
+</libraries>

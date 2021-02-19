@@ -1,0 +1,320 @@
+/* Won't work because card-text mt-3 is outside obu style
+.block_obu_learnanalytics .card-text mt-3 {
+    margin-top: -8px;   /* Try and grab back some (half) of the margin from previous card/heading *
+} */
+
+.block_obu_learnanalytics label {
+    padding-right: 8px;
+}
+
+.block_obu_learnanalytics .error {
+    color: red;
+    font-weight: bold;
+}
+
+.block_obu_learnanalytics .error-tip {
+    /* cursor: pointer; */
+    text-decoration: dotted;
+}
+
+.block_obu_learnanalytics .error-tip .error-text {
+    display: none;
+    visibility: hidden;
+    cursor: auto;
+    border: black;
+    border-style: solid;
+    border-width: medium;
+    border-radius: 6px;
+    padding: 10px;
+    background-color: lightgray;
+    color: black;
+    text-align: left;
+    text-decoration: none;
+}
+
+.block_obu_learnanalytics .error-tip:hover .error-text {
+    display: inline-block;
+    visibility: visible;
+}
+
+/* Attempt at Styles for general hover tips
+   But used Bootstrap instead
+.block_obu_learnanalytics .hover-tip {
+    text-decoration: none;
+}
+
+.block_obu_learnanalytics .hover-text {
+    display: none;
+    visibility: hidden;
+    cursor: auto;
+    border: black;
+    border-style: solid;
+    border-width: thin;
+    padding: 0 2px 0 2px;
+    background-color: lemonchiffon;
+    color: black;
+    text-align: left;
+    text-decoration: none;
+}
+
+.block_obu_learnanalytics .hover-tip:hover .hover-text {
+    display: inline-block;
+    visibility: visible;
+} */
+
+/* It's actually a table for Students Grid and Chart */
+.block_obu_learnanalytics #obula_tutor_parent_grid {
+    width: 100%;
+}
+
+/* It's a cell in a row in above table */
+.block_obu_learnanalytics #obula_tutor_grid_chart {
+    width: auto;
+}
+
+/* It's the image in the above cell */
+.block_obu_learnanalytics #obula_tutorsGraph_img {
+    zoom: 3;
+    max-width: 100%;
+    height: auto;
+}
+
+.block_obu_learnanalytics .wait-cursor {
+    cursor: wait;
+    pointer-events: none;
+    opacity: 0.4;
+}
+
+.block_obu_learnanalytics .chart-links {
+    margin-left: 40px;
+}
+
+.block_obu_learnanalytics #obula_mod_eng {
+    display: block;
+    margin: 56px 0 10px 20px;
+    /* visibility: collapse; */
+}
+
+.block_obu_learnanalytics #obula_studentModule_img {
+    margin-bottom: 15px;
+}
+
+.block_obu_learnanalytics table.parameters {
+    border-collapse: collapse;
+}
+
+.block_obu_learnanalytics th.parameters, td.parameters {
+    padding-right: 16px;
+    vertical-align: bottom;
+}
+
+.block_obu_learnanalytics table.students {
+    border-collapse: collapse;
+}
+
+.block_obu_learnanalytics th.students, .block_obu_learnanalytics td.students {
+    border: 1px solid black;
+    padding: 0 4px 0 4px;
+}
+
+/* th-span is headings over headings*/
+.block_obu_learnanalytics th.students.th-span {
+    text-align: center;
+}
+
+.block_obu_learnanalytics tr.students[selected] {
+    background-color: #f1f1f1;      /* Very light grey */
+}
+
+.block_obu_learnanalytics td.students-name {
+    border: 1px solid black;
+    padding-right: 10px;
+}
+
+/* Now some style for the students grid columns I can click */
+.block_obu_learnanalytics th.students-clickable, .block_obu_learnanalytics td.students-clickable {
+    border: 1px solid black;
+    padding: 0 4px 0 4px;
+    cursor: pointer;
+}
+
+/* Now some style for the students grid columns I can hide */
+.block_obu_learnanalytics th.students-hideable, .block_obu_learnanalytics td.students-hideable {
+    border: 1px solid black;
+    padding: 0 4px 0 4px;
+}
+
+/* th-span is headings over headings*/
+.block_obu_learnanalytics th.students-hideable.th-span {
+    text-align: center;
+}
+
+.block_obu_learnanalytics tr.students-hideable[selected] {
+    background-color: #f1f1f1;      /* Very light grey */
+}
+
+/* And now them hidden */
+.block_obu_learnanalytics .students-hidden {
+    display: none;
+}
+
+/* Student Marks table */
+.block_obu_learnanalytics table.student-marks {
+    border-collapse: collapse;
+}
+
+/* Cells and headers in Student Marks */
+.block_obu_learnanalytics .student-marks th, .block_obu_learnanalytics .student-marks td {
+    border: 1px solid black;
+    padding: 0 4px 0 4px;
+}
+
+.block_obu_learnanalytics .student-marks th {
+    background-color: gainsboro;
+}
+
+.block_obu_learnanalytics .student-marks tr:nth-child(odd) {
+    background-color: #e6e6e6;
+}
+
+.block_obu_learnanalytics .student-marks tr:nth-child(even) {
+    background-color: white;
+}
+
+.block_obu_learnanalytics th.th-numeric, .block_obu_learnanalytics td.td-numeric {
+    text-align: right;
+}
+
+.block_obu_learnanalytics button.button-search {
+    background-image: url('http://localhost/moodle/blocks/obu_learnanalytics/pix/search.png');
+    background-size: 20px 20px;
+    height: 24px;
+    width: 24px;
+    outline: none;
+    border: 1px solid darkgrey;
+    vertical-align: top;
+}
+
+.block_obu_learnanalytics input[type=radio] {
+    margin: 0 5px;
+}
+
+.material-icons.copyclip {
+    /* color:green; luckily I don't want to as a:not can beat this*/
+    cursor: pointer;
+    float: right;
+    vertical-align: top;
+    text-decoration: none !important;
+}
+
+a.material-icons.search {
+    color: #4d4d4d !important;
+    text-decoration: none !important;
+    vertical-align: top;
+    /* border-width: 1px; */
+    height: 25px;
+    cursor: pointer; 
+}
+
+a.material-icons.search:hover {
+    background-color: #cdcdcd;      /* Very light grey */;
+    color: black;
+}
+
+a.material-icons.nextprev {
+    color: darkgray !important;
+    text-decoration: none !important;
+    vertical-align: top;
+    cursor: pointer; 
+}
+
+a.material-icons.nextprev:hover {
+    background-color: #cdcdcd;      /* Very light grey */;
+    color: black;
+}
+
+.block_obu_learnanalytics #obula_weekdate {
+    border-width: 1px;
+    border-style: solid;
+    border-color: lightgray;
+    padding: 0 2px 0 2px; 
+}
+
+.block_obu_learnanalytics .link-help {
+    cursor: help;
+}
+
+.block_obu_learnanalytics .obula-modal-header {
+    display: block !important;     /* override the plex setting */
+}
+.block_obu_learnanalytics .obula-modal-title {
+    line-height: inherit;
+}
+
+#obula_modal_footer_text {
+    text-align: left;
+    margin-left: 20px;
+    color:blue;
+}
+
+/* Styles for modal help popup */
+/*#obula_modal_popup {
+    top:5%;
+    left: 0px;
+}*/
+
+.block_obu_learnanalytics .popup-pgm-search {
+    min-height: 350px;
+}
+
+.block_obu_learnanalytics .modal-footer .btn {
+    margin: 5px;
+}
+
+.block_obu_learnanalytics .popup-pgm-ul {
+    list-style-type: none;
+    padding-left: 0;
+    cursor: pointer;
+}
+
+.block_obu_learnanalytics .popup-pgm-ul li:hover {
+    color:white;
+    background-color: blue;
+}
+
+/* Styles to manipulate content blocks */
+.obula-block-collapsed {
+    width: 0px !important;
+    height: 0px !important;
+}
+
+.obula-block-fullwidth {
+    width: 100% !important;
+}
+
+.obula-block-hidden {
+    display: none !important;
+}
+
+.block_obu_learnanalytics .link-right {
+    float: right;
+    padding-right: 8px;
+    font-size: 1rem;
+}
+
+.block_obu_learnanalytics .ssc-button {
+    float: right;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.block_obu_learnanalytics .ssc-sid-sml {
+    float: right;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.block_obu_learnanalytics .ssc-sid-med {
+    margin-left: 5px;
+    margin-right: 5px;
+}

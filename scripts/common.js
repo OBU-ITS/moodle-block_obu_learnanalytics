@@ -350,9 +350,14 @@ function copyErrorTextToClipboard() {
     //debugger;
     // Get the text
     var copyText = document.getElementById("error-msg");
+    var errorCell = document.getElementById("obula_error_cell");
+    var clipText = copyText.innerText;
+    if (errorCell.innerText != "") {
+        clipText += "\r\n\r\n" + errorCell.innerText;
+    }
 
     if (navigator.clipboard) {
-        navigator.clipboard.writeText(copyText.innerText).then(function () {
+        navigator.clipboard.writeText(clipText).then(function () {
             // great nothing to do ok = true;
         }, function (err) {
             alert("Copy to clipboard failed");
@@ -360,7 +365,7 @@ function copyErrorTextToClipboard() {
     } else {
         // As it's not an input we can't select it, but we have a hidden field we can use
         var hiddenText = document.getElementById("obula_copy2clip");
-        hiddenText.value = copyText.innerText;
+        hiddenText.value = clipText;
 
         // Select the contents
         hiddenText.select();
@@ -377,8 +382,8 @@ function copyErrorTextToClipboard() {
 }
 
 function gotoFeedback(type) {
-    //  Hardcode for now https://docs.google.com/forms/d/1pClVblSvOXIcNLRv8fP4j_296nBSBM--n6bbdi789TU/edit?gxids=7628
-    window.open('https://docs.google.com/forms/d/1pClVblSvOXIcNLRv8fP4j_296nBSBM--n6bbdi789TU/edit?gxids=7628');
+    //  Hardcode for now https://docs.google.com/forms/d/e/1FAIpQLScR2K62QEwoJyQJfYCuEt5W58ajYqIEbpMWcmNxzSmOoEmVeA/viewform?gxids=7628
+    window.open('https://docs.google.com/forms/d/e/1FAIpQLScR2K62QEwoJyQJfYCuEt5W58ajYqIEbpMWcmNxzSmOoEmVeA/viewform?gxids=7628');
 }
 
 /**

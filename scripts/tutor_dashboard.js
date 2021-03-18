@@ -22,6 +22,7 @@ function collapseTutor() {
     var sideNode = checkColumn(anyNode);
     $("#obula_summary_row").hide();
     $("#obula_dash_row").hide();
+    $('#obula_footer').hide();
 
     if (sideNode) {
         $("#obula_ts_heading_sml").show();
@@ -80,6 +81,7 @@ function showTutorFull() {
             } else {
                 $('#obula_error_cell').html(resp.message);
                 $("#obula_error_row").show();
+                $('#obula_footer').hide();
             }
         })
         .fail(function (jqXHR, textStatus, errorThrown) {
@@ -92,4 +94,7 @@ function showTutorFull() {
         //         // Code will always get executed after done or fail, like a try/catch finally
         //     })
         ;           // End of .ajax 'line'
+
+    // Now the data currency
+    showDataCurrency();
 }

@@ -210,6 +210,38 @@ function showDateControls(newDate = null, studentDashboard = false, drawSemester
     }
 }
 
+function showDataCurrency() {
+    var data_currency = document.getElementById("obula_footer");
+    // Don't repeat it if it's been done, it won't change that often
+    if (data_currency != null && data_currency.innerHTML == 'Data Currency') {
+        $.ajax({
+            type: 'POST',
+            url: "../blocks/obu_learnanalytics/data_currency.php",
+            // beforeSend: function () {
+            //     $("#obula_error_row").hide();
+            //}
+        })
+            .done(function (resp) {
+                if (resp != null && resp.success) {
+                    $('#obula_footer').html(resp.footerhtml);
+                    $('#obula_footer').show();
+                }
+            })
+            .fail(function (jqXHR, textStatus, errorThrown) {
+                // only way to trigger a fail is with a non 200 response, 404, 500 etc
+                // but that seems extreme for a simple validation
+                // So reserving this for exceptions
+                alert('showDataCurrency post failed:' + errorThrown);
+            })
+            // .always(function(resp) {
+            //         // Code will always get executed after done or fail, like a try/catch finally
+            //     })
+            ;           // End of .ajax 'line'
+    } else {
+        $('#obula_footer').show();
+    }
+}
+
 
 /**
  * Hides nav bar and main panel (if it's not in main panel)

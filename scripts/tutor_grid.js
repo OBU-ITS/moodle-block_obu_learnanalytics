@@ -232,6 +232,54 @@ function unClickStudent() {
     hideCharts(true);
 }
 
+/**
+ * Handles population and showing of help popup (that form needs to have already rendered)
+ * @param studentNumber The student number
+ * @param sname The student's name
+ * @param advisor The advisor's p number 
+ */
+ function showStudentInfo(studentNumber, sname, advisor) {
+    var data = {
+        "studentNumber": studentNumber
+        , "sName": sname
+        , "advisor": advisor
+    };
+    $.ajax({
+        type: 'POST',
+        url: "../blocks/obu_learnanalytics/get_student_info.php",
+        data: data,
+        beforeSend: function () {
+            $("#obula_error_row").hide();
+        }
+    })
+        .done(function (resp) {
+            if (resp != null && resp.success) {
+                $('#obula_modal_popup_title').html(resp.title);
+                $('.modal-body').html(resp.popupbodyhtml);
+                // Display Modal, but make sure correct buttons will show
+                $('#obula_modal_body').removeClass('popup-pgm-search');
+                $('#obula_modal_close').show();
+                $('#obula_modal_close').prop('disabled', false);
+                $('#obula_modal_ok').hide();
+                $('#obula_modal_ok').prop('disabled', true);
+                $('#obula_modal_cancel').hide();
+                $("#obula_modal_footer_text").text("");
+                $('#obula_modal_footer_text').removeAttr('title');
+                $('#obula_modal_popup').modal('show');
+            }
+        })
+        .fail(function (resp) {
+            // only way to trigger a fail is with a non 200 response, 404, 500 etc
+            // but that seems extreme for a simple validation
+            // So reserving this for exceptions
+            alert('showStudentInfo exception ' + resp.responseText);
+        })
+        // .always(function(resp) {
+        //         // Code will always get executed after done or fail, like a try/catch finally
+        //     })
+        ;           // End of .ajax 'line'
+}
+
 function showModuleEng() {
     var currentWeek = $("#obula_currentweek").val();       // Don't parse the JSON
     var studentNumber = getStudentNumberParameter();
@@ -474,6 +522,9 @@ function programmeChanged() {
     unClickStudent();
     // Now reload
     $("#obula_myacc").prop("checked", false);
+    $("#obula_title").text("Learning Analytics");     //In case this is/was the SSC dash
+    $("#obula_title").removeClass('ssc-title');
+    $("#obula_title").addClass('tutor-title');
     reloadGrid('programme', oldProgramme);
 };
 

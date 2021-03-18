@@ -22,11 +22,13 @@ namespace block_obu_learnanalytics\curl;
 
 class common
 {
-
     protected static $la_ws_url = null;
     protected static $la_ws_token = null;
     protected static $la_ws_accept_sc = false;
     protected static $la_ws_trace = false;
+    protected static $la_ws_curl_timeout_cc = 5;
+    protected static $la_ws_curl_timeout = 20;
+    protected static $la_ws_cc = false;
 
     public function __construct()
     {
@@ -37,6 +39,14 @@ class common
         self::$la_ws_token = \get_config('block_obu_learnanalytics', 'ws_bearer_token');
         self::$la_ws_accept_sc = \get_config('block_obu_learnanalytics', 'ws_accept_selfcert');
         self::$la_ws_trace = \get_config('block_obu_learnanalytics', 'ws_trace_calls');
+        $temp = \get_config('block_obu_learnanalytics', 'ws_curl_timeout_cc');
+        if ($temp != false && $temp != "" && $temp != 0) {
+            self::$la_ws_curl_timeout_cc = $temp;
+        }
+        $temp = \get_config('block_obu_learnanalytics', 'ws_curl_timeout');
+        if ($temp != false && $temp != "" && $temp != 0) {
+            self::$la_ws_curl_timeout = $temp;
+        }
     }
 
     /*public function __destruct()
@@ -44,6 +54,11 @@ class common
     }
     */
     
+    public function setCheckConnection(bool $value = true)
+    {
+        self::$la_ws_cc = $value;
+    }
+
     /**
      * send_request
      * Call the la web services (from config) with parameters
@@ -58,7 +73,13 @@ class common
         
         // Build URL - do we need http_build_query??
         $url = self::$la_ws_url . $params;
+        // Decide which bearer token
+        //global $USER;
+        //if (isset($USER->demomode) && $USER->demomode == "1") {
+            //
+        //}
         $auth = "Authorization: Bearer " . self::$la_ws_token;
+        $timeout = (self::$la_ws_cc == true) ? self::$la_ws_curl_timeout_cc : self::$la_ws_curl_timeout;
 
         // Set options
         curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json' , $auth ));
@@ -67,6 +88,7 @@ class common
         curl_setopt($curl, CURLOPT_MAXREDIRS, 20);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_FAILONERROR, true);
+        curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, $timeout);   // Seconds
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);      // 2 is default and does the check
         if (self::$la_ws_accept_sc == "1" || self::$la_ws_accept_sc == true) {
             curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
@@ -120,7 +142,7 @@ class common
         return json_decode($result, true);
     }
 
-    public function echo_error_console_log($ex)
+    public function echo_error_console_log($ex, $echo = true)
     {
         $caller = "";
         $from = qualified_me();
@@ -141,10 +163,14 @@ class common
         $temp .= 'console.log(' . json_encode($ex->getFile()) . ');';
         $temp .= 'console.log(' . json_encode($ex->getTraceAsString()) . ');';
         $consolehtml = \sprintf('<div display="none"><script type="text/javascript">%s</script></div>', $temp);
-        // Echo as an array - javascript is expecting that
-        ob_start();     // to solve problems when something already sent
-        header('Content-type: application/json');
-        echo json_encode(array('success' => false, 'consolehtml' => $consolehtml));
+        if ($echo) {
+            // Echo as an array - javascript is expecting that
+            ob_start();     // to solve problems when something already sent
+            header('Content-type: application/json');
+            echo json_encode(array('success' => false, 'consolehtml' => $consolehtml));
+        } else {
+            return $consolehtml;
+        }
     }
     
     /**
@@ -177,4 +203,5 @@ class common
         } // If we don't find it then the pnumber will go back as the name
         return array('PNumber' => $pnumber, 'Name' => $pname, 'userid' => $userid);
     }
-} // End of class
+// End of class
+}

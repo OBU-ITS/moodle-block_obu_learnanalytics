@@ -52,6 +52,11 @@ class block_obu_learnanalytics extends block_base
 
     public function get_content()
     {
+        // Add some local config changes to user global as that seems to persist fine
+        global $USER;
+        $USER->ignoressc = $this->config->ignoressc;
+        $USER->demomode = $this->config->demomode;
+
         if ($this->content !== null) {
             return $this->content;
         }
@@ -75,6 +80,7 @@ class block_obu_learnanalytics extends block_base
             return $this->content;
         }*/
 
+        $this->content->footer = "<div id='obula_footer' style='display:none'>Data Currency</div>";
         switch ($laRole) {
             case ("SSC"):
                 $this->content->text = $renderer->ssc_dashboard();

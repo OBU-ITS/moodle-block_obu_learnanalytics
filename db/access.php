@@ -28,6 +28,7 @@
  //     Save All
  //     Refresh page, Purge all caches and go to admin index page e.g. /moodle/admin/index.php
  //     Let it do the update
+ // NOTE: LA dashboards no longer use capabilities but use dummy courses
 
 defined('MOODLE_INTERNAL') || die();
 

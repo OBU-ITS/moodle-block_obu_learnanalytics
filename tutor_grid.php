@@ -160,6 +160,7 @@ if ($success) {
     $html .= '</select>';
     $html .= '<label style="padding-left:8px">of ' . $count . '</label>';
     $html .= '</td>';
+    $html .= '<td></td>';       // for the info button
 
     $headerText = "Engagement";
     // For now put the show scatter chart here, but for now taken away :)
@@ -180,6 +181,7 @@ if ($success) {
     $html .= "<input type='checkbox' id='obula_myacc' name='obula_myacc' value='myacc' onchange='myaccChanged()</input>";
     $html .= "<label for='obula_myacc' style='padding-left:8px'>My Academic Advisees ($count)</label>";
     $html .= "</span></td>";
+    $html .= '<td></td>';       // for the info button
 
     $imageUrl = get_image_url("Actions-go-" . $cohortSort . "-view-icon");
     // tip won't go away on click $studyStageCell = "<th class='students' style='min-width:75px' data-toggle='tooltip' title = 'Compared to Average' onclick='clickCohortHeading()'>Position";
@@ -256,6 +258,7 @@ if ($success) {
             // such as https://stackoverflow.com/questions/10070232/how-to-make-a-cell-of-table-hyperlink
             //$studentAtts = array("href"=>"javascript:void(0);","onclick"=>"clickStudent('$studentKey')");
             $sname = $data["student_name"];
+            $advisor = $data["advisor_number"];
             // Do not try simplifying the following verbose lines of code unless you have time to spare
             // Seems to be a problem with the 's inside the "'s
             // $html .= "<a href='javascript:clickStudent('{$programme}','{$studyStage}','{$studentKey}','{$sname}')'>{$sname}</a></td>";
@@ -268,10 +271,16 @@ if ($success) {
             $html .= "true)";
             $html .= '">'; // Note the closing "
             $html .= "{$sname}</a></td>";
+            $onclick = "showStudentInfo('{$studentKey}','{$sname}','{$advisor}')";
+            $class = "material-icons students-info";
+            if ($advisor == "") {
+                $class .= " students-warning";
+            }
+            $html .= '<td class="' . $class . '" title="Student Info" onclick="' . $onclick . '">info</td>';       // the info button, preview is good too
 
             $imageUrl = get_image_url4Comparison("sStage", $data["cohort_comparison"]);
             $hint = $data['cohort_comparison_hint'];
-            $studyStageCell = "<td class='students' data-toggle='tooltip' title = '$hint'>"; // Simple hint for now TODO one using CSS
+            $studyStageCell = "<td class='students students-pos' data-toggle='tooltip' title = '$hint'>"; // Simple hint for now TODO one using CSS
             $studyStageCell .= "<img src = $imageUrl style = 'max-height:18px'>";
             //$studyStageCell .= " (" . sprintf('%.0f', $data["student_engagement"]) . "/" . sprintf('%.0f', $data["student_weighted_engagement"]) . ")";
             $studyStageCell .= "</td>";

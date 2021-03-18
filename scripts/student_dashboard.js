@@ -1,10 +1,6 @@
 /* scripts for use with student dashboard
 */
 
-// $(document).ready(function () {
-//     debugger; // NOT NEEDED YET
-// });
-
 /**
  * Handles click events for ideas lightbulb
  */
@@ -174,6 +170,9 @@ function showStudentGraphs() {
     loadStudentGraph('ezduration', 2, null, false);
     //loadStudentGraph('loansline', 3, null, false);
     //loadStudentGraph('attduration', 4, null, false);
+
+    // Now the data currency
+    showDataCurrency();
 }
 
 function clickChangeWeek(direction) {

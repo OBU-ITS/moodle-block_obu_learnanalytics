@@ -29,7 +29,7 @@ class odds
      * as well as deciding if it's an SSC, Tutor or Student
      * and checking logged in
      * if only 1 role is going to be valid then pass it to save it checking irrelevant options
-     * Defaulst to just DIE's if there is a problem
+     * Default to just DIE's if there is a problem
      *
      * @param  string  $roleNeeded
      * @param  boolean $justDIE    False to return a null for failure
@@ -47,14 +47,16 @@ class odds
             }
             die("Not Authenticated");
         }
-        if (!isset($role) && ($roleNeeded == null || $roleNeeded == 'SSC')) {
-            global $DB;
-            $course = $DB->get_record('course', array('idnumber' => 'SUBS_LA_SSCS'));   //TODO move to config
-            if ($course) {
-                $context = \context_course::instance($course->id);
-                if ($context != null) {
-                    if (is_enrolled($context, $USER->id, '', true)) {
-                        $role = 'SSC';
+        if (!isset($USER->ignoressc) || $USER->ignoressc != "1") {
+            if (!isset($role) && ($roleNeeded == null || $roleNeeded == 'SSC')) {
+                global $DB;
+                $course = $DB->get_record('course', array('idnumber' => 'SUBS_LA_SSCS'));   //TODO move to config
+                if ($course) {
+                    $context = \context_course::instance($course->id);
+                    if ($context != null) {
+                        if (is_enrolled($context, $USER->id, '', true)) {
+                            $role = 'SSC';
+                        }
                     }
                 }
             }

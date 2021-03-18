@@ -1,7 +1,10 @@
 /* scripts for use with ssc (Student Support Coordinator) dashboard
 */
 
-$(document).ready(function () {
+$(document).ready(function () { readySSC(); });     // Has to be called from inline function or it fails
+
+function readySSC() {
+    //debugger;
     var anyNode = document.getElementById("obula_ssc_heading_sml");
     var sideNode = checkColumn(anyNode);
     if (sideNode) {
@@ -11,7 +14,7 @@ $(document).ready(function () {
         $("#obula_ssc_heading_med").show();
         $("#obula_ssc_input_med").show();
     }
-});
+}
 
 /**
  * Clears the selected dashboard and parameters, ready to try again
@@ -20,6 +23,7 @@ function clearSSC(sideNode = false) {
     $("#obula_ssc_sid").val('');
     $("#obula_summary_row").hide();
     $("#obula_dash_row").hide();
+    $('#obula_footer').hide();
 
     if (sideNode) {
         $("#obula_ssc_heading_sml").show();
@@ -94,6 +98,7 @@ function showBecomeView(type, className) {
             } else {
                 $('#obula_error_cell').html(resp.message);
                 $("#obula_error_row").show();
+                $('#obula_footer').hide();
             }
         })
         .fail(function (jqXHR, textStatus, errorThrown) {
@@ -106,4 +111,7 @@ function showBecomeView(type, className) {
         //         // Code will always get executed after done or fail, like a try/catch finally
         //     })
         ;           // End of .ajax 'line'
+        
+    // Now the data currency
+    showDataCurrency();
 }

@@ -34,6 +34,8 @@ echo "<th>Grade</th>";
 echo "<th class='th-numeric'>%</th>";
 echo "<th class='th-numeric'>Weighting</th>";
 echo "<th>Status</th>";
+echo "<th class='th-numeric'>Average<br>Pass</th>";
+echo "<th class='th-numeric'>Average<br>All</th>";
 echo "</tr>";
 
 foreach ($studentMarks as $module) {
@@ -55,8 +57,10 @@ foreach ($studentMarks as $module) {
     echo "<td>{$module['grade_code']}</td>";
     echo "<td class='td-numeric'>{$pc}</td>";
     echo "<td class='td-numeric'>{$wt}</td>";
-    $text = "";     //($module['published'] == 0) ? get_string('marks-notpublished', 'block_obu_learnanalytics') : get_string('marks-published', 'block_obu_learnanalytics');
+    $text = "";  //($module['published'] == 0) ? get_string('marks-notpublished', 'block_obu_learnanalytics') : get_string('marks-published', 'block_obu_learnanalytics');
     echo "<td class='students'>{$text}</td>";
+    echo "<td class='td-numeric'>{$module['passed_avg_mark_percentage']}</td>";
+    echo "<td class='td-numeric'>{$module['attempted_avg_mark_percentage']}</td>";
 }
 
 echo "</table></td>";

@@ -40,6 +40,10 @@ $string['ws_accept_selfcert'] = 'Accept Self Certification';
 $string['ws_accept_selfcert_info'] = 'Only for test instances, it will allow the web service to use a self issued certificate';
 $string['ws_trace_calls'] = 'Trace Web Service calls';
 $string['ws_trace_calls_info'] = 'Only for test instances, file is obu_learnanalytics_wstraces.txt in Moodle temp folder';
+$string['ws_curl_timeout_cc'] = 'Curl Timeout Check Connection';
+$string['ws_curl_timeout_cc_info'] = 'Timeout in seconds for initial Check Connection';
+$string['ws_curl_timeout'] = 'Curl Timeout Data';
+$string['ws_curl_timeout_info'] = 'Timeout in seconds Data Requests';
 
 // Error strings
 $string['edw_connect_error'] = 'Error connecting to Enterprise Data Warehouse, please try later';
@@ -66,3 +70,8 @@ $string['ssc-dash-title-med'] = 'Learning Analytics (SSC View)';
 $string['tutor_dashboard_opened'] = 'Tutor Dashboard Opened';
 $string['tutor_programme_changed'] = 'Tutor Programme Changed';
 $string['dashboard_closed'] = 'Dashboard Closed';
+
+// Config
+$string['blocksettings'] = 'Personal Overrides';
+$string['demomode'] = 'Demo Mode (Obscure Student Details)';
+$string['ignoressc'] = 'Ignore SSC Capability';

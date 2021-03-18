@@ -1,5 +1,16 @@
-This file describes API changes in the recentlyaccesseditems block code.
+This file describes changes in the obu_learnanalytics block code.
 
-=== 3.7 ===
+=== 0.9.8 ===
+* 23rd February Initial Release to Prod Moodle
 
-* The 'block/recentlyaccesseditems:addinstance' capability has been removed. It has never been used in code.
+=== 0.10.1 ===
+* Problem fixed where 404 on initial check for web services throw a Moodle page exception
+* Timeouts for web service call's now configurable, 1 config for initial check connection and 1 for rest
+* Fixed feedback link for correct url
+* Added Average Pass and Taken Marks
+* Added footer show data currency
+* Added start of demo mode to obfusticate student data
+* Changed SSC title when programme Changed
+* Added styles for SSC and Tutor titles
+* New Student info popup with email links
+* Reset heading when SSC changes programme

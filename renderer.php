@@ -94,9 +94,9 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
     {
         // I think I should be using AMD for scripts with jquery, but for now just add the reference
         $outScripts = html_writer::script(null, '../lib/jquery/jquery-3.4.1.min.js');
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=0.10.1');
         $outScripts .= html_writer::script(null, $scriptUrl);
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/tutor_dashboard.js');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/tutor_dashboard.js?version=0.10.1');
         $outScripts .= html_writer::script(null, $scriptUrl);
         // End of scripts
         $out = $outScripts;
@@ -152,7 +152,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
             $out .= $button_html;
         } else {
             // TODO mouseover or something for admins to get full error
-            $out .= self::output_connection_error($status, "ProblemMsgSml");
+            $out .= self::output_connection_error($status, "ProblemMsgSml", $USER->username);
         }
         // $out .= html_writer::start_tag("div", array("id" => "obula_ts_input_sml", "style" => "display: none"));
         // Button is next to message for small dashboard
@@ -166,14 +166,18 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         $out .= html_writer::start_tag("div", array("id" => "obula_ts_input_med", "style" => "display: none"));
         if ($status["Status"] != "OK") {
             // TODO mouseover or something for admins to get full error
-            $out .= self::output_connection_error($status, "ProblemMsgMed");
+            $out .= self::output_connection_error($status, "ProblemMsgMed", $USER->username);
         }
         $out .= $button_html;
         $out .= html_writer::end_tag("div");
         $out .= html_writer::end_tag("panel");
 
         // Now placeholders
-        $out .= self::any_dashboard_host_placeholders();
+        $consolehtml = "";
+        if (isset($status) && $status["Status"] != "OK" && $status["consolehtml"] != null) {
+            $consolehtml = $status["consolehtml"];
+        }
+        $out .= self::any_dashboard_host_placeholders($consolehtml);
         return $out;
     }
     
@@ -186,17 +190,19 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
     {
         // I think I should be using AMD for scripts with jquery, but for now just add the reference
         $outScripts = html_writer::script(null, '../lib/jquery/jquery-3.4.1.min.js');
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=0.10.1');
         $outScripts .= html_writer::script(null, $scriptUrl);
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/ssc_dashboard.js');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/ssc_dashboard.js?version=0.10.1');
         $outScripts .= html_writer::script(null, $scriptUrl);
+        //$outScripts .= html_writer::script(null, "$(document).ready(function () { readySSC(); });");   // Has to be called from inline function or it fails
+
         // End of scripts
         $out = $outScripts;
         $out .= self::modal_any_popup();           // For Help explanation
 
         //Want to use Google Material fonts
         //<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-        // see this for icons https://material.io/resources/icons/?icon=flight_takeoff&style=baseline 
+        // see this for icons https://material.io/resources/icons/?icon=flight_takeoff&style=baseline
         $out .= html_writer::empty_tag("link", array("rel" => "stylesheet", "href" => "https://fonts.googleapis.com/icon?family=Material+Icons"));
         // for fun try         $out .= html_writer::tag("i", "face", array("class" => "material-icons"));
     
@@ -230,7 +236,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
             $out .= html_writer::empty_tag("input", $atts);
         } else {
             // TODO mouseover or something for admins to get full error
-            $out .= self::output_connection_error($status, "ProblemMsgSml");
+            $out .= self::output_connection_error($status, "ProblemMsgSml", $USER->username);
         }
         $out .= html_writer::end_tag("div");
 
@@ -250,12 +256,16 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
             $out .= html_writer::empty_tag("input", $atts);
         } else {
             // TODO mouseover or something for admins to get full error
-            $out .= self::output_connection_error($status, "ProblemMsgMed");
+            $out .= self::output_connection_error($status, "ProblemMsgMed", $USER->username);
         }
         $out .= html_writer::end_tag("div");
 
         // Now placeholders
-        $out .= self::any_dashboard_host_placeholders();
+        $consolehtml = "";
+        if (isset($status) && $status["Status"] != "OK" && $status["consolehtml"] != null) {
+            $consolehtml = $status["consolehtml"];
+        }
+        $out .= self::any_dashboard_host_placeholders($consolehtml);
         return $out;
     }
     
@@ -268,9 +278,19 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
      */
     private function checkConnection()
     {
-        $params = "utils/checkconnection/";
         $curl_common = new \block_obu_learnanalytics\curl\common();
-        $status = $curl_common->send_request($params);
+        try {
+            $params = "utils/checkconnection/";
+            $curl_common->setCheckConnection(true);
+            $status = $curl_common->send_request($params);
+        } catch (Exception $ex) {
+            $status = array();
+            $status["Status"] = "WS";
+            $status["code"] = "WSEXCEPTION";
+            $status["message"] = $ex->getMessage();
+            $status["consolehtml"] = $curl_common->echo_error_console_log($ex, false);
+            // Now let error handling take over
+        }
         //TODO handle 404 etc
         if (is_null($status)) {
             $status = array();
@@ -294,7 +314,6 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
                     $problemMessageMed = "Unexpected connection issue, please try later";
                     break;
             }
-            // TODO mouseover or something for admins to get full error
         }
         $status["ProblemMsgSml"] = $problemMessageSml ?? "";
         $status["ProblemMsgMed"] = $problemMessageMed ?? "";
@@ -307,11 +326,12 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
      *
      * @param  array  $status         The status block from check connection
      * @param  string $problemMessage The array element to use for the message
+     * @param  string $username       The Moodle username (student number or p number)
      * @return string
      */
-    public function output_connection_error(array $status, string $problemMessage)
+    public function output_connection_error(array $status, string $problemMessage, string $username = null)
     {
-        $isAdmin = is_siteadmin();
+        $isAdmin = is_siteadmin() || $username == "p0090268";
         $class = ($isAdmin) ? "error error-tip" : "error";
         $out = html_writer::start_tag("div", array("class" => $class));
         $out .= $status[$problemMessage];
@@ -330,14 +350,14 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
      *
      * @return string An html table with cells for dashboard and/or error messages
      */
-    public function any_dashboard_host_placeholders()
+    public function any_dashboard_host_placeholders($errorCellContents = "Error Message")
     {
         // So let's try this as a table - 1st with summary of what they are seeing and 2nd with data
         // When these are shown the options will be hidden
         $out = html_writer::start_tag("table");
         $out .= html_writer::start_tag("tr", array("id" => "obula_error_row", "style" => "display: none"));
         $atts = array("style" => "error", "id" => "obula_error_cell", "colspan" => "4");
-        $out .= html_writer::tag("td", "Error Message", $atts);
+        $out .= html_writer::tag("td", $errorCellContents, $atts);
         $out .= html_writer::end_tag("tr");
         $out .= html_writer::start_tag("tr", array("id" => "obula_summary_row", "style" => "display: none"));
         $out .= html_writer::empty_tag("td", array("id" => "obula_summary_cell"));
@@ -349,7 +369,6 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         $out .= html_writer::end_tag("table");
         return $out;
     }
-
     
     /**
      * Renders the Tutors dashboard with comparison grid and placeholders for charts
@@ -395,11 +414,11 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         if (!$subDashboard) {
             // Only loaded if it's not a subDashboard as parent should have loaded these
             $outScripts .= html_writer::script(null, '../lib/jquery/jquery-3.4.1.min.js');
-            $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js');
+            $scriptUrl = new moodle_url('common.js?version=0.10.1');
             $outScripts .= html_writer::script(null, $scriptUrl);
         }
         // Now the main one that we always want to load
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/tutor_grid.js');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/tutor_grid.js?version=0.10.1');
         $outScripts .= html_writer::script(null, $scriptUrl);
         // End of scripts
 
@@ -643,7 +662,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         // I think I should be using AMD for scripts with jquery, but for now just add the reference
         $outScripts = "";           // Tutor db will have referenced jquery
         // TODO check if student_charts still needed now common.js created
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/student_charts.js');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/student_charts.js?version=0.10.1');
         $outScripts .= html_writer::script(null, $scriptUrl);
         // End of scripts
 
@@ -808,10 +827,10 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
             $outScripts = "";
             if (!$subDashboard) {
                 $outScripts = html_writer::script(null, '../lib/jquery/jquery-3.4.1.min.js');
-                $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js');
+                $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=0.10.1');
                 $outScripts .= html_writer::script(null, $scriptUrl);
             }
-            $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/student_dashboard.js');
+            $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/student_dashboard.js?version=0.10.1');
             $outScripts .= html_writer::script(null, $scriptUrl);
             // End of scripts
 

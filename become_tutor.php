@@ -30,7 +30,7 @@ header('Content-type: application/json');
 
 global $DB;
 global $PAGE;
-$summaryMessage = "<h3>Learning Analytics";
+$summaryMessage = "<span class='tutor-title' id='obula_title'>Learning Analytics</span>";
 $summaryMessage .= "<a href='javascript:collapseTutor()' class = 'link-right'>Close</a></h5>";
 
 // TODO find way to pick up programme for Tutor or last viewed

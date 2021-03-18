@@ -55,7 +55,7 @@ switch ($studentNumber) {
         } else {
             $sname = $studentNumber;
         }
-        $summaryMessage = "<h5>You are viewing the Learning Analytics Dashboard for {$sname}'s Programme";
+        $summaryMessage = "<span class='ssc-title' id='obula_title'>You are viewing the Tutors Dashboard for {$sname}'s Programme</span>";
         $summaryMessage .= "   <a href='javascript:clearSSC()' class='link-right'>Clear</a>";
         $summaryMessage .= "   <a href='javascript:collapseSSC()' class='link-right'>Close</a>";
 

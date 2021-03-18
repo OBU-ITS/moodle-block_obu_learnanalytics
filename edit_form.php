@@ -13,35 +13,27 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
- 
+
 /**
- * The tutor_programme_changed event.
+ * Form for editing OBU Learning Analytics block instances.
  *
  * @package     block_obu_learnanalytics
- * @copyright   2020 Ken Burch <ken.burch@brookes.ac.uk>
+ * @copyright   2021 Ken Burch <ken.burch@brookes.ac.uk>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-namespace block_obu_learnanalytics\event;
-defined('MOODLE_INTERNAL') || die();
-/**
- * The tutor_programme_changed event class.
- *
- * @property-read array $other {
- *      Extra information about event.
- *
- *      - PUT INFO HERE
- * }
- *
- * @since     Moodle 3.8.2
- * @copyright 2021 Ken Burch
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- **/
-class tutor_programme_changed extends \core\event\base
+class block_obu_learnanalytics_edit_form extends block_edit_form
 {
-    protected function init()
+    protected function specific_definition($mform)
     {
-        $this->data['crud'] = 'r'; // c(reate), r(ead), u(pdate), d(elete)
-        $this->data['edulevel'] = self::LEVEL_OTHER;
+        global $DB;
+
+        // Fields for editing personal Learning Analytics settings.
+        $mform->addElement('header', 'configheader', get_string('blocksettings', 'block_obu_learnanalytics'));
+
+        $mform->addElement('selectyesno', 'config_demomode', get_string('demomode', 'block_obu_learnanalytics'));
+        $mform->setDefault('config_demomode', 0);
+
+        $mform->addElement('selectyesno', 'config_ignoressc', get_string('ignoressc', 'block_obu_learnanalytics'));
+        $mform->setDefault('config_ignoressc', 0);
     }
 }

@@ -127,8 +127,28 @@
 }
 
 .block_obu_learnanalytics td.students-name {
-    border: 1px solid black;
+    border-left: 1px solid black;
+    border-top: 1px solid black;
+    border-bottom: 1px solid black;
     padding-right: 10px;
+}
+
+.block_obu_learnanalytics td.students-pos {
+    text-align: center;
+}
+
+.block_obu_learnanalytics td.students-info {
+    border-top: 1px solid black;
+    border-bottom: 1px solid black;
+    font-size: 22px;
+    line-height: 22px;
+    display: table-cell;
+    color: #d10373;
+    cursor: pointer;        /*Because href didn't format well*/
+}
+
+.block_obu_learnanalytics td.students-warning {
+    color: orange;
 }
 
 /* Now some style for the students grid columns I can click */
@@ -317,4 +337,22 @@ a.material-icons.nextprev:hover {
 .block_obu_learnanalytics .ssc-sid-med {
     margin-left: 5px;
     margin-right: 5px;
+}
+
+.block_obu_learnanalytics .ssc-title {
+    font-weight: 600;
+    font-size: 1.17rem;
+    line-height: 1.2;
+}
+
+.block_obu_learnanalytics .tutor-title {
+    font-weight: 600;
+    font-size: 1.64rem;
+    line-height: 1.2;
+}
+
+/* The footer is where we show data currency for the LA tables */
+.block_obu_learnanalytics #obula_footer {
+    font-weight: bold;
+    margin-top: 10px;
 }

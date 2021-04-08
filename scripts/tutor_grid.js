@@ -1,7 +1,7 @@
 /* scripts for use with tutor grid
 */
 
-var gridLoading = studentLoading = chartLoading = false;
+var gridLoading = studentLoading = chartLoading = marksLoading = false;
 
 $(document).ready(function () {
     //debugger;
@@ -30,10 +30,19 @@ $(document).ready(function () {
 
     showDateControls("getcurrent", false, true);
     //var currentWeek = $("#obula_currentweek").val();       // Don't parse the JSON
+    // So is this a load from SSC dash, if so there is a hidden field of obula_ssc_student
+    // if it is then set maxShow to *
+    var maxShow = 10;
+    var studentNumber = '';
+    var sno = $("#obula_ssc_student").val();
+    if (sno != null && sno != '?') {
+        maxShow = '*';
+        studentNumber = sno;
+    }
     var data = {
-        "programme": programme, "sStage": cohort, "maxShow": 10, "sStageSort": "down", "studentSort": "down"
+        "programme": programme, "sStage": cohort, "maxShow": maxShow, "sStageSort": "down", "studentSort": "down"
         , "cohortfirst": 1, "currentWeek": "", "bandingCalc": "MED-20-4", "studyType": studyType
-        , "myAdvisees": false, "semester": "", option: "getcurrent", "maxShow": 10
+        , "myAdvisees": false, "semester": "", option: "getcurrent", "studentNumber": studentNumber
     };
     $.ajax({
         type: 'POST',
@@ -41,7 +50,13 @@ $(document).ready(function () {
         data: data
     })
         .done(function (res) {
-            tutor_grid_done(true, res, programme, cohort);
+            //debugger;
+            var studentNumber = '';
+            var sno = $("#obula_ssc_student").val();
+            if (sno != null && sno != '?') {
+                studentNumber = sno;
+            }
+            tutor_grid_done(true, res, programme, cohort, studentNumber);
         })
         .fail(function (errMsg) {
             alert('reloadGrid 1 post failed:' + errMsg);
@@ -50,51 +65,43 @@ $(document).ready(function () {
 });             // End of inline function
 
 function set_gridLoading(state) {
-    if (state) {
-        gridLoading = true;
-        $('#obula_dash_div').addClass('wait-cursor');
-        //        document.body.style.cursor = "wait";
-    } else {
-        gridLoading = false;
-        if (!gridLoading && !studentLoading && !chartLoading) {
-            $('#obula_dash_div').removeClass('wait-cursor');
-            //$('[data-toggle="ztooltip"]').tooltip("hide");
-            //        document.body.style.cursor = "default";
-        }
-    }
+    gridLoading = state;
+    set_somethingLoading(state);
 }
 
 function set_studentLoading(state) {
-    if (state) {
-        studentLoading = true;
-        $('#obula_dash_div').addClass('wait-cursor');
-        //        document.body.style.cursor = "wait";
-    } else {
-        studentLoading = false;
-        if (!gridLoading && !studentLoading && !chartLoading) {
-            $('#obula_dash_div').removeClass('wait-cursor');
-            //$('[data-toggle="ztooltip"]').tooltip("hide");
-            //        document.body.style.cursor = "default";
-        }
-    }
+    studentLoading = state;
+    set_somethingLoading(state);
 }
 
 function set_chartLoading(state) {
+    chartLoading = state;
+    set_somethingLoading(state);
+}
+
+function set_marksLoading(state) {
+    marksLoading = state;
+    set_somethingLoading(state);
+}
+
+function set_somethingLoading(state) {
     if (state) {
-        chartLoading = true;
         $('#obula_dash_div').addClass('wait-cursor');
-        //        document.body.style.cursor = "wait";
+        //$('body').addClass('wait-cursor');
+        // Despite the wait-cursor setting the cursor, it didn't work in chrome
+        // even if I set it on the body, so next line is a solution (still do class as that greys page)
+        $('body').css('cursor', 'wait');
     } else {
-        chartLoading = false;
-        if (!gridLoading && !studentLoading && !chartLoading) {
+        if (!gridLoading && !studentLoading && !chartLoading && !marksLoading) {
             $('#obula_dash_div').removeClass('wait-cursor');
+            $('body').css('cursor', '');
             //$('[data-toggle="ztooltip"]').tooltip("hide");
             //        document.body.style.cursor = "default";
         }
     }
 }
 
-function tutor_grid_done(fromReadyEvent, res, programme, cohort, refreshChart = false, updateDate = false, redrawSemester = false) {
+function tutor_grid_done(fromReadyEvent, res, programme, cohort, studentNumber, refreshChart = false, updateDate = false, redrawSemester = false) {
     // Fix the Bootstrap Tooltip behavior (it wasn't closing if you clicked on the hovered control)
     $('[data-toggle="ztooltip"]').tooltip({
         trigger: 'hover'
@@ -161,7 +168,11 @@ function tutor_grid_done(fromReadyEvent, res, programme, cohort, refreshChart = 
         }
     }
     if (res.success) {
-        if (!fromReadyEvent) {
+        if (fromReadyEvent) {
+            if (studentNumber != '') {
+                highlightStudentRow(studentNumber);
+            }
+        } else {
             checkRefreshStudentBits(res.date, redrawSemester);
         }
         if (refreshChart) {
@@ -238,7 +249,7 @@ function unClickStudent() {
  * @param sname The student's name
  * @param advisor The advisor's p number 
  */
- function showStudentInfo(studentNumber, sname, advisor) {
+function showStudentInfo(studentNumber, sname, advisor) {
     var data = {
         "studentNumber": studentNumber
         , "sName": sname
@@ -298,7 +309,7 @@ function showModuleEng() {
             $('#obula_studentModule_row').show();
             var element = document.getElementById("obula_studentModule_row");
             element.scrollIntoView(true);
-    },
+        },
         error: function (errMsg) {
             alert('showModuleEng Event post failed:' + errMsg);
         }
@@ -307,6 +318,7 @@ function showModuleEng() {
 
 function showStudentsMarks(studentNumber, scrollIntoView) {
     var data = { "studentNumber": studentNumber };
+    set_marksLoading(true);
     $.ajax({
         type: 'POST',
         url: "../blocks/obu_learnanalytics/student_marks_grid.php",
@@ -324,10 +336,10 @@ function showStudentsMarks(studentNumber, scrollIntoView) {
                     divElement.scrollIntoView(true);
                 }
             }
-            set_studentLoading(false);
+            set_marksLoading(false);
         },
         error: function (errMsg) {
-            set_studentLoading(false);
+            set_marksLoading(false);
             alert('clickStudentsMark Event post failed:' + errMsg);
         }
     });
@@ -434,7 +446,7 @@ function showChart(fromStudentClick = false) {
             error: function (errMsg) {
                 alert('showChart Event post failed:' + errMsg);
                 $("#obula_chart_show").show();
-                set_chartLoading(true);
+                set_chartLoading(false);
                 if (fromStudentClick) {
                     set_studentLoading(false);
                 }
@@ -861,7 +873,7 @@ function reloadGrid(option = null, oldProgramme = null) {
     var data = {
         "programme": programme, "sStage": cohort, "maxShow": maxShow, "sStageSort": sStageSort, "studentSort": studentSort
         , "cohortfirst": cohortfirst, "currentWeek": currentWeek, "bandingCalc": bandingCalc, "studyType": studyType
-        , "myAdvisees": myAdvisees, "semester": semester, "option": option, "maxShow": maxShow, "oldProgramme": oldProgramme
+        , "myAdvisees": myAdvisees, "semester": semester, "option": option, "oldProgramme": oldProgramme
     };
     $.ajax({
         type: 'POST',
@@ -869,7 +881,7 @@ function reloadGrid(option = null, oldProgramme = null) {
         data: data
     })
         .done(function (res) {
-            tutor_grid_done(false, res, programme, cohort, refreshChart, true, redrawSemester);
+            tutor_grid_done(false, res, programme, cohort, '', refreshChart, true, redrawSemester);
         })
         .fail(function (jqXHR, textStatus, errorThrown) {
             alert('reloadGrid 2 post failed:' + errorThrown);

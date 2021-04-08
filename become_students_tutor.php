@@ -72,7 +72,7 @@ switch ($studentNumber) {
         // Now let's get the renderer class so I can call functions from it
         $renderer = $PAGE->get_renderer('block_obu_learnanalytics');
         try {
-            $dashboard = $renderer->tutor_dashboard($pgm, true);
+            $dashboard = $renderer->tutor_dashboard($pgm, true, $studentNumber);
         } catch (\Exception $ex) {
             header('HTTP/1.0 500 Internal Server Error');
             echo json_encode(array('success' => false, 'dashboardhtml' => 'BIGGG Bang :)'));

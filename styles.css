@@ -80,7 +80,7 @@
 }
 
 .block_obu_learnanalytics .wait-cursor {
-    cursor: wait;
+    cursor: wait !important;
     pointer-events: none;
     opacity: 0.4;
 }

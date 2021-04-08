@@ -72,6 +72,7 @@ function showBecomeView(type, className) {
     var data = {
         "studentNumber": studentNumber
     };
+    $("#obula_ssc_student").val(studentNumber);
     var tnode = event.target;
     var urlpage = (type == "S") ? "become_student" : "become_students_tutor";
     // Ajax call re-written to use later .done/.fail functionality in case we need promises later

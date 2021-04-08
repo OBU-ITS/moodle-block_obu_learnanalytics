@@ -94,9 +94,9 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
     {
         // I think I should be using AMD for scripts with jquery, but for now just add the reference
         $outScripts = html_writer::script(null, '../lib/jquery/jquery-3.4.1.min.js');
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=0.10.1');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=0.10.2');
         $outScripts .= html_writer::script(null, $scriptUrl);
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/tutor_dashboard.js?version=0.10.1');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/tutor_dashboard.js?version=0.10.2');
         $outScripts .= html_writer::script(null, $scriptUrl);
         // End of scripts
         $out = $outScripts;
@@ -190,9 +190,9 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
     {
         // I think I should be using AMD for scripts with jquery, but for now just add the reference
         $outScripts = html_writer::script(null, '../lib/jquery/jquery-3.4.1.min.js');
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=0.10.1');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=0.10.2');
         $outScripts .= html_writer::script(null, $scriptUrl);
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/ssc_dashboard.js?version=0.10.1');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/ssc_dashboard.js?version=0.10.2');
         $outScripts .= html_writer::script(null, $scriptUrl);
         //$outScripts .= html_writer::script(null, "$(document).ready(function () { readySSC(); });");   // Has to be called from inline function or it fails
 
@@ -213,6 +213,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         $out .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_navbar_ariahidden', "value" => '?'));
         $out .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_page_taken', "value" => '?'));
         $out .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_copy2clip', "value" => '?'));
+        $out .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_ssc_student', "value" => '?'));
 
         // Links for either format
         $links = html_writer::tag("a", "Help", array("href" => "javascript:showHelp('ssc')", "class" => "link-right link-help"));       // TODO CSS right
@@ -378,11 +379,11 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
      * @param  boolean $subDashboard     True if called from SSC fashboard
      * @return string                    HTML to render
      */
-    public function tutor_dashboard(string $defaultProgramme, bool $subDashboard)
+    public function tutor_dashboard(string $defaultProgramme, bool $subDashboard, string $studentNumber = null)
     {
         $out = '';
         $out .= html_writer::start_tag("div");
-        $out .= self::tutor_grid($defaultProgramme, $subDashboard);
+        $out .= self::tutor_grid($defaultProgramme, $subDashboard, $studentNumber);
         $out .= html_writer::end_tag("div");
 
         $out .= html_writer::empty_tag("br");
@@ -405,7 +406,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
      * @see ?? for the expected structure
      * @return string
      */
-    public function tutor_grid($defaultProgramme, $subDashboard)
+    public function tutor_grid($defaultProgramme, $subDashboard, $studentNumber)
     {
         $util_dates = new \block_obu_learnanalytics\util\date_functions();
         $curl_common = new \block_obu_learnanalytics\curl\common();
@@ -414,11 +415,11 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         if (!$subDashboard) {
             // Only loaded if it's not a subDashboard as parent should have loaded these
             $outScripts .= html_writer::script(null, '../lib/jquery/jquery-3.4.1.min.js');
-            $scriptUrl = new moodle_url('common.js?version=0.10.1');
+            $scriptUrl = new moodle_url('common.js?version=0.10.2');
             $outScripts .= html_writer::script(null, $scriptUrl);
         }
         // Now the main one that we always want to load
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/tutor_grid.js?version=0.10.1');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/tutor_grid.js?version=0.10.2');
         $outScripts .= html_writer::script(null, $scriptUrl);
         // End of scripts
 
@@ -662,7 +663,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         // I think I should be using AMD for scripts with jquery, but for now just add the reference
         $outScripts = "";           // Tutor db will have referenced jquery
         // TODO check if student_charts still needed now common.js created
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/student_charts.js?version=0.10.1');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/student_charts.js?version=0.10.2');
         $outScripts .= html_writer::script(null, $scriptUrl);
         // End of scripts
 
@@ -827,10 +828,10 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
             $outScripts = "";
             if (!$subDashboard) {
                 $outScripts = html_writer::script(null, '../lib/jquery/jquery-3.4.1.min.js');
-                $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=0.10.1');
+                $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=0.10.2');
                 $outScripts .= html_writer::script(null, $scriptUrl);
             }
-            $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/student_dashboard.js?version=0.10.1');
+            $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/student_dashboard.js?version=0.10.2');
             $outScripts .= html_writer::script(null, $scriptUrl);
             // End of scripts
 

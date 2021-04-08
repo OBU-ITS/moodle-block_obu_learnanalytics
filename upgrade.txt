@@ -14,3 +14,8 @@ This file describes changes in the obu_learnanalytics block code.
 * Added styles for SSC and Tutor titles
 * New Student info popup with email links
 * Reset heading when SSC changes programme
+
+=== 0.10.2 ===
+* Fixed wait cursor during loads
+* Student Support Coordinator now highlights student in grid
+

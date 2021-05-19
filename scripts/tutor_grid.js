@@ -2,6 +2,7 @@
 */
 
 var gridLoading = studentLoading = chartLoading = marksLoading = false;
+var studentLoadingCount = 0;
 
 $(document).ready(function () {
     //debugger;
@@ -42,7 +43,7 @@ $(document).ready(function () {
     var data = {
         "programme": programme, "sStage": cohort, "maxShow": maxShow, "sStageSort": "down", "studentSort": "down"
         , "cohortfirst": 1, "currentWeek": "", "bandingCalc": "MED-20-4", "studyType": studyType
-        , "myAdvisees": false, "semester": "", option: "getcurrent", "studentNumber": studentNumber
+        , "onlyMyAdvisees": "false", "semester": "", option: "getcurrent", "studentNumber": studentNumber
     };
     $.ajax({
         type: 'POST',
@@ -70,8 +71,21 @@ function set_gridLoading(state) {
 }
 
 function set_studentLoading(state) {
-    studentLoading = state;
-    set_somethingLoading(state);
+    if (state) {
+        // Test it before add for first time in
+        if (studentLoadingCount == 0) {
+            studentLoading = state;
+            set_somethingLoading(state);
+        }
+        studentLoadingCount++;
+    } else {
+        studentLoadingCount--;
+        // Test after subtract for all done
+        if (studentLoadingCount == 0) {
+            studentLoading = state;
+            set_somethingLoading(state);
+        }
+    }
 }
 
 function set_chartLoading(state) {
@@ -114,6 +128,8 @@ function tutor_grid_done(fromReadyEvent, res, programme, cohort, studentNumber, 
         $("#selStudyStage").prop("disabled", true);
         $("#selStudyType").prop("disabled", true);
     } else {
+        $("#selStudyStage").prop("disabled", false);
+        $("#selStudyType").prop("disabled", false);
         if (res.study_stages !== undefined && res.study_stages != '') {
             sstages = res.study_stages.split('|');
             sstages.pop();          // Last element is empty
@@ -153,12 +169,6 @@ function tutor_grid_done(fromReadyEvent, res, programme, cohort, studentNumber, 
     if (res.advisees_count > 0) {
         $("#obula_advisor").show();
     }
-    // And the chart link
-    if (res.students_count > 1) {
-        $("#obula_chart_show").show();
-    } else {
-        $("#obula_chart_show").hide();
-    }
 
     if (updateDate) {
         // And now the date controls
@@ -181,6 +191,17 @@ function tutor_grid_done(fromReadyEvent, res, programme, cohort, studentNumber, 
     } else {
         unClickStudent();
     }
+    if (!refreshChart) {
+        // And the chart link (note unClickStudent can show it, but only if it hides the graph)
+        var chartDisplay = document.getElementById("obula_tutorsGraph_img").style.display;
+        if (chartDisplay == "none") {
+            if (res.students_count > 1) {
+                $("#obula_chart_show").show();
+            } else {
+                $("#obula_chart_show").hide();
+            }
+        }
+    }
     set_gridLoading(false);
 }
 
@@ -196,12 +217,13 @@ function highlightStudentRow(studentNumber) {
 }
 
 function clickStudent(programme, studyStage, studentNumber, studentName, scrollIntoView = true, newDate = null) {
-    set_studentLoading(true);
     //debugger;
+    //$(this).blur();
     highlightStudentRow(studentNumber);
     store_parameters(programme, studyStage, studentNumber, studentName);
     // Now the graphs
     for (var i = 1; i <= 2; i++) {
+        set_studentLoading(true);       // Yes inside the loop, it counts them started and done
         var lastOne = (i == 2);
         var imgElement = document.getElementById("obula_studentGraph_img_" + i);
         if (imgElement != null) {
@@ -210,23 +232,17 @@ function clickStudent(programme, studyStage, studentNumber, studentName, scrollI
             var rbname = types[i - 1] + 'charttype';
             var selectedType = $('input[name=' + rbname + ']:checked', '#obula_studentGraphs_div').val();
             // Now we need the Banding
-            loadStudentGraph(selectedType, i, newDate, scrollIntoView);
+            loadStudentGraph(selectedType, i, newDate, scrollIntoView, set_studentLoading);
         }
     }
     // If marks or eng chart are visible then reload
-    var finished = true;
     var chartDisplay = document.getElementById("obula_tutorsGraph_img").style.display;
     if (chartDisplay != "none") {
-        showChart(true);
-        finished = false;
+        showChart();
     }
     var studentMarksDisplay = document.getElementById("obula_studentmarks_div").style.display;
     if (studentMarksDisplay != "none") {
-        showStudentsMarks(studentNumber, false);
-        finished = false;
-    }
-    if (finished) {
-        set_studentLoading(false);
+        showStudentsMarks(programme, studentNumber, false);
     }
 
     // Hide Module graph
@@ -303,21 +319,33 @@ function showModuleEng() {
         url: "../blocks/obu_learnanalytics/student_module_eng.php",
         data: data,
         success: function (res) {
-            $('#obula_studentModule_img').attr("src", res);       // Don't need .delay(2000);
-            // Make sure it's visible
-            $("#obula_studentModule_img").show();
-            $('#obula_studentModule_row').show();
-            var element = document.getElementById("obula_studentModule_row");
-            element.scrollIntoView(true);
+            //debugger;
+            $resType = typeof res;
+            if ($resType === 'object') {    // Images actually come back as strings
+                // So this is actually an error structure
+                if (res.http_status == 204) {
+                    alert('No Module Engagement for this Student and Time Period');
+                } else {
+                    alert('Error from post, HTTP Status: ' + res.http_status + '\n' + res.message);
+                }
+            } else {
+                $('#obula_studentModule_img').attr("src", res);       // Don't need .delay(2000);
+                // Make sure it's visible
+                $("#obula_studentModule_img").show();
+                $('#obula_studentModule_row').show();
+                var element = document.getElementById("obula_studentModule_row");
+                element.scrollIntoView(true);
+            }
         },
         error: function (errMsg) {
+            //debugger;
             alert('showModuleEng Event post failed:' + errMsg);
         }
     });
 }
 
-function showStudentsMarks(studentNumber, scrollIntoView) {
-    var data = { "studentNumber": studentNumber };
+function showStudentsMarks(programme, studentNumber, scrollIntoView) {
+    var data = { "studentNumber": studentNumber, "programme": programme };
     set_marksLoading(true);
     $.ajax({
         type: 'POST',
@@ -345,13 +373,40 @@ function showStudentsMarks(studentNumber, scrollIntoView) {
     });
 }
 
-function clickStudentsMark(studentNumber, studentName, studyStage) {
-    showStudentsMarks(studentNumber, true);
+function clickStudentsMark(studentNumber, studentName, studyStage, programme) {
+    $(this).blur();
+    showStudentsMarks(programme, studentNumber, true);
     var studentGraphsDisplay = document.getElementById("obula_studentGraphs_div").style.display;
     if (studentGraphsDisplay != "none") {
         clickStudent(getProgrammeParameter(), studyStage, studentNumber, studentName, false);
     } else {
         highlightStudentRow(studentNumber);
+    }
+};
+
+function hideOtherMarksChanged() {
+    var element = document.getElementById("obula_hideOtherMarks");
+    // Now send it back to be saved
+    var data = {
+        "name": "obula_hide_othermarks", "value": element.checked.toString()
+    };
+    $.ajax({
+        type: 'POST',
+        url: "../blocks/obu_learnanalytics/set_user_preference.php",
+        data: data
+    })
+        .done(function (res) {
+        })
+        .fail(function (jqXHR, textStatus, errorThrown) {
+            alert('set_user_preference post failed:' + errorThrown);
+        })
+        ;           // End of .ajax 'line'
+
+    // Now do hide/unhide
+    if (element.checked) {
+        $(".student-marks .other-mark").attr("class", "hidden-mark");
+    } else {
+        $(".student-marks .hidden-mark").attr("class", "other-mark");
     }
 };
 
@@ -401,7 +456,7 @@ function checkRefreshStudentBits(newDate, semesterChanged) {
     }
 }
 
-function showChart(fromStudentClick = false) {
+function showChart() {
     // Let's hide some columns so we have more space
     // TODO see if we can just query table rather than whole dom
     $(".students-hideable").addClass('students-hidden');
@@ -439,17 +494,11 @@ function showChart(fromStudentClick = false) {
                 // Make sure it's visible
                 $("#obula_tutorsGraph_img").show();
                 set_chartLoading(false);
-                if (fromStudentClick) {
-                    set_studentLoading(false);
-                }
             },
             error: function (errMsg) {
                 alert('showChart Event post failed:' + errMsg);
                 $("#obula_chart_show").show();
                 set_chartLoading(false);
-                if (fromStudentClick) {
-                    set_studentLoading(false);
-                }
             }
         });
     }
@@ -526,6 +575,7 @@ function showMarksvEng(duration = 'il', newDate = null) {
 
 function programmeChanged() {
     if (gridLoading) { return };
+    //debugger;
     // Get the old one
     var oldProgramme = getProgrammeParameter();
     // Store it, but clear student and cohort
@@ -644,7 +694,7 @@ function showSearchProgrammeResults(str) {
         var html = '<ul class="popup-pgm-ul">';
         results.forEach(function (item, index) {
             if (item == null) {
-                html += '<li>...</li>';
+                html += '<li title="More matches, enter more to refine">...</li>';
             } else {
                 html += '<li title="' + item["code"] + '" onclick="pickPGMCode(' + "'" + item["code"] + "', false)" + '"';
                 html += ' ondblclick="pickPGMCode(' + "'" + item["code"] + "', true)" + '">';
@@ -839,6 +889,9 @@ function reloadGrid(option = null, oldProgramme = null) {
     var stElement = document.getElementById("selStudyType");
     var studyType = (stElement == null) ? '*' : stElement.value;
     var myaccElement = document.getElementById("obula_myacc");
+    var cohortfirst = 1;
+    var sStageSort = 'down';
+    var studentSort = 'down';
     if (option != null && option == 'programme') {
         // Assume loaded if we are called from programme changed
         cohElement.value = cohort = '*';
@@ -847,19 +900,22 @@ function reloadGrid(option = null, oldProgramme = null) {
             myaccElement.checked = false;
         }
         maxShow = 10;
+    } else {
+        if ($("#obula_swap_sort").prop('name') !== undefined) {
+            cohortfirst = ($("#obula_swap_sort").prop('name') == 'obula_cohortfirst_1') ? 1 : 0;
+        }
+        sStageSort = ($("#obula_cohort_sort").prop('name') == 'obula_cohort_down') ? 'down' : 'up';
+        studentSort = ($("#obula_student_sort").prop('name') == 'obula_student_down') ? 'down' : 'up';
     }
 
     //debugger;
     var refreshChart = (document.getElementById("obula_tutorsGraph_img").style.display == "none") ? false : true;
     // or can use $("#obula_tutorsGraph_img").is(":visible")
-    var sStageSort = ($("#obula_cohort_sort").prop('name') == 'obula_cohort_down') ? 'down' : 'up';
-    var studentSort = ($("#obula_student_sort").prop('name') == 'obula_student_down') ? 'down' : 'up';
-    var cohortfirst = ($("#obula_swap_sort").prop('name') == 'obula_cohortfirst_1') ? 1 : 0;
     var bandingCalc = $("#obula_banding_calc").val();
     var currentWeek = $("#obula_currentweek").val();       // Don't parse the JSON
-    var myAdvisees = false;
+    var onlyMyAdvisees = "false";
     if (myaccElement != null && myaccElement.checked) {
-        myAdvisees = true;
+        onlyMyAdvisees = "true";
     }
     var semester = null;
     var redrawSemester = true;
@@ -873,7 +929,7 @@ function reloadGrid(option = null, oldProgramme = null) {
     var data = {
         "programme": programme, "sStage": cohort, "maxShow": maxShow, "sStageSort": sStageSort, "studentSort": studentSort
         , "cohortfirst": cohortfirst, "currentWeek": currentWeek, "bandingCalc": bandingCalc, "studyType": studyType
-        , "myAdvisees": myAdvisees, "semester": semester, "option": option, "oldProgramme": oldProgramme
+        , "onlyMyAdvisees": onlyMyAdvisees, "semester": semester, "option": option, "oldProgramme": oldProgramme
     };
     $.ajax({
         type: 'POST',

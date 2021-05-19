@@ -54,8 +54,12 @@ class block_obu_learnanalytics extends block_base
     {
         // Add some local config changes to user global as that seems to persist fine
         global $USER;
-        $USER->ignoressc = $this->config->ignoressc;
-        $USER->demomode = $this->config->demomode;
+        global $PAGE;
+        $PAGE->requires->jquery();
+        if ($this->config != null) {
+            $USER->ignoressc = $this->config->ignoressc;
+            $USER->demomode = $this->config->demomode;
+        }
 
         if ($this->content !== null) {
             return $this->content;

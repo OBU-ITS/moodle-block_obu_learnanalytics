@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $studentSort = $_POST["studentSort"];
     $cohortFirst = $_POST["cohortfirst"];
     $currentWeek = $_POST["currentWeek"]; // In JSON
-    $myAdvisees = ($_POST["myAdvisees"] ?? "true");
+    $onlyMyAdvisees = ($_POST["onlyMyAdvisees"] ?? "true");
     $bandingCalcOptions = ($_POST["bandingCalc"]);
     $semester = $_POST["semester"] ?? "";
     $option = ($_POST["option"]);
@@ -105,7 +105,7 @@ try {
     // Now let it send all that back
     $success = false;
 }
-if ($success && $studentsComparitives == null || count($studentsComparitives) == 0) {
+if ($success && !isset($studentsComparitives) || count($studentsComparitives) == 0) {
     $html = "<br><b><font size='+2'><style='color:blue'>No Active Students for this Selection Criteria</style></font></b>";
     // Now let it send all that back
     $success = false;
@@ -126,31 +126,29 @@ if ($success) {
     $html .= "<tr>";
 
     // show rows drop down
-    // But if we are filtering advisees, we need to loop through and count
-    if ($myAdvisees === true) {
-        $count = 0;
-        foreach ($studentsComparitives as $studentKey => $data) {
-            if ($data["advisor_number"] == strtoupper($username)) {
-                $count++;
-            }
+    // But if we could filter advisees, we need to loop through and count
+    $count = count($studentsComparitives);
+    $adviseesCount = 0;
+    foreach ($studentsComparitives as $studentKey => $data) {
+        if ($data["advisor_number"] == strtoupper($username)) {
+            $adviseesCount++;
         }
-    } else {
-        $count = count($studentsComparitives);
     }
+    $outOfCount = ($onlyMyAdvisees == "true") ? $adviseesCount : $count;
 
     $html .= "<td class='parameters' style='min-width:240px'>";
     $html .= '<label for "selMaxShow" style="min-width:100px">Show</label>';
     $html .= '<select name="showMax" id="selMaxShow" onchange="maxShowChanged()">';
-    if ($count <= 10) {
-        $html .= "<option value='10' selected='selected'>$count</option>";
+    if ($outOfCount <= 10) {
+        $html .= "<option value='10' selected='selected'>$outOfCount</option>";
     } else {
         $selatt = ($maxShow == 10) ? "selected='selected'" : "";
         $html .= "<option value='10' $selatt>10</option>";
-        if ($count >= 20) {
+        if ($outOfCount >= 20) {
             $selatt = ($maxShow == 20) ? "selected='selected'" : "";
             $html .= "<option value='20' $selatt>20</option>";
         }
-        if ($count >= 50) {
+        if ($outOfCount >= 50) {
             $selatt = ($maxShow == 50) ? "selected='selected'" : "";
             $html .= "<option value='50' $selatt>50</option>";
         }
@@ -158,7 +156,7 @@ if ($success) {
         $html .= "<option value='*' $selatt>All</option>";
     }
     $html .= '</select>';
-    $html .= '<label style="padding-left:8px">of ' . $count . '</label>';
+    $html .= '<label style="padding-left:8px">of ' . $outOfCount . '</label>';
     $html .= '</td>';
     $html .= '<td></td>';       // for the info button
 
@@ -175,11 +173,15 @@ if ($success) {
         $html .= "<th class='students-hideable th-span' colspan='$studyColumns'>$headerText</th>";
     }
     $html .= "</tr>";
-    // line 2
+    // line 2 (Defaults to not show, js will show it if advisee count > 0)
     $html .= "<tr>";
     $html .= "<td><span style='display:none' id='obula_advisor'>";
-    $html .= "<input type='checkbox' id='obula_myacc' name='obula_myacc' value='myacc' onchange='myaccChanged()</input>";
-    $html .= "<label for='obula_myacc' style='padding-left:8px'>My Academic Advisees ($count)</label>";
+    $html .= "<input type='checkbox' id='obula_myacc' name='obula_myacc' value='myacc'";
+    if ($onlyMyAdvisees == "true") {
+        $html .= " checked";
+    }
+    $html .= " onchange='myaccChanged()'</input>";
+    $html .= "<label for='obula_myacc' style='padding-left:8px'>My Academic Advisees ($adviseesCount)</label>";
     $html .= "</span></td>";
     $html .= '<td></td>';       // for the info button
 
@@ -210,8 +212,8 @@ if ($success) {
     // Now a dividing cell
     // $html .= "<td>&nbsp</td>";
     // And a header for marks
-    $html .= "<th class='students-hideable'>2020/21 Sem 1</th>";
     $html .= "<th class='students-hideable'>2019/20 Sem 2</th>";
+    $html .= "<th class='students-hideable'>2020/21 Sem 1</th>";
     if ($stageColumn > 0) {
         $html .= "<th class='students-hideable'>Stage</th>";
     }
@@ -237,110 +239,109 @@ if ($success) {
     $ids2chart = '';
     $stypes = array();
     $sstages = array();
-    $count = $adviseesCount = 0;
+    $loopCount = 0;
     foreach ($studentsComparitives as $studentKey => $data) {
         // array will contain all students for the cohort/studystage/studytype so averages etc make sense
         // so we may need to not show some if filtering by academic advisor
-        if ($data["advisor_number"] == strtoupper($username)) {
-            $adviseesCount++;
-        } else {
-            if ($myAdvisees === true) {
-                continue;
-            }
+        if ($onlyMyAdvisees == "true" && $data["advisor_number"] != strtoupper($username)) {
+            continue;
         }
         
-        // So can't break from loop anymore when we've done enough as we need the filtered count
-        $count++;
-        if ($count <= $maxShow) {
-//            $html .= "<tr class='students'><td class='students-name'>";
-            $html .= "<tr class='students' id='sid_" . $studentKey . "'><td class='students-name'>";
-            // Various articles on best way to make a link to javascript
-            // such as https://stackoverflow.com/questions/10070232/how-to-make-a-cell-of-table-hyperlink
-            //$studentAtts = array("href"=>"javascript:void(0);","onclick"=>"clickStudent('$studentKey')");
-            $sname = $data["student_name"];
-            $advisor = $data["advisor_number"];
+        // Already have count so we can break again
+        $loopCount++;
+        if ($loopCount > $maxShow) {
+            break;
+        }
+
+        $html .= "<tr class='students' id='sid_" . $studentKey . "'><td class='students-name'>";
+        // Various articles on best way to make a link to javascript
+        // such as https://stackoverflow.com/questions/10070232/how-to-make-a-cell-of-table-hyperlink
+        //$studentAtts = array("href"=>"javascript:void(0);","onclick"=>"clickStudent('$studentKey')");
+        $sname = $data["student_name"];
+        $advisor = $data["advisor_number"];
+        // Do not try simplifying the following verbose lines of code unless you have time to spare
+        // Seems to be a problem with the 's inside the "'s
+        // $html .= "<a href='javascript:clickStudent('{$programme}','{$studyStage}','{$studentKey}','{$sname}')'>{$sname}</a></td>";
+        $temp = $data["study_stage"];
+        $html .= '<a href="javascript:clickStudent(';
+        $html .= "'$programme',";
+        $html .= "'$temp',";
+        $html .= "'$studentKey',";
+        $html .= "'$sname',";
+        $html .= "true)";
+        $html .= '">'; // Note the closing "
+        $html .= "{$sname}</a></td>";
+        $onclick = "showStudentInfo('{$studentKey}','{$sname}','{$advisor}')";
+        $class = "material-icons students-info";
+        if ($advisor == "") {
+            $class .= " students-warning";
+        }
+        $html .= '<td class="' . $class . '" title="Student Info" onclick="' . $onclick . '">info</td>';       // the info button, preview is good too
+
+        $imageUrl = get_image_url4Comparison("sStage", $data["cohort_comparison"]);
+        $hint = $data['cohort_comparison_hint'];
+        $studyStageCell = "<td class='students students-pos' data-toggle='tooltip' title = '$hint'>"; // Simple hint for now TODO one using CSS
+        $studyStageCell .= "<img src = $imageUrl style = 'max-height:18px'>";
+        //$studyStageCell .= " (" . sprintf('%.0f', $data["student_engagement"]) . "/" . sprintf('%.0f', $data["student_weighted_engagement"]) . ")";
+        $studyStageCell .= "</td>";
+
+        $emptyCell = "<td class='students'/>";
+
+        $imageUrl0 = get_image_url4Comparison("student", $data["student_comparison_prev0"]);
+        $imageUrl1 = get_image_url4Comparison("student", $data["student_comparison_prev1"]);
+        $imageUrl2 = get_image_url4Comparison("student", $data["student_comparison_prev2"]);
+        $studentCell = "<td class='students'>";
+        // Simple hints for now TODO one using CSS
+        $hint = $data['student_comparison_prev0_hint'];
+        $studentCell .= "<img src = $imageUrl0 style = 'max-height:18px' data-toggle='tooltip' title = '$hint'>";
+        $hint = $data['student_comparison_prev1_hint'];
+        $studentCell .= "<img src = $imageUrl1 style = 'max-height:18px' data-toggle='tooltip' title = '$hint'>";
+        $hint = $data['student_comparison_prev2_hint'];
+        $studentCell .= "<img src = $imageUrl2 style = 'max-height:18px' data-toggle='tooltip' title = '$hint'>";
+        $studentCell .= "</td>";
+
+        if ($cohortFirst == 1) {
+            $html .= $studyStageCell;
+            $html .= $emptyCell;
+            $html .= $studentCell;
+        } else {
+            $html .= $studentCell;
+            $html .= $emptyCell;
+            $html .= $studyStageCell;
+        }
+
+        // Now a dividing cell
+        // $html .= "<td>&nbsp</td>";
+        // And cells for marks
+        for ($i = 0; $i < 2; $i++) {
+            $html .= "<td class='students-hideable'>";      // TODO right justify mark
+            $mark = ($i == 0) ? $data["student_average_mark_lt"] : $data["student_average_mark_tt"];
             // Do not try simplifying the following verbose lines of code unless you have time to spare
             // Seems to be a problem with the 's inside the "'s
-            // $html .= "<a href='javascript:clickStudent('{$programme}','{$studyStage}','{$studentKey}','{$sname}')'>{$sname}</a></td>";
             $temp = $data["study_stage"];
-            $html .= '<a href="javascript:clickStudent(';
-            $html .= "'$programme',";
-            $html .= "'$temp',";
+            $html .= '<a href="javascript:clickStudentsMark(';
             $html .= "'$studentKey',";
             $html .= "'$sname',";
-            $html .= "true)";
+            $html .= "'$temp',";
+            $html .= "'$programme')";
             $html .= '">'; // Note the closing "
-            $html .= "{$sname}</a></td>";
-            $onclick = "showStudentInfo('{$studentKey}','{$sname}','{$advisor}')";
-            $class = "material-icons students-info";
-            if ($advisor == "") {
-                $class .= " students-warning";
-            }
-            $html .= '<td class="' . $class . '" title="Student Info" onclick="' . $onclick . '">info</td>';       // the info button, preview is good too
-
-            $imageUrl = get_image_url4Comparison("sStage", $data["cohort_comparison"]);
-            $hint = $data['cohort_comparison_hint'];
-            $studyStageCell = "<td class='students students-pos' data-toggle='tooltip' title = '$hint'>"; // Simple hint for now TODO one using CSS
-            $studyStageCell .= "<img src = $imageUrl style = 'max-height:18px'>";
-            //$studyStageCell .= " (" . sprintf('%.0f', $data["student_engagement"]) . "/" . sprintf('%.0f', $data["student_weighted_engagement"]) . ")";
-            $studyStageCell .= "</td>";
-
-            $emptyCell = "<td class='students'/>";
-
-            $imageUrl0 = get_image_url4Comparison("student", $data["student_comparison_prev0"]);
-            $imageUrl1 = get_image_url4Comparison("student", $data["student_comparison_prev1"]);
-            $imageUrl2 = get_image_url4Comparison("student", $data["student_comparison_prev2"]);
-            $studentCell = "<td class='students'>";
-            // Simple hints for now TODO one using CSS
-            $hint = $data['student_comparison_prev0_hint'];
-            $studentCell .= "<img src = $imageUrl0 style = 'max-height:18px' data-toggle='tooltip' title = '$hint'>";
-            $hint = $data['student_comparison_prev1_hint'];
-            $studentCell .= "<img src = $imageUrl1 style = 'max-height:18px' data-toggle='tooltip' title = '$hint'>";
-            $hint = $data['student_comparison_prev2_hint'];
-            $studentCell .= "<img src = $imageUrl2 style = 'max-height:18px' data-toggle='tooltip' title = '$hint'>";
-            $studentCell .= "</td>";
-
-            if ($cohortFirst == 1) {
-                $html .= $studyStageCell;
-                $html .= $emptyCell;
-                $html .= $studentCell;
-            } else {
-                $html .= $studentCell;
-                $html .= $emptyCell;
-                $html .= $studyStageCell;
-            }
-
-            // Now a dividing cell
-            // $html .= "<td>&nbsp</td>";
-            // And cells for marks
-            for ($i = 0; $i < 2; $i++) {
-                $html .= "<td class='students-hideable'>";      // TODO right justify mark
-                $mark = ($i == 0) ? $data["student_average_mark_tt"] : $data["student_average_mark_lt"];
-                // Do not try simplifying the following verbose lines of code unless you have time to spare
-                // Seems to be a problem with the 's inside the "'s
-                $temp = $data["study_stage"];
-                $html .= '<a href="javascript:clickStudentsMark(';
-                $html .= "'$studentKey',";
-                $html .= "'$sname',";
-                $html .= "'$temp')";
-                $html .= '">'; // Note the closing "
-                $html .= "{$mark}</a></td>";
-            }
-
-            // Now study stage/mode/level if needed
-            if ($stageColumn > 0) {
-                $html .= "<td class='students-hideable'>" . $data["study_stage"] . "</td>";
-            }
-            if ($typeColumn > 0) {
-                $html .= "<td class='students-hideable'>" . $data["study_type"] . "</td>";
-            }
-            if ($levelColumn > 0) {
-                $html .= "<td class='students-hideable'>" . $data["study_level"] . "</td>";
-            }
-
-            $html .= "</tr>";
+            $html .= "{$mark}</a></td>";
         }
-        if ($count > 1) {
+
+        // Now study stage/mode/level if needed
+        if ($stageColumn > 0) {
+            $html .= "<td class='students-hideable'>" . $data["study_stage"] . "</td>";
+        }
+        if ($typeColumn > 0) {
+            $html .= "<td class='students-hideable'>" . $data["study_type"] . "</td>";
+        }
+        if ($levelColumn > 0) {
+            $html .= "<td class='students-hideable'>" . $data["study_level"] . "</td>";
+        }
+        // Row done
+        $html .= "</tr>";
+
+        if ($loopCount > 1) {
             $ids2chart .= ",";
         }
         $ids2chart .= "'" . $studentKey . "'";
@@ -369,6 +370,7 @@ if ($success) {
 
 $returnDate = ($dateRecalculated) ? json_encode($current) : "";     // No htmlspecialchars
 header('Content-type: application/json');
+// student_count is used to determine if we should show charting link
 $json = json_encode(array('success' => $success, 'html' => $html, 'date' => $returnDate
                             , 'full_data_set' => $fullDataSet
                             , 'students_count' => $count, 'advisees_count' => $adviseesCount
@@ -382,7 +384,13 @@ if ($json) {
 }
 exit;
 
-function get_image_url($imageName)
+/**
+ * Routine to get the url to reference a .png image
+ *
+ * @param  string $imageName The image name without it's extension
+ * @return string The relative url for the image
+ */
+function get_image_url(string $imageName)
 {
     // TODO I think there is an approved way of getting an url to an image that will then use cache etc
     // But looking at the network traffic, the browser is already doing some optimisation

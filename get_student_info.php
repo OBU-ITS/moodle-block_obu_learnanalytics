@@ -41,8 +41,13 @@ if ($advisor == "") {
 }
 $email = $sid . "@brookes.ac.uk";
 $studentUserObj = $DB->get_record("user", array('username' => $sid));
+$lAccess = "Never";
 if ($studentUserObj != false) {
     $email = $studentUserObj->email;
+    $last = $studentUserObj->lastaccess;
+    if ($last != null) {
+        $lAccess = date('d-M-Y h:i:s', $last);
+    }
 }
 
 header('Content-type: application/json');
@@ -59,8 +64,8 @@ foreach ($fileLines as $line) {
     }
 }
 // Next line does not use ", because we don't want PHP to try and replace the variables yet
-$from = array('{$studentNumber}', '{$sName}', '{$email}', '{$aaName}', '{$aaemail}');
-$to = array($sid, $sName, $email, $aaName, $aaemail);
+$from = array('{$studentNumber}', '{$sName}', '{$email}', '{$aaName}', '{$aaemail}', '{$lAccess}');
+$to = array($sid, $sName, $email, $aaName, $aaemail, $lAccess);
 $popupbodyhtml = str_replace($from, $to, $html);
 
 // Now send all that back

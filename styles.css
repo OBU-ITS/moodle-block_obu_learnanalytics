@@ -205,6 +205,19 @@
     text-align: right;
 }
 
+.block_obu_learnanalytics tr.main-mark {
+    font-style: normal;
+}
+
+.block_obu_learnanalytics tr.other-mark {
+    font-style: italic;
+    font-weight: lighter;
+}
+
+.block_obu_learnanalytics tr.hidden-mark {
+    display: none;
+}
+
 .block_obu_learnanalytics button.button-search {
     background-image: url('http://localhost/moodle/blocks/obu_learnanalytics/pix/search.png');
     background-size: 20px 20px;

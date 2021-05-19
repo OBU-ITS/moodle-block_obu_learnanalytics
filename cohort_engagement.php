@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } else {
         $current = $util_dates->json_2_current_week($currentWeek);
     }
-    $durationCode = $_POST["duration"] ?? '1wk';     // 1wk, 4wks or sem(ester)
+    $durationCode = $_POST["duration"] ?? '13wks';     // 1wk, 4wks, 13wks or sem(ester)
 } else {
     exit("Brookes Learning Analytics - GET not supported for cohort chart");
 }

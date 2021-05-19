@@ -30,6 +30,9 @@ class common
     protected static $la_ws_curl_timeout = 20;
     protected static $la_ws_cc = false;
 
+    protected static $last_http_status = -1;
+    protected static $last_curl_errno = -1;
+
     public function __construct()
     {
         self::$la_ws_url = \get_config('block_obu_learnanalytics', 'ws_root_url');
@@ -102,13 +105,13 @@ class common
         }
 
         $result = curl_exec($curl);
-        $http_status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-        $curl_errno = curl_errno($curl);
+        self::$last_http_status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        self::$last_curl_errno = curl_errno($curl);
         $error_msg = '';
 
         if ($debugFile != null) {
-            \fwrite($debugFile, 'WS HTTP status:' . $http_status . PHP_EOL);
-            \fwrite($debugFile, 'WS Curl err no:' . $curl_errno . PHP_EOL);
+            \fwrite($debugFile, 'WS HTTP status:' . self::$last_http_status . PHP_EOL);
+            \fwrite($debugFile, 'WS Curl err no:' . self::$last_curl_errno . PHP_EOL);
             if ($curl_errno) {
                 $error_msg = curl_error($curl);
                 \fwrite($debugFile, 'WS Curl errmsg:' . $error_msg . PHP_EOL);
@@ -134,12 +137,17 @@ class common
             \fclose($debugFile);
         }
 
-        if ($http_status > 300) {
+        if (self::$last_http_status > 300) {
             // By throwing it we get the call stack in the exception
-            throw new \Exception("Error calling web service HTTP Status = {$http_status}, params = {$params}");
+            throw new \Exception("Error calling web service HTTP Status = {self::$last_http_status}, params = {$params}");
         }
 
         return json_decode($result, true);
+    }
+
+    public function get_last_http_status()
+    {
+        return self::$last_http_status;
     }
 
     public function echo_error_console_log($ex, $echo = true)

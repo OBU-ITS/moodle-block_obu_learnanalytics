@@ -36,8 +36,40 @@ $simpleCurrent = $util_dates->createSimpleCurrentParam($current);
 $params = "student/modgraphdata/$sid/$simpleCurrent/";
 $curl_common = new \block_obu_learnanalytics\curl\common();
 $studentModuleData = $curl_common->send_request($params);
+if ($studentModuleData == null) {
+    header('Content-type: application/json');
+    $http_status = $curl_common->get_last_http_status();
+    if ($http_status == 204) {
+        // Empty data set is a success of sorts
+        $json = json_encode(array('success' => true, 'http_status' => $http_status));
+        if ($json) {
+            echo $json;
+        } else {
+            $json_error = json_last_error_msg();
+            echo json_encode(array('success' => false, 'json_error' => "{$json_error}"));
+        }
+    } else {
+        $json = json_encode(array('success' => false, 'http_status' => $http_status));
+        if ($json) {
+            echo $json;
+        } else {
+            $json_error = json_last_error_msg();
+            echo json_encode(array('success' => false, 'json_error' => "{$json_error}"));
+        }
+    }
+    return;
+}
 if (count($studentModuleData) != 2) {
-    echo "error";       // TODO find a way to report this to the user
+    header('Content-type: application/json');
+    $json = json_encode(array('success' => false, 'http_status' => $http_status
+            , 'message' => 'Unexpected data structure returned'));
+    if ($json) {
+        echo $json;
+    } else {
+        $json_error = json_last_error_msg();
+        echo json_encode(array('success' => false, 'json_error' => "{$json_error}"));
+    }
+    return;
 }
 $studentModules = $studentModuleData["Modules"];
 $studentGraphData = $studentModuleData["GraphData"];

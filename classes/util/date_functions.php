@@ -409,11 +409,15 @@ class date_functions
                 $weeks = 4;
                 break;
     
-                case 'sem':
-                    $semesters = self::get_semesters();
-                    $weeks = 10;     //TODO
-                    break;
-               
+            case '13wks':
+                $weeks = 13;
+                break;
+    
+            case 'sem':
+                $semesters = self::get_semesters();
+                $weeks = 10;     //TODO
+                break;
+            
             default:
             $weeks = 1;
         break;

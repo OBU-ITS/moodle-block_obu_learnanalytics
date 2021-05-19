@@ -19,3 +19,20 @@ This file describes changes in the obu_learnanalytics block code.
 * Fixed wait cursor during loads
 * Student Support Coordinator now highlights student in grid
 
+=== 0.10.3 ===
+* Fix bug where sort columns swapped after empty programme selected
+* Hide show charts link for empty programme
+* Re-enable Study Stage and Mode after empty programme
+* Added hint to Programme Search on ... to say more results
+* Fixed Academic Advisee selection (needs new WS version)
+* Fixed problem where number of students shown varied
+* Fixed problem if student changed with marks grid active, it never ungreyed
+* Fixed student lookup when student number starts with a '0'
+* Student Graphs changed to show Mean and Median averages (needs new WS version)
+* Show unrelated marks in italics (dimmed) and add option to hide them
+* Remember last hide un-related marks selection
+* Reversed Marks columns
+* Corrected technique for jquery load for Moodle 3.10
+* Added last accessed data to student popup
+* Removed focus from student after click as 3.10 highlights it
+* Stopped Chart engagement link re-appearing when changing week with chart visible

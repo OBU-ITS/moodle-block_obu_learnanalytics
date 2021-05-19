@@ -33,9 +33,6 @@ defined('MOODLE_INTERNAL') || die();
  *      - PUT INFO HERE
  * }
  *
- * @since     Moodle 3.8.2
- * @copyright 2021 Ken Burch
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  **/
 class dashboard_closed extends \core\event\base
 {

@@ -68,8 +68,9 @@ function getStudentNameParameter() {
     return result;
 }
 
-function loadStudentGraph(chartType, chartNo, newDate = null, scrollIntoView = false) {
+function loadStudentGraph(chartType, chartNo, newDate = null, scrollIntoView = false, doneFunction = loadStudentGraphDone) {
     // TODO Cohort
+    //debugger;
     var currentWeek = "";
     if (newDate == null) {
         currentWeek = $("#obula_currentweek").val();       // Don't parse the JSON
@@ -101,6 +102,7 @@ function loadStudentGraph(chartType, chartNo, newDate = null, scrollIntoView = f
                 $('#obula_error_cell').html(res.consolehtml);
                 $("#obula_error_row").show();       // Probably won't as consolehtml has display none in it
                 alert('loadStudentGraph returned error, see console');
+                doneFunction(false);
             } else {
                 // Could still be an exception I didn't format, it seems they normally start <br />
                 if (res.startsWith('<br />')) {
@@ -118,13 +120,22 @@ function loadStudentGraph(chartType, chartNo, newDate = null, scrollIntoView = f
                         var imgElement = document.getElementById("obula_studentGraphs_div");
                         imgElement.scrollIntoView(false);           // true is going too far
                     }
+                    // Now get the focus away from the student that was clicked because Moodle 3.10 upgrade outlines it
+                    $('#obula_mod_eng').focus();
+                    doneFunction(false);
                 }
             }
         },
         error: function (errMsg) {
             alert('loadStudentGraph post failed:' + errMsg);
+            doneFunction(false);
         }
     });
+}
+
+function loadStudentGraphDone(state = false)
+{
+    // Nothing to do
 }
 
 /**
@@ -410,6 +421,38 @@ function copyErrorTextToClipboard() {
         if (!ok) {
             //alert("Copy to clipboard failed");
         }
+    }
+}
+
+/**
+ * Unsuccesful ?? attempt to copy to clipboard
+ * But left as I want to crack it for when someone wants the data from the tutor grid copied.
+ * Note navigator.clipboard.writeText is async so
+ */
+ function copyTextToClipboard(clipText) {
+    //debugger;
+    // if (navigator.clipboard) {
+    //     navigator.clipboard.writeText(clipText).then(function () {
+    //         // great nothing to do ok = true;
+    //     }, function (err) {
+    //         alert("Copy to clipboard failed");
+    //     });
+    // } else {
+        // As it's not an input we can't select it, but we have a hidden field we can use
+        var hiddenText = document.getElementById("obula_copy2clip");
+        hiddenText.value = clipText;
+
+        // Select the contents
+        hiddenText.select();
+        //hiddenText.show();
+        //hiddenText.setSelectionRange(0, 99999); /* For mobile devices */
+
+        // Copy the selected text
+        // Note feature is deprecated, but it's working for now
+        ok = document.execCommand("copy");
+        if (!ok) {
+            //alert("Copy to clipboard failed");
+        // }
     }
 }
 

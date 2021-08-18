@@ -36,3 +36,8 @@ This file describes changes in the obu_learnanalytics block code.
 * Added last accessed data to student popup
 * Removed focus from student after click as 3.10 highlights it
 * Stopped Chart engagement link re-appearing when changing week with chart visible
+
+=== 0.10.5 ===
+* Demo mode capability
+* Remove hardcoding for term heading
+* Fix for cohort chart

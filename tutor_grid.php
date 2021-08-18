@@ -96,9 +96,11 @@ $success = true;        // Hopefully
 try {
     $simpleCurrent = $util_dates->createSimpleCurrentParam($current);
     // We don't want to filter by academic advisor, because cohort/studyStage averages etc should include all students
-    $params = "tutor/studentsgrid/$programme/$bandingCalcOptions/$simpleCurrent/$studyStage/$studyType/*/";
+    $params = "tutor/studentsgridv2/$programme/$bandingCalcOptions/$simpleCurrent/$studyStage/$studyType/*/";
     $curl_common = new \block_obu_learnanalytics\curl\common();
-    $studentsComparitives = $curl_common->send_request($params);
+    $result = $curl_common->send_request($params);
+    $studentsComparitives = $result["data"];
+    $headings = $result["header"];
 } catch (Exception $e) {
     // Just output it in big bold red, shouldn't happen so no CSS for this
     $html = "<br><b><font size='6'><style='color:red'>Exception from students_comparitive_grid: {$e}</style></font></b>";
@@ -212,8 +214,8 @@ if ($success) {
     // Now a dividing cell
     // $html .= "<td>&nbsp</td>";
     // And a header for marks
-    $html .= "<th class='students-hideable'>2019/20 Sem 2</th>";
-    $html .= "<th class='students-hideable'>2020/21 Sem 1</th>";
+    $html .= "<th class='students-hideable'>" . $headings['lastTermHeading'] . "</th>";
+    $html .= "<th class='students-hideable'>" . $headings['thisTermHeading'] . "</th>";
     if ($stageColumn > 0) {
         $html .= "<th class='students-hideable'>Stage</th>";
     }

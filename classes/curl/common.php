@@ -39,7 +39,12 @@ class common
         if (substr_compare(self::$la_ws_url, '/', -1) != 0) {
             self::$la_ws_url .= '/';
         }
-        self::$la_ws_token = \get_config('block_obu_learnanalytics', 'ws_bearer_token');
+        global $USER;
+        if ($USER->demomode == "1") {
+            self::$la_ws_token = \get_config('block_obu_learnanalytics', 'ws_bearer_token_demo');
+        } else {
+            self::$la_ws_token = \get_config('block_obu_learnanalytics', 'ws_bearer_token');
+        }
         self::$la_ws_accept_sc = \get_config('block_obu_learnanalytics', 'ws_accept_selfcert');
         self::$la_ws_trace = \get_config('block_obu_learnanalytics', 'ws_trace_calls');
         $temp = \get_config('block_obu_learnanalytics', 'ws_curl_timeout_cc');

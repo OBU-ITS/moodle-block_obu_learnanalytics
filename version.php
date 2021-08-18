@@ -25,8 +25,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component  = 'block_obu_learnanalytics';
-$plugin->release    = 'v0.10.4';      //Do global search/replace when changing this
-$plugin->version    = 2021051701;   // yyyymmddvv
+$plugin->release    = 'v0.10.5';      //Do global search/replace when changing this
+$plugin->version    = 2021081800;   // yyyymmddvv
 $plugin->requires   = 2019052000; // Moodle v3.7.0
 // Supported value is any of the predefined constants MATURITY_ALPHA, MATURITY_BETA, MATURITY_RC or MATURITY_STABLE.
 $plugin->maturity   = MATURITY_BETA;

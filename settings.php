@@ -49,6 +49,12 @@ if ($ADMIN->fulltree) {   // also tried $hassiteconfig ||
         get_string('ws_bearer_token_info', 'block_obu_learnanalytics'),
         ''
     ));
+    $settings->add(new admin_setting_configpasswordunmask(
+        'block_obu_learnanalytics/ws_bearer_token_demo',
+        get_string('ws_bearer_token_demo', 'block_obu_learnanalytics'),
+        get_string('ws_bearer_token_demo_info', 'block_obu_learnanalytics'),
+        ''
+    ));
     $settings->add(new admin_setting_configtext(
         'block_obu_learnanalytics/ws_curl_timeout_cc',
         get_string('ws_curl_timeout_cc', 'block_obu_learnanalytics'),

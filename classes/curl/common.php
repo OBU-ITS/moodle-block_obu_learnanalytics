@@ -40,7 +40,7 @@ class common
             self::$la_ws_url .= '/';
         }
         global $USER;
-        if ($USER->demomode == "1") {
+        if (isset($USER->demomode) && $USER->demomode == "1") {
             self::$la_ws_token = \get_config('block_obu_learnanalytics', 'ws_bearer_token_demo');
         } else {
             self::$la_ws_token = \get_config('block_obu_learnanalytics', 'ws_bearer_token');
@@ -144,7 +144,8 @@ class common
 
         if (self::$last_http_status > 300) {
             // By throwing it we get the call stack in the exception
-            throw new \Exception("Error calling web service HTTP Status = {self::$last_http_status}, params = {$params}");
+            $statusNo = self::$last_http_status;
+            throw new \Exception("Error calling web service HTTP Status = {$statusNo}, params = {$params}");
         }
 
         return json_decode($result, true);

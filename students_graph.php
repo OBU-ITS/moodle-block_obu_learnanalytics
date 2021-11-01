@@ -86,7 +86,8 @@ try {
         }
         // Note exception isn't caught if next line fails
         $curl_common = new \block_obu_learnanalytics\curl\common();
-        $params = "student/pgmgraphdata/$sid/$programme/{$sStage}/$simpleCurrent/both/{$column}/";
+        $enc_pgm = htmlspecialchars(urlencode(str_replace('/','~',$programme)));
+        $params = "student/pgmgraphdata/$sid/{$enc_pgm}/{$sStage}/$simpleCurrent/both/{$column}/";
         try {
             $studentGraphData = $curl_common->send_request($params);
         } catch (\Exception $ex) {
@@ -104,6 +105,7 @@ try {
         $weeks = [];
         $plot1Counts = [];
         $plot2Counts = [];
+        $plot3Counts = [];
 
         if ($studentGraphData != null) {
             foreach ($studentGraphData as $key => $row) {

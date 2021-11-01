@@ -41,3 +41,10 @@ This file describes changes in the obu_learnanalytics block code.
 * Demo mode capability
 * Remove hardcoding for term heading
 * Fix for cohort chart
+
+=== 0.10.6 ===
+* Fix bug created for some tutors when demo mode introduced
+* Fix for programmes with a '/' in them
+* Fix pick up of Study Stage to correct new students engagement
+* Fix to default study stage/mod selection for large programmes 
+* Fix for click event for students with am apostrophe in their name

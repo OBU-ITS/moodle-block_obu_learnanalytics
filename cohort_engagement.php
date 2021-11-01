@@ -57,7 +57,8 @@ if ($programme != '') {             // Just a safety check, should never get cal
 
     $weeks = $util_dates->interprete_duration_code($durationCode);
     $simpleCurrent = $util_dates->createSimpleCurrentParam($current);
-    $params = "tutor/cohorteng/$programme/$studyStage/$studyType/$weeks/$simpleCurrent/";
+    $enc_pgm = htmlspecialchars(urlencode(str_replace('/','~',$programme)));
+    $params = "tutor/cohorteng/$enc_pgm/$studyStage/$studyType/$weeks/$simpleCurrent/";
     $studentsData = $curl_common->send_request($params);
     
     $excludeZeros = false;

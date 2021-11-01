@@ -96,7 +96,10 @@ $success = true;        // Hopefully
 try {
     $simpleCurrent = $util_dates->createSimpleCurrentParam($current);
     // We don't want to filter by academic advisor, because cohort/studyStage averages etc should include all students
-    $params = "tutor/studentsgridv2/$programme/$bandingCalcOptions/$simpleCurrent/$studyStage/$studyType/*/";
+    // Had to encode programme as it can have / for example BA/BSH-PKPO, but that wasn't enough because decode happened before htaccess
+    // so swap / to ~ (and back in web service)
+    $enc_pgm = htmlspecialchars(urlencode(str_replace('/','~',$programme)));
+    $params = "tutor/studentsgridv2/$enc_pgm/$bandingCalcOptions/$simpleCurrent/$studyStage/$studyType/*/";
     $curl_common = new \block_obu_learnanalytics\curl\common();
     $result = $curl_common->send_request($params);
     $studentsComparitives = $result["data"];
@@ -129,12 +132,18 @@ if ($success) {
 
     // show rows drop down
     // But if we could filter advisees, we need to loop through and count
+    // So count anything we might need
     $count = count($studentsComparitives);
+    $stypes = array();
+    $sstages = array();
     $adviseesCount = 0;
     foreach ($studentsComparitives as $studentKey => $data) {
         if ($data["advisor_number"] == strtoupper($username)) {
             $adviseesCount++;
         }
+        // Now save actual study types and stages that we have (even if not shown)
+        $stypes[$data["study_type"]] = 1;
+        $sstages[$data["study_stage"]] = 1;
     }
     $outOfCount = ($onlyMyAdvisees == "true") ? $adviseesCount : $count;
 
@@ -239,8 +248,6 @@ if ($success) {
 
     // Loop through sorted students data and create rows
     $ids2chart = '';
-    $stypes = array();
-    $sstages = array();
     $loopCount = 0;
     foreach ($studentsComparitives as $studentKey => $data) {
         // array will contain all students for the cohort/studystage/studytype so averages etc make sense
@@ -260,6 +267,8 @@ if ($success) {
         // such as https://stackoverflow.com/questions/10070232/how-to-make-a-cell-of-table-hyperlink
         //$studentAtts = array("href"=>"javascript:void(0);","onclick"=>"clickStudent('$studentKey')");
         $sname = $data["student_name"];
+        // Note tried various urlencode functions and &apos; but that get swapped back n the browser and it still wouldn't work
+        $urlName = addslashes($sname);
         $advisor = $data["advisor_number"];
         // Do not try simplifying the following verbose lines of code unless you have time to spare
         // Seems to be a problem with the 's inside the "'s
@@ -269,11 +278,11 @@ if ($success) {
         $html .= "'$programme',";
         $html .= "'$temp',";
         $html .= "'$studentKey',";
-        $html .= "'$sname',";
+        $html .= "'$urlName',";
         $html .= "true)";
         $html .= '">'; // Note the closing "
         $html .= "{$sname}</a></td>";
-        $onclick = "showStudentInfo('{$studentKey}','{$sname}','{$advisor}')";
+        $onclick = "showStudentInfo('{$studentKey}','{$urlName}','{$advisor}')";
         $class = "material-icons students-info";
         if ($advisor == "") {
             $class .= " students-warning";
@@ -323,7 +332,7 @@ if ($success) {
             $temp = $data["study_stage"];
             $html .= '<a href="javascript:clickStudentsMark(';
             $html .= "'$studentKey',";
-            $html .= "'$sname',";
+            $html .= "'$urlName',";
             $html .= "'$temp',";
             $html .= "'$programme')";
             $html .= '">'; // Note the closing "
@@ -347,9 +356,6 @@ if ($success) {
             $ids2chart .= ",";
         }
         $ids2chart .= "'" . $studentKey . "'";
-        // Now save actual study types and stages that we have (even if no shown)
-        $stypes[$data["study_type"]] = 1;
-        $sstages[$data["study_stage"]] = 1;
     }
 
     $html .= "</table></td>";

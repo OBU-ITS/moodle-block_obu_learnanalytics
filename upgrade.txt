@@ -48,3 +48,9 @@ This file describes changes in the obu_learnanalytics block code.
 * Fix pick up of Study Stage to correct new students engagement
 * Fix to default study stage/mod selection for large programmes 
 * Fix for click event for students with am apostrophe in their name
+
+=== 0.10.7 ===
+* Cope with WS taking long time to fail DB connection
+
+=== 0.10.8 ===
+* Make check connection message/status an Ajax callback and panel

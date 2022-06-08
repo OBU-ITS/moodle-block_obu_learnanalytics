@@ -5,6 +5,7 @@ $(document).ready(function () { readySSC(); });     // Has to be called from inl
 
 function readySSC() {
     //debugger;
+    // Enabling/disabling of controls is done in check connection
     var anyNode = document.getElementById("obula_ssc_heading_sml");
     var sideNode = checkColumn(anyNode);
     if (sideNode) {
@@ -20,7 +21,8 @@ function readySSC() {
  * Clears the selected dashboard and parameters, ready to try again
  */
 function clearSSC(sideNode = false) {
-    $("#obula_ssc_sid").val('');
+    $("#obula_ssc_sid_sml").val('');
+    $("#obula_ssc_sid_med").val('');
     $("#obula_summary_row").hide();
     $("#obula_dash_row").hide();
     $('#obula_footer').hide();

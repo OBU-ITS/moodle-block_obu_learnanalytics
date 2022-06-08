@@ -42,10 +42,12 @@ $string['ws_accept_selfcert'] = 'Accept Self Certification';
 $string['ws_accept_selfcert_info'] = 'Only for test instances, it will allow the web service to use a self issued certificate';
 $string['ws_trace_calls'] = 'Trace Web Service calls';
 $string['ws_trace_calls_info'] = 'Only for test instances, file is obu_learnanalytics_wstraces.txt in Moodle temp folder';
-$string['ws_curl_timeout_cc'] = 'Curl Timeout Check Connection';
-$string['ws_curl_timeout_cc_info'] = 'Timeout in seconds for initial Check Connection';
-$string['ws_curl_timeout'] = 'Curl Timeout Data';
-$string['ws_curl_timeout_info'] = 'Timeout in seconds Data Requests';
+$string['ws_curl_connecttimeout'] = 'Curl Connect Timeout';
+$string['ws_curl_connecttimeout_info'] = 'Connect timeout in Milliseconds for All Requests';
+$string['ws_curl_timeout_cc'] = 'Curl Execute Timeout Initial Check';
+$string['ws_curl_timeout_cc_info'] = 'Execute timeout in seconds for initial Check Connection';
+$string['ws_curl_timeout'] = 'Curl Execute Timeout Data';
+$string['ws_curl_timeout_info'] = 'Execute timeout in seconds for Data Requests';
 
 // Error strings
 $string['edw_connect_error'] = 'Error connecting to Enterprise Data Warehouse, please try later';

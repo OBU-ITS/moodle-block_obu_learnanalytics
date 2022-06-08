@@ -4,6 +4,7 @@
 $(document).ready(function () {
     var anyNode = document.getElementById("obula_ts_heading_sml");
     var sideNode = checkColumn(anyNode);
+    // Enabling/disabling of controls is done in check connection
     if (sideNode) {
         $("#obula_ts_heading_sml").show();
         $("#obula_ts_input_sml").show();

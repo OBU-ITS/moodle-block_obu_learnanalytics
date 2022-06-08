@@ -92,9 +92,11 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
      */
     public function tutor_dashboard_summary()
     {
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=0.10.6');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=0.10.8');
         $outScripts = html_writer::script(null, $scriptUrl);
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/tutor_dashboard.js?version=0.10.6');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/tutor_dashboard.js?version=0.10.8');
+        $outScripts .= html_writer::script(null, $scriptUrl);
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/check_connection.js?version=0.10.8');
         $outScripts .= html_writer::script(null, $scriptUrl);
         // End of scripts
         $out = $outScripts;
@@ -107,7 +109,6 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         // for fun try         $out .= html_writer::tag("i", "face", array("class" => "material-icons"));
 
         global $USER;
-        $status = self::checkConnection();
 
         $userPrefs = get_user_preferences();
         if (array_key_exists("obula_last_tutor_grid_date", $userPrefs)) {
@@ -135,50 +136,48 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
 
         // Button for either panel
         $temp = get_string("tutor-show", 'block_obu_learnanalytics');
-        $atts = array("type" => "button", "value" => $temp, "class" => "ssc-button", "onclick" => "showTutorFull()");
-        $tag_name = ($status["Status"] == "OK") ? "input" : "input disabled";
+        $atts = array("type" => "button", "disabled" => "true", "value" => $temp, "class" => "ssc-button", "onclick" => "showTutorFull()", "id" => "obula-show-tf-sml");
+        $tag_name = "input";
         $button_html = html_writer::empty_tag($tag_name, $atts);
-        
+
         // Actually start with nothing visible and javascript can enable the ones for the correct size
         // Small right panel
         $atts = array("id" => "obula_ts_heading_sml", "style" => "display: none");
         $out .= html_writer::start_tag("panel", $atts);
+        $out .= html_writer::start_tag("div");
         $temp2 = get_string("tutor-dash-title-sml", 'block_obu_learnanalytics');
         $out .= html_writer::tag("h5", $temp2 . "   " . $links);
-        if ($status["Status"] == "OK") {
-            $out .= html_writer::tag("span", $message);
-            $out .= $button_html;
-        } else {
-            // TODO mouseover or something for admins to get full error
-            $out .= self::output_connection_error($status, "ProblemMsgSml", $USER->username);
-        }
-        // $out .= html_writer::start_tag("div", array("id" => "obula_ts_input_sml", "style" => "display: none"));
+        // Output both OK and failed tags for js to update
+        $out .= html_writer::tag("span", $message);
+        $out .= $button_html;
+        // Now tags for possible error message
+        // TODO mouseover or something for admins to get full error
+        $out .= html_writer::end_tag("div");
+        // error tags are in a div
+        $out .= self::connection_error_placeHolder(true, $USER->username);
+        
+        // $out .= html_writer::start_tag("div", array("id" => "obula_ts_input_sml", "style" => "display: inline"));
         // Button is next to message for small dashboard
         // $out .= html_writer::end_tag("div");
         $out .= html_writer::end_tag("panel");
-        
+
         // Full or 2/3 width panel
         $atts = array("id" => "obula_ts_heading_med", "style" => "display: none");
         $out .= html_writer::start_tag("panel", $atts);
         $out .= html_writer::tag("h5", "Learning Analytics - {$message}" . "   " . $links);
-        $out .= html_writer::start_tag("div", array("id" => "obula_ts_input_med", "style" => "display: none"));
-        if ($status["Status"] != "OK") {
-            // TODO mouseover or something for admins to get full error
-            $out .= self::output_connection_error($status, "ProblemMsgMed", $USER->username);
-        }
-        $out .= $button_html;
+        $out .= html_writer::start_tag("div", array("id" => "obula_ts_input_med", "style" => "display: inline"));
+        // TODO mouseover or something for admins to get full error
+        $out .= self::connection_error_placeHolder(false, $USER->username);
+        $out .= str_replace("obula-show-tf-sml", "obula-show-tf-med", $button_html);
         $out .= html_writer::end_tag("div");
         $out .= html_writer::end_tag("panel");
 
-        // Now placeholders
+        // Now other placeholders
         $consolehtml = "";
-        if (isset($status) && $status["Status"] != "OK" && $status["consolehtml"] != null) {
-            $consolehtml = $status["consolehtml"];
-        }
         $out .= self::any_dashboard_host_placeholders($consolehtml);
         return $out;
     }
-    
+
     /**
      * Dashboard for a student coordinator
      *
@@ -186,12 +185,12 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
      */
     public function ssc_dashboard()
     {
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=0.10.6');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=0.10.8');
         $outScripts = html_writer::script(null, $scriptUrl);
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/ssc_dashboard.js?version=0.10.6');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/ssc_dashboard.js?version=0.10.8');
         $outScripts .= html_writer::script(null, $scriptUrl);
-        //$outScripts .= html_writer::script(null, "$(document).ready(function () { readySSC(); });");   // Has to be called from inline function or it fails
-
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/check_connection.js?version=0.10.8');
+        $outScripts .= html_writer::script(null, $scriptUrl);
         // End of scripts
         $out = $outScripts;
         $out .= self::modal_any_popup();           // For Help explanation
@@ -201,11 +200,10 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         // see this for icons https://material.io/resources/icons/?icon=flight_takeoff&style=baseline
         $out .= html_writer::empty_tag("link", array("rel" => "stylesheet", "href" => "https://fonts.googleapis.com/icon?family=Material+Icons"));
         // for fun try         $out .= html_writer::tag("i", "face", array("class" => "material-icons"));
-    
-        global $USER;
-        $status = self::checkConnection();
 
-        // A hidden field to hold state of the nav panel
+        global $USER;
+
+        // Hidden fields to hold state of the nav panel
         $out .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_navbar_ariahidden', "value" => '?'));
         $out .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_page_taken', "value" => '?'));
         $out .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_copy2clip', "value" => '?'));
@@ -218,125 +216,58 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         // Actually start with nothing visible and javascript can enable the ones for the correct size
         // First the Small panel
         $atts = array("id" => "obula_ssc_heading_sml", "style" => "display: none");
-        $out .= html_writer::start_tag("div", array("id" => "obula_ssc_input_sml", "style" => "display: none"));
+        $out .= html_writer::start_tag("panel", $atts);
+        $out .= html_writer::start_tag("div");
         $temp2 = get_string("ssc-dash-title-sml", 'block_obu_learnanalytics');
-        $out .= html_writer::tag("h5", $temp2 . "   " . $links, $atts);
-        if ($status["Status"] == "OK") {
-            $out .= html_writer::tag("label", "Student Number", array("for" => "obula_ssc_sid"));
-            //TODO Protect against SQL Inject attacks, just check it's an int
-            $out .= html_writer::empty_tag("input", array("type" => "text", "id" => "obula_ssc_sid", "class" => "ssc-sid-sml"));
-            $temp = get_string("ssc-students-view", 'block_obu_learnanalytics');
-            $atts = array("type" => "button", "value" => $temp, "class" => "ssc-button", "onclick" => "showBecomeView('S', 'ssc-sid-sml')");
-            $out .= html_writer::empty_tag("input disabled", $atts);
-            $temp = get_string("ssc-tutors-view", 'block_obu_learnanalytics');
-            $atts = array("type" => "button", "value" => $temp, "class" => "ssc-button", "onclick" => "showBecomeView('T', 'ssc-sid-sml')");
-            $out .= html_writer::empty_tag("input", $atts);
-        } else {
-            // TODO mouseover or something for admins to get full error
-            $out .= self::output_connection_error($status, "ProblemMsgSml", $USER->username);
-        }
+        $out .= html_writer::tag("h5", $temp2 . "   " . $links);
+        $out .= html_writer::tag("label", "Student Number", array("for" => "obula_ssc_sid_sml"));
+        //TODO Protect against SQL Inject attacks, just check it's an int
+        $out .= html_writer::empty_tag("input disabled", array("type" => "text", "id" => "obula_ssc_sid_sml", "class" => "ssc-sid-sml"));
+        $temp = get_string("ssc-students-view", 'block_obu_learnanalytics');
+        $atts = array("type" => "button", "value" => $temp, "class" => "ssc-button", "id" => "obula-show-sv-sml", "onclick" => "showBecomeView('S', 'ssc-sid-sml')");
+        $out .= html_writer::empty_tag("input disabled", $atts);
+        $temp = get_string("ssc-tutors-view", 'block_obu_learnanalytics');
+        $atts = array("type" => "button", "value" => $temp, "class" => "ssc-button", "id" => "obula-show-tv-sml", "onclick" => "showBecomeView('T', 'ssc-sid-sml')");
+        $out .= html_writer::empty_tag("input disabled", $atts);
         $out .= html_writer::end_tag("div");
+        $out .= self::connection_error_placeHolder(true, $USER->username);
+        $out .= html_writer::end_tag("panel");
 
         // Then Medium panel
         $atts = array("id" => "obula_ssc_heading_med", "style" => "display: none");
         $out .= html_writer::tag("h5", "Welcome to Learning Analytics " . $links, $atts);
         $out .= html_writer::start_tag("div", array("id" => "obula_ssc_input_med", "style" => "display: none"));
-        if ($status["Status"] == "OK") {
-            $out .= html_writer::tag("label", "Student Number", array("for" => "obula_ssc_sid_med"));
-            //TODO Protect against SQL Inject attacks
-            $out .= html_writer::empty_tag("input", array("type" => "text", "id" => "obula_ssc_sid", "class" => "ssc-sid-med"));
-            $temp = get_string("ssc-students-view", 'block_obu_learnanalytics');
-            $atts = array("type" => "button", "value" => $temp, "class" => "ssc-button", "onclick" => "showBecomeView('S', 'ssc-sid-med')");
-            $out .= html_writer::empty_tag("input disabled", $atts);
-            $temp = get_string("ssc-tutors-view", 'block_obu_learnanalytics');
-            $atts = array("type" => "button", "value" => $temp, "class" => "ssc-button", "onclick" => "showBecomeView('T', 'ssc-sid-med')");
-            $out .= html_writer::empty_tag("input", $atts);
-        } else {
-            // TODO mouseover or something for admins to get full error
-            $out .= self::output_connection_error($status, "ProblemMsgMed", $USER->username);
-        }
+        $out .= html_writer::tag("label", "Student Number", array("for" => "obula_ssc_sid_med"));
+        //TODO Protect against SQL Inject attacks
+        $out .= html_writer::empty_tag("input disabled", array("type" => "text", "id" => "obula_ssc_sid_med", "class" => "ssc-sid-med"));
+        $temp = get_string("ssc-students-view", 'block_obu_learnanalytics');
+        $atts = array("type" => "button", "value" => $temp, "class" => "ssc-button", "id" => "obula-show-sv-med", "onclick" => "showBecomeView('S', 'ssc-sid-med')");
+        $out .= html_writer::empty_tag("input disabled", $atts);
+        $temp = get_string("ssc-tutors-view", 'block_obu_learnanalytics');
+        $atts = array("type" => "button", "value" => $temp, "class" => "ssc-button", "id" => "obula-show-tv-med", "onclick" => "showBecomeView('T', 'ssc-sid-med')");
+        $out .= html_writer::empty_tag("input disabled", $atts);
+        $out .= self::connection_error_placeHolder(false, $USER->username);
         $out .= html_writer::end_tag("div");
 
         // Now placeholders
         $consolehtml = "";
-        if (isset($status) && $status["Status"] != "OK" && $status["consolehtml"] != null) {
-            $consolehtml = $status["consolehtml"];
-        }
         $out .= self::any_dashboard_host_placeholders($consolehtml);
         return $out;
-    }
-    
-    /**
-     * checkConnection
-     * Routine to check status of Web Services and EDW Database
-     * returns status and interpreted messages
-     *
-     * @return array
-     */
-    private function checkConnection()
-    {
-        $curl_common = new \block_obu_learnanalytics\curl\common();
-        try {
-            $params = "utils/checkconnection/";
-            $curl_common->setCheckConnection(true);
-            $status = $curl_common->send_request($params);
-        } catch (Exception $ex) {
-            $status = array();
-            $status["Status"] = "WS";
-            $status["code"] = "WSEXCEPTION";
-            $status["message"] = $ex->getMessage();
-            $status["consolehtml"] = $curl_common->echo_error_console_log($ex, false);
-            // Now let error handling take over
-        }
-        //TODO handle 404 etc
-        if (is_null($status)) {
-            $status = array();
-            $status["Status"] = "";
-            $status["code"] = "WSNOTREACHED";
-            $status["message"] = "Web Service not reachable";
-        }
-        if ($status["Status"] != "OK") {
-            $problemType = substr($status["code"], 0, 2);
-            switch ($problemType) {
-                case "WS":
-                    $problemMessageSml = "LA Services unavailable";
-                    $problemMessageMed = "LA Services unavailable, please try later";
-                    break;
-                case "DB":
-                    $problemMessageSml = "EDW unavailable";
-                    $problemMessageMed = "Enterprise Data Warehouse unavailable, please try later";
-                    break;
-                default:
-                    $problemMessagSml = "Connection issue";
-                    $problemMessageMed = "Unexpected connection issue, please try later";
-                    break;
-            }
-        }
-        $status["ProblemMsgSml"] = $problemMessageSml ?? "";
-        $status["ProblemMsgMed"] = $problemMessageMed ?? "";
-
-        return $status;
     }
 
     /**
      * output_error and hide the details for hint to pick up
      *
-     * @param  array  $status         The status block from check connection
-     * @param  string $problemMessage The array element to use for the message
      * @param  string $username       The Moodle username (student number or p number)
      * @return string
      */
-    public function output_connection_error(array $status, string $problemMessage, string $username = null)
+    public function connection_error_placeHolder(bool $smallPanel, string $username = null)
     {
+        $id_suffix = $smallPanel ? "_sml" : "_med";
         $isAdmin = is_siteadmin() || $username == "p0090268";
         $class = ($isAdmin) ? "error error-tip" : "error";
-        $out = html_writer::start_tag("div", array("class" => $class));
-        $out .= $status[$problemMessage];
-        if ($isAdmin) {
-            $clipButton = '<a class="material-icons copyclip" onclick="copyErrorTextToClipboard()" data-toggle="ztooltip" title="Copy to Clipboard">content_copy</a>';
-            $tip = "Error" . $clipButton . "<div id='error-msg'><br>Code:" . $status["code"] . "<br>Message:" . $status["message"]. "</div>";
-            $out .= html_writer::tag("span", $tip, array("class" => "error-text"));
-        }
+        $out = html_writer::start_tag("div", array("class" => $class, "id" => "obula_cc_errordiv" . $id_suffix, "style" => "display: none"));
+        $out .= "???";
         $out .= html_writer::end_tag("div");
         return $out;
     }
@@ -366,7 +297,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         $out .= html_writer::end_tag("table");
         return $out;
     }
-    
+
     /**
      * Renders the Tutors dashboard with comparison grid and placeholders for charts
      * called from self::tutor_dashboard_summary and become_students_tutor.php
@@ -409,11 +340,11 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         $outScripts = "";
         if (!$subDashboard) {
             // Only loaded if it's not a subDashboard as parent should have loaded these
-            $scriptUrl = new moodle_url('common.js?version=0.10.6');
+            $scriptUrl = new moodle_url('common.js?version=0.10.8');
             $outScripts .= html_writer::script(null, $scriptUrl);
         }
         // Now the main one that we always want to load
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/tutor_grid.js?version=0.10.6');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/tutor_grid.js?version=0.10.8');
         $outScripts .= html_writer::script(null, $scriptUrl);
         // End of scripts
 
@@ -461,7 +392,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         $outParams .= html_writer::start_tag('td', array("class" => "parameters"));
         $outParams .= html_writer::tag('label', 'Study Stage', array('for' => 'selStudyStage', 'style' => 'min-width:100px'));
         $selectAtts = array("name" => "StudyStages", "id" => "selStudyStage", "onchange" => "studyStageChanged()", "style" => "min-width:160px;max-width:160px");
-        
+
         $outParams .= html_writer::start_tag('select', $selectAtts);
 
         foreach ($allSStages as $key => $data) {
@@ -475,7 +406,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         }
 
         $outParams .= html_writer::end_tag("select");
-        
+
         $outParams .= html_writer::end_tag("td");
 
         // Placeholder for date_controls.php
@@ -579,7 +510,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         $chartAtts['style'] = "display:none";
         $outPlaceHolders .= html_writer::tag('a', 'Expand chart', $chartAtts);
         $outPlaceHolders .= html_writer::end_tag("td");
-        
+
         $outPlaceHolders .= html_writer::end_tag("tr");
 
         $outPlaceHolders .= html_writer::start_tag("tr");
@@ -602,7 +533,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         $out = $outScripts . $outParams . $outPlaceHolders;
         return $out;
     }
-    
+
     public function student_marks_placeholder()
     {
         $out = "";
@@ -631,7 +562,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         $out .= html_writer::end_tag('table');
         return $out;
     }
-    
+
     /**
      * student_charts
      * Render a single students engagement as chart(s)
@@ -656,7 +587,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         }
         $outScripts = "";
         // TODO check if student_charts still needed now common.js created
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/student_charts.js?version=0.10.6');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/student_charts.js?version=0.10.8');
         $outScripts .= html_writer::script(null, $scriptUrl);
         // End of scripts
 
@@ -711,7 +642,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
 
         return $out;
     }
-    
+
     /**
      * student_chart_placeholders
      *
@@ -819,10 +750,10 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
             global $SESSION;
             $outScripts = "";
             if (!$subDashboard) {
-                $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=0.10.6');
+                $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=0.10.8');
                 $outScripts .= html_writer::script(null, $scriptUrl);
             }
-            $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/student_dashboard.js?version=0.10.6');
+            $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/student_dashboard.js?version=0.10.8');
             $outScripts .= html_writer::script(null, $scriptUrl);
             // End of scripts
 
@@ -886,7 +817,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
             //  - Blank row, placeholder etc
             $outTables  = html_writer::start_tag("table", array("id" => "obula_student_data", "style" => "width:100%"));
             $outTables .= html_writer::start_tag("tr");
-        
+
             $outTables .= html_writer::start_tag("td");
             $outTables .= html_writer::start_tag("table", array("id" => "obula_student_status"));
 
@@ -932,7 +863,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
                                 $emoticon = "smile.png";
                             }
                             break;
-                        
+
                         default:
                             $i = $studentCount - $pos - 1;
                             $posPerc = sprintf("%.2f%%", $i / $studentCount * 100);
@@ -964,7 +895,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
                     $outTables .= html_writer::span($message);
                     $outTables .= html_writer::tag("a", "show", array("href" => "javascript:showCohortComparison()"));
                     $outTables .= html_writer::end_tag("td");
-            
+
                     $outTables .= html_writer::end_tag("tr");         // Just the end of the 1st status message
                 }
             }
@@ -1005,7 +936,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
             $outTables .= html_writer::empty_tag("td", array("style" => "height: 12px"));
             $outTables .= html_writer::empty_tag("td");
             $outTables .= html_writer::end_tag("tr");
-            
+
             // Now a row for the ideas placeholder
             $outTables .= html_writer::start_tag("tr", array("id" => "obula_student_ideas_row", "style" => "display: none"));      // dummy status row
             $outTables .= html_writer::empty_tag("td");      // Cell 1 empty
@@ -1024,12 +955,12 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
             $outTables .= html_writer::start_tag("td", array("style" => "vertical-align: top; text-align: right")); // Yes text-align for an image
             // TODO I think there is an approved way of getting an url to an image that will then use cache etc
             $ideaimg = new moodle_url('/blocks/obu_learnanalytics/pix/icons8-idea-64.png');
-            $atts = array("src" => $ideaimg, "style" => "max-height:48px", "title"=> "Ideas to increase your engagement");
+            $atts = array("src" => $ideaimg, "style" => "max-height:48px", "title" => "Ideas to increase your engagement");
             $atts["onclick"] = "ideasClicked({$sid})";
             $outTables .= html_writer::empty_tag("img", $atts);
             $outTables .= html_writer::end_tag("td");
             $outTables .= html_writer::end_tag("tr");
-            
+
             // Now row for explain link with a spacer
             $outTables .= html_writer::start_tag("tr");
             $outTables .= html_writer::empty_tag("td", array("style" => "height: 12px"));
@@ -1055,14 +986,14 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
 
             // Now a row for date control
             $outTables .= html_writer::start_tag("tr", array("id" => "obula_before_week_row", "style" => "display: none"));
-    
+
             // Now let's put the weekcontrol here  // TODO empty spacer TD or centre or something
             // Placeholder for week_control.php
             //$outTables .= html_writer::empty_tag("td");
             $outTables .= html_writer::empty_tag("td", array("id" => "obula_week_control_cell", "class" => "parameters"));
             $outTables .= html_writer::empty_tag("td");
             $outTables .= html_writer::end_tag("tr");
-            
+
             // Originally did these in the same table but that causes sizing issues when they reduce the width
             // so close and reopen a new table
             $outTables .= html_writer::end_tag("table");
@@ -1106,7 +1037,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
             $outTables .= self::student_chart_placeholders(false, true);
             $outTables .= html_writer::end_tag("td");
             $outTables .= html_writer::end_tag("tr");
-            
+
             $outTables .= html_writer::end_tag("table");
 
             // Store some hidden input fields for javascript functions to use
@@ -1119,7 +1050,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
             throw $th;
         }
     }
-    
+
     /**
      * Call back function for uasort on StudentData Array, sorting on Duration
      *
@@ -1176,7 +1107,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         // or resolve_image_location
         return $ret;
     }
-    
+
     /**
      * Outputs a cell (TD) with a variable number of Vertical Radio buttons
      *

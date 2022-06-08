@@ -56,14 +56,21 @@ if ($ADMIN->fulltree) {   // also tried $hassiteconfig ||
         ''
     ));
     $settings->add(new admin_setting_configtext(
-        'block_obu_learnanalytics/ws_curl_timeout_cc',
+        'block_obu_learnanalytics/ws_curl_connecttimeout',
+        get_string('ws_curl_connecttimeout', 'block_obu_learnanalytics'),
+        get_string('ws_curl_connecttimeout_info', 'block_obu_learnanalytics'),
+        '500',
+        PARAM_INT
+    ));
+    $settings->add(new admin_setting_configtext(
+        'block_obu_learnanalytics/ws_curl_exec_timeout_cc',
         get_string('ws_curl_timeout_cc', 'block_obu_learnanalytics'),
         get_string('ws_curl_timeout_cc_info', 'block_obu_learnanalytics'),
         '5',
         PARAM_INT
     ));
     $settings->add(new admin_setting_configtext(
-        'block_obu_learnanalytics/ws_accept_timeout',
+        'block_obu_learnanalytics/ws_curl_exec_timeout',
         get_string('ws_curl_timeout', 'block_obu_learnanalytics'),
         get_string('ws_curl_timeout_info', 'block_obu_learnanalytics'),
         '30',

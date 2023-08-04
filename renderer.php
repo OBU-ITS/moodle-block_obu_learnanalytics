@@ -92,11 +92,11 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
      */
     public function tutor_dashboard_summary()
     {
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=0.10.8');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=0.11.1');
         $outScripts = html_writer::script(null, $scriptUrl);
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/tutor_dashboard.js?version=0.10.8');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/tutor_dashboard.js?version=0.11.1');
         $outScripts .= html_writer::script(null, $scriptUrl);
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/check_connection.js?version=0.10.8');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/check_connection.js?version=0.11.1');
         $outScripts .= html_writer::script(null, $scriptUrl);
         // End of scripts
         $out = $outScripts;
@@ -185,11 +185,11 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
      */
     public function ssc_dashboard()
     {
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=0.10.8');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=0.11.1');
         $outScripts = html_writer::script(null, $scriptUrl);
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/ssc_dashboard.js?version=0.10.8');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/ssc_dashboard.js?version=0.11.1');
         $outScripts .= html_writer::script(null, $scriptUrl);
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/check_connection.js?version=0.10.8');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/check_connection.js?version=0.11.1');
         $outScripts .= html_writer::script(null, $scriptUrl);
         // End of scripts
         $out = $outScripts;
@@ -340,11 +340,11 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         $outScripts = "";
         if (!$subDashboard) {
             // Only loaded if it's not a subDashboard as parent should have loaded these
-            $scriptUrl = new moodle_url('common.js?version=0.10.8');
+            $scriptUrl = new moodle_url('common.js?version=0.11.1');
             $outScripts .= html_writer::script(null, $scriptUrl);
         }
         // Now the main one that we always want to load
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/tutor_grid.js?version=0.10.8');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/tutor_grid.js?version=0.11.1');
         $outScripts .= html_writer::script(null, $scriptUrl);
         // End of scripts
 
@@ -358,7 +358,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         $outParams .= html_writer::start_tag("tr", array("class" => "parameters", "style" => "min-width:100px"));
         // So get the data we need
         $outParams .= html_writer::start_tag('td', array("class" => "parameters"));
-        // Get the current week to show
+        // Get the current week to show  (This is what is on the server)
         $current = $util_dates->get_current_week();
         $params = 'tutor/activepgms/' . $current["first_day_week"]->format('Y-m-d') . '/';
         $activeProgrammes = $curl_common->send_request($params);
@@ -587,7 +587,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         }
         $outScripts = "";
         // TODO check if student_charts still needed now common.js created
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/student_charts.js?version=0.10.8');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/student_charts.js?version=0.11.1');
         $outScripts .= html_writer::script(null, $scriptUrl);
         // End of scripts
 
@@ -750,10 +750,10 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
             global $SESSION;
             $outScripts = "";
             if (!$subDashboard) {
-                $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=0.10.8');
+                $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=0.11.1');
                 $outScripts .= html_writer::script(null, $scriptUrl);
             }
-            $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/student_dashboard.js?version=0.10.8');
+            $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/student_dashboard.js?version=0.11.1');
             $outScripts .= html_writer::script(null, $scriptUrl);
             // End of scripts
 

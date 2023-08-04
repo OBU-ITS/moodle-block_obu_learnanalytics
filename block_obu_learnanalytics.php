@@ -74,7 +74,7 @@ class block_obu_learnanalytics extends block_base
         $this->content = new stdClass;
 
         if (!isset($laRole)) {
-            $this->content->text = $renderer->error_page('capability_error');
+            //$this->content->text = $renderer->error_page('capability_error');
             return $this->content;
         }
 

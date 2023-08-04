@@ -54,3 +54,12 @@ This file describes changes in the obu_learnanalytics block code.
 
 === 0.10.8 ===
 * Make check connection message/status an Ajax callback and panel
+
+=== 0.10.9 ===
+* Re release to CoSector with missing file added (check_connection.php)
+
+=== 0.10.10 ===
+* More debug trace lines added
+
+=== 1.11.1 ===
+* Hide block if user not valid

@@ -67,7 +67,7 @@ try {
                 $column = "vle_sessions";
                 break;
             case "vleduration":
-                $column = "vle_duration_total";
+                $column = "vle_duration_total";     // Needs to be _minutes in the future
                 break;
             case "vleviews":
                 $column = "vle_page_views";

@@ -92,11 +92,11 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
      */
     public function tutor_dashboard_summary()
     {
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=0.11.1');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=1.12.1');
         $outScripts = html_writer::script(null, $scriptUrl);
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/tutor_dashboard.js?version=0.11.1');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/tutor_dashboard.js?version=1.12.1');
         $outScripts .= html_writer::script(null, $scriptUrl);
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/check_connection.js?version=0.11.1');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/check_connection.js?version=1.12.1');
         $outScripts .= html_writer::script(null, $scriptUrl);
         // End of scripts
         $out = $outScripts;
@@ -126,9 +126,13 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         }
 
         // Hidden fields to hold state of the nav panel
-        $out .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_navbar_ariahidden', "value" => '?'));
+        $out .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_navbar_rightDrawerDA', "value" => '?'));
         $out .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_page_taken', "value" => '?'));
         $out .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_copy2clip', "value" => '?'));
+        $out .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_host', "value" => '?'));
+        $out .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_lablockid', "value" => '?'));
+        $out .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_nextblockid', "value" => '?'));
+        $out .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_parentblockid', "value" => '?'));
 
         // Links for Help and Feedback
         $links = html_writer::tag("a", "Help", array("href" => "javascript:showHelp('tutor')", "class" => "link-right link-help"));
@@ -140,6 +144,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         $tag_name = "input";
         $button_html = html_writer::empty_tag($tag_name, $atts);
 
+        // Put a div around everything we want to move
         // Actually start with nothing visible and javascript can enable the ones for the correct size
         // Small right panel
         $atts = array("id" => "obula_ts_heading_sml", "style" => "display: none");
@@ -185,11 +190,11 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
      */
     public function ssc_dashboard()
     {
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=0.11.1');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=1.12.1');
         $outScripts = html_writer::script(null, $scriptUrl);
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/ssc_dashboard.js?version=0.11.1');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/ssc_dashboard.js?version=1.12.1');
         $outScripts .= html_writer::script(null, $scriptUrl);
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/check_connection.js?version=0.11.1');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/check_connection.js?version=1.12.1');
         $outScripts .= html_writer::script(null, $scriptUrl);
         // End of scripts
         $out = $outScripts;
@@ -204,10 +209,14 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         global $USER;
 
         // Hidden fields to hold state of the nav panel
-        $out .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_navbar_ariahidden', "value" => '?'));
+        $out .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_navbar_rightDrawerDA', "value" => '?'));
         $out .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_page_taken', "value" => '?'));
         $out .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_copy2clip', "value" => '?'));
         $out .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_ssc_student', "value" => '?'));
+        $out .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_host', "value" => '?'));
+        $out .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_lablockid', "value" => '?'));
+        $out .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_nextblockid', "value" => '?'));
+        $out .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_parentblockid', "value" => '?'));
 
         // Links for either format
         $links = html_writer::tag("a", "Help", array("href" => "javascript:showHelp('ssc')", "class" => "link-right link-help"));       // TODO CSS right
@@ -340,11 +349,11 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         $outScripts = "";
         if (!$subDashboard) {
             // Only loaded if it's not a subDashboard as parent should have loaded these
-            $scriptUrl = new moodle_url('common.js?version=0.11.1');
+            $scriptUrl = new moodle_url('common.js?version=1.12.1');
             $outScripts .= html_writer::script(null, $scriptUrl);
         }
         // Now the main one that we always want to load
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/tutor_grid.js?version=0.11.1');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/tutor_grid.js?version=1.12.1');
         $outScripts .= html_writer::script(null, $scriptUrl);
         // End of scripts
 
@@ -587,7 +596,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         }
         $outScripts = "";
         // TODO check if student_charts still needed now common.js created
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/student_charts.js?version=0.11.1');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/student_charts.js?version=1.12.1');
         $outScripts .= html_writer::script(null, $scriptUrl);
         // End of scripts
 
@@ -750,10 +759,10 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
             global $SESSION;
             $outScripts = "";
             if (!$subDashboard) {
-                $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=0.11.1');
+                $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=1.12.1');
                 $outScripts .= html_writer::script(null, $scriptUrl);
             }
-            $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/student_dashboard.js?version=0.11.1');
+            $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/student_dashboard.js?version=1.12.1');
             $outScripts .= html_writer::script(null, $scriptUrl);
             // End of scripts
 

@@ -2,6 +2,7 @@
 */
 
 $(document).ready(function () {
+    var host = $("#obula_host").val();
     var anyNode = document.getElementById("obula_ts_heading_sml");
     var sideNode = checkColumn(anyNode);
     // Enabling/disabling of controls is done in check connection
@@ -12,29 +13,22 @@ $(document).ready(function () {
         $("#obula_ts_heading_med").show();
         $("#obula_ts_input_med").show();
     }
+    // var host = $("#obula_host").val();
+    // if (host == "right") {
+    //     $("#obula_ts_heading_sml").show();
+    //     $("#obula_ts_input_sml").show();
+    // } else {
+    //     $("#obula_ts_heading_med").show();
+    //     $("#obula_ts_input_med").show();
+    // }
 });
 
 /**
  * Clears the selected dashboard and parameters, and goes back to original home
  */
 function collapseTutor() {
-    // So work out where we are going back to 
-    var anyNode = document.getElementById("obula_ts_heading_sml");
-    var sideNode = checkColumn(anyNode);
-    $("#obula_summary_row").hide();
-    $("#obula_dash_row").hide();
-    $('#obula_footer').hide();
+    giveBackPage("ts");
 
-    if (sideNode) {
-        $("#obula_ts_heading_sml").show();
-        $("#obula_ts_input_sml").show();
-    } else {
-        $("#obula_ts_heading_med").show();
-        $("#obula_ts_input_med").show();
-    }
-    if (sideNode) {
-        giveBackPage(sideNode);
-    }
     // Now log the event with an Ajax call, ignoring the response
     var data = {
         "dashboard": "Tutor"

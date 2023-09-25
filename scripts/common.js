@@ -260,102 +260,93 @@ function showDataCurrency() {
  */
 function takeOverPage(tnode) {
     // Don't do it twice
-    if ($("#obula_page_taken") != 'Y') {
-        $("#obula_page_taken").val('Y');
-        // First the Navigation Menu (it's got to go)
-        // But only if it's not already
-        var ariaHidden = $("#nav-drawer").attr("aria-hidden");
-        $("#obula_navbar_ariahidden").val(ariaHidden);
-        if (ariaHidden == "false") {
-            $("button[data-action='toggle-drawer']").click();
-        }
-        // I tried other ways of hiding it, but it never collapsed
+    if ($("#obula_page_taken").val() != "Y") {
+        $("#obula_page_taken").val("Y");
+        // Next the Navigation Menu (it's got to go)
+        // But only if it's not already, we could just try and click it but I want to store if I need restore
+        // Now get the data-action for the right drawer, if they have already collapsed it then we will get undefined
+        // I tried other ways of hiding it with pervious moodle, but it never collapsed
         // and/or they couldn't show it again with the correct button
-        //navDiv.toggle();
-        //$('#nav-drawer').collapse('hide');
-        //$("#nav-drawer").attr("aria-hidden", "true");
-        // That doesn't seem to set the closed class
-        //var navDivClass = $("#nav-drawer").attr("class");
-        //$("#nav-drawer").attr("class", navDivClass + " closed");
-
-        // Next let's find where we are, because if we are on the sidebar we need to take over
-        var sideNode = checkColumn(tnode);
-        if (sideNode != null) {
-            // Let's get rid of the main block
-            $("#region-main").hide();
-            $("#region-main").attr("aria-hidden", "true");
-            // Now steal it's space
-            var curClass = $("#region-main").attr("class");
-            $("#region-main").attr("class", curClass + " obula-block-collapsed");
-            // And make the sideNode take it
-            sideNode.className += " obula-block-fullwidth";
-
-            // Now that annoying customise button
-            $("#page-header").hide();
-            $("#page-header").attr("aria-hidden", "true");
-            // Now steal it's space
-            var curClass = $("#page-header").attr("class");
-            $("#page-header").attr("class", curClass + " obula-block-collapsed");
-
-            // Now let's hide all the other blocks in this column
-            //debugger;
-            var asideCol = document.getElementById("block-region-side-pre");
-            var node = asideCol.firstChild;
-            while (node) {
-                if (node !== this && node.nodeType === Node.ELEMENT_NODE) {
-                    var datablock = node.getAttribute('data-block');
-                    // So if it's not me and it's a block and it's visible - hide it
-                    if (datablock != null && datablock != 'obu_learnanalytics'
-                        && node.offsetWidth > 0) {
-                        node.className += " obula-block-hidden";        // Also so I can find the ones I hid
-                    }
-                }
-                node = node.nextElementSibling || node.nextSibling;
-            }
+        var rightDrawerDA = $(".drawer-right").find(".drawertoggle").attr("data-action");
+        var rightDrawerCloseVisible =$(".drawer-right").find(".drawertoggle").is(":visible");
+        // But we also need to check if it's visible as it remains in the dom, it's hidden by a class of hidden being added
+        if (rightDrawerDA == "closedrawer" && rightDrawerCloseVisible == true) {
+            $("button[data-action='closedrawer']").click();
+            $("#obula_navbar_rightDrawerDA").val(rightDrawerDA);          // So we know if we should open it after
+        } else {
+            $("#obula_navbar_rightDrawerDA").val("No");
         }
+        // Let's find where we are, because we need to put it back later
+        var retValues = checkColumn2(tnode);
+        var host = retValues[0];
+        var laBlockId = retValues[1];
+        var nextBlockId = retValues[2];
+        var parentBlockId = retValues[3];
+        // Store them
+        $("#obula_host").val(host);          // So we know if we should open it after
+        $("#obula_lablockid").val(laBlockId);          // So we know if we should open it after
+        $("#obula_nextblockid").val(nextBlockId);          // So we know if we should open it after
+        $("#obula_parentblockid").val(parentBlockId);      // For later
+
+        // Used to only take over agressively from the right panel, but because Moodle 4
+        // has wide margins around the main panel we need to it anyway
+        // Let's get rid of the main block
+        $("#topofscroll").hide();
+        $("#topofscroll").attr("aria-hidden", "true");
+
+        // Now append our block to main (it gets removed from the old parent by the method)
+        // Tried with jquery because I hate mixing it, but failed as the jquery append despite the documentation isn't the same
+        var newParent = document.getElementById("page");
+        var myBlock = document.getElementById(laBlockId);
+        newParent.appendChild(myBlock);
     }
 }
 
-function giveBackPage(sideNode) {
-    $("#region-main").show();
-    $("#region-main").attr("aria-hidden", "false");
-    var curClass = $("#region-main").attr("class");
-    $("#region-main").attr("class", curClass.replace(" obula-block-collapsed", ""));
-    curClass = sideNode.className;
-    curClass = curClass.replace(" obula-block-fullwidth", "");
-    sideNode.className = curClass;
-    $("#obula_page_taken").val('N');
+function giveBackPage(type) {
+    // So hide all the results before we re-arrange
+    $("#obula_summary_row").hide();
+    $("#obula_dash_row").hide();
+    $('#obula_footer').hide();
 
-    // Now that annoying customise button (somebody might want it)
-    $("#page-header").show();
-    $("#page-header").attr("aria-hidden", "false");
-    var curClass = $("#page-header").attr("class");
-    curClass = curClass.replace("obula-block-collapsed", "");
-    $("#page-header").attr("class", curClass);
-
-    // Now let's unhide all the other blocks in this column
-    //debugger;
-    var asideCol = document.getElementById("block-region-side-pre");
-    var node = asideCol.firstChild;
-    while (node) {
-        if (node !== this && node.nodeType === Node.ELEMENT_NODE) {
-            var datablock = node.getAttribute('data-block');
-            // So if it's not me and it's a block and it's hidden by me, unhide it
-            if (datablock != null && datablock != 'obu_learnanalytics') {
-                var myclass = node.className;
-                if (myclass.indexOf('obula-block-hidden') >= 0) {
-                    node.className = myclass.replace(' obula-block-hidden', '');
-                }
-            }
-        }
-        node = node.nextElementSibling || node.nextSibling;
+    // Get the info we stored earlier for this
+    var host = $("#obula_host").val();
+    var laBlockId = $("#obula_lablockid").val();
+    var nextBlockId = $("#obula_nextblockid").val();
+    var parentBlockId = $("#obula_parentblockid").val();
+    if (host == "right") {
+        $("#obula_" + type + "_heading_sml").show();
+        $("#obula_" + type + "_input_sml").show();
+        $("#obula_" + type + "_heading_med").hide();
+        $("#obula_" + type + "_input_med").hide();
+    } else {
+        $("#obula_" + type + "_heading_sml").hide();
+        $("#obula_" + type + "_input_sml").hide();
+        $("#obula_" + type + "_heading_med").show();
+        $("#obula_" + type + "_input_med").show();
+    }
+    // So now work out where we are going back to 
+    var newParent = document.getElementById(parentBlockId);
+    var myBlock = document.getElementById(laBlockId);
+    if (nextBlockId) {
+        var sibling = document.getElementById(nextBlockId);
+        newParent.insertBefore(myBlock, sibling);
+    } else
+    {
+        // Must have been last one, so just append
+        newParent.appendChild(myBlock);
     }
 
+    // Now show the main page again
+    $("#topofscroll").show();
+    $("#topofscroll").attr("aria-hidden", "false");
+    $("#obula_page_taken").val('N');
+
     // Now the Nav
-    var ariaHidden = $("#nav-drawer").attr("aria-hidden");
-    var ariaWasHidden = $("#obula_navbar_ariahidden").val();
-    if (ariaWasHidden == "false" && ariaHidden == "true") {
-        $("button[data-action='toggle-drawer']").click();
+    var rightDrawerDA = $("#obula_navbar_rightDrawerDA").val();
+    if (rightDrawerDA == "closedrawer") {
+        // Hope there is only one button inside righ drawer toggle div
+        var rightDrawerDA = $(".drawer-right-toggle").find("button").click();
+        $("#obula_navbar_rightDrawerDA").val(" ");
     }
 
 }
@@ -382,6 +373,53 @@ function checkColumn(tnode) {
     // Now return the parent of node we need to change
     // Which doesn't have an ID !!
     return (sidebar) ? node.parentNode : null;
+}
+
+/**
+ * Replaces checkColumn
+ * Checks to see if we are currently in the main column or side bar
+ * @param {*} tnode A node in the dashboard, like the button that was clicked
+ * returns an array of values
+ * [0] "right" or "main" to indicate if it is in the right sidebar
+ * [1] the ID of the la block (to make moving it easier)
+ * [2] the ID of the next block so we can slot back in front (can be null or ?)
+ * [3] the parent ID
+ */
+function checkColumn2(tnode) {
+    var host = "main";        // Are we in the right panel
+    var laBlockId = "";
+    var nextBlockId = "";
+    var parentBlockId = "";
+    var node = tnode;
+    // Had trouble with jQuery, so use jscript instead
+    while (node.parentNode) {
+        node = node.parentNode;
+        if (node.attributes && node.attributes["data-block"] && node.attributes["data-block"].nodeValue == "obu_learnanalytics")
+        {
+            laBlockId = node.id;
+            // Now look to see if there is another block (with Moodle 4 they are sections)
+            var nextNode = node;
+            // We need a loop as there are spacers in between
+            while (nextNode.nextElementSibling) {
+                nextNode = nextNode.nextElementSibling;
+                if (nextNode.tagName == "SECTION") {
+                    nextBlockId = nextNode.id;
+                    break;
+                }
+            }
+        }
+        if (node.id == "block-region-side-pre") {
+            parentBlockId = node.id;
+            host = "right";
+            break;
+        }
+        if (node.id == "block-region-content") {     // That's the middle panel so might as well stop
+            parentBlockId = node.id;
+            break;
+        }
+    }
+    // Now return what we have gathered on the way up
+    return [host, laBlockId, nextBlockId, parentBlockId];
 }
 
 /**

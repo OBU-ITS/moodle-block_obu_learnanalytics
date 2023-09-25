@@ -20,33 +20,23 @@ function readySSC() {
 /**
  * Clears the selected dashboard and parameters, ready to try again
  */
-function clearSSC(sideNode = false) {
+function clearSSC() {
     $("#obula_ssc_sid_sml").val('');
     $("#obula_ssc_sid_med").val('');
     $("#obula_summary_row").hide();
     $("#obula_dash_row").hide();
     $('#obula_footer').hide();
-
-    if (sideNode) {
-        $("#obula_ssc_heading_sml").show();
-        $("#obula_ssc_input_sml").show();
-    } else {
-        $("#obula_ssc_heading_med").show();
-        $("#obula_ssc_input_med").show();
-    }
+    // Only called when page open
+    $("#obula_ssc_heading_med").show();
+    $("#obula_ssc_input_med").show();
 }
 
 /**
  * Clears the selected dashboard and parameters, and goes back to original home
  */
 function collapseSSC() {
-    // So work out where we are going back to 
-    var anyNode = document.getElementById("obula_ssc_heading_sml");
-    var sideNode = checkColumn(anyNode);
-    clearSSC(sideNode);
-    if (sideNode) {
-        giveBackPage(sideNode);
-    }
+    clearSSC();
+    giveBackPage("ssc");
     // Now log the event with an Ajax call, ignoring the response
     var data = {
         "dashboard": "Tutor"        //TODO determine which dashboard we are closing for students go-live

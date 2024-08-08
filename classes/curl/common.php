@@ -34,6 +34,8 @@ class common
     protected static $last_http_status = -1;
     protected static $last_curl_errno = -1;
 
+    protected static $semester = '??????';
+
     public function __construct()
     {
         self::$la_ws_url = \get_config('block_obu_learnanalytics', 'ws_root_url');
@@ -250,5 +252,6 @@ class common
         } // If we don't find it then the pnumber will go back as the name
         return array('PNumber' => $pnumber, 'Name' => $pname, 'userid' => $userid);
     }
+
 // End of class
 }

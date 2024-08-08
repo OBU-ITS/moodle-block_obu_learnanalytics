@@ -15,19 +15,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $sid = $_POST["studentNumber"] ?? ""; //TODO error handling if no student id
     $sName = $_POST["sName"] ?? "";
     $advisor = $_POST["advisor"] ?? "";
+    $semester = $_POST["semester"] ?? "";
 } else {
     exit("Brookes Learning Analytics - GET not supported");
 }
 
-/* don't need anymore data from EDW yet
 try {
-    $params = 'student/marks/' . $sid . '/';
-    //$studentMarks = $curl_common->send_request($params);
+    $params = 'student/modules/' . $sid . '/' . $semester . '/';
+    $studentModules = $curl_common->send_request($params);
 } catch (Exception $ex) {
     $curl_common->echo_error_console_log($ex);
     exit;
 }
-*/
+
 $aaName = $advisor;
 $aaemail = strtolower($advisor) . "@brookes.ac.uk";
 if ($advisor == "") {
@@ -50,6 +50,45 @@ if ($studentUserObj != false) {
     }
 }
 
+$moduleRows = '<tr><th>Module Code</th><th>Module</th><th>Credits</th><th>Compulsory</th>';
+$moduleRows .= '<th>Programme</th><th>Study Path</th><th>Campus</th></tr>';
+foreach ($studentModules as $module) {
+    $comp = ($module["compulsory_code"] == 'COMP') ? 'Yes' : 'No';
+    $moduleRows .= '<tr><td>' . $module["module_id"] . '</td>';
+    $moduleRows .= '<td>' . $module["module"] . '</td>';
+    $moduleRows .= '<td>' . $module["credits"] . '</td>';
+    $moduleRows .= '<td>' . $comp . '</td>';
+    $moduleRows .= '<td>' . $module["programme_code"] . '</td>';
+    $moduleRows .= '<td>' . $module["study_path"] . '</td>';
+    $moduleRows .= '<td>' . $module["campus_code"] . '</td></tr>';
+}
+;
+
+try {
+    $params = 'student/attendance/' . $sid . '/' . $semester . '/';
+    $studentAttendance = $curl_common->send_request($params);
+} catch (Exception $ex) {
+    $curl_common->echo_error_console_log($ex);
+    exit;
+}
+
+$attRows = '<tr><th>Week Commencing</th><th>Module Code</th><th>Module</th>';
+$attRows .= '<th>Attended</th><th>Out of</th></tr>';
+$lastWc = "";
+foreach ($studentAttendance as $attendance) {
+    if ($lastwc != $attendance["week_commencing"]) {
+        $attRows .= '<tr><td>' . $attendance["week_commencing"] . '</td>';
+    } else {
+        $attRows .= '<tr><td></td>';
+    }
+    $lastwc = $attendance["week_commencing"];
+    $attRows .= '<td>' . $attendance["module_id"] . '</td>';
+    $attRows .= '<td>' . $attendance["module"] . '</td>';
+    $attRows .= '<td>' . $attendance["attended_total"] . '</td>';
+    $attRows .= '<td>' . $attendance["attended_out_of"] . '</td></tr>';
+}
+;
+
 header('Content-type: application/json');
 $title = $sName;
 // TODO hunt for other languages
@@ -64,8 +103,9 @@ foreach ($fileLines as $line) {
     }
 }
 // Next line does not use ", because we don't want PHP to try and replace the variables yet
-$from = array('{$studentNumber}', '{$sName}', '{$email}', '{$aaName}', '{$aaemail}', '{$lAccess}');
-$to = array($sid, $sName, $email, $aaName, $aaemail, $lAccess);
+// If adding more detail then change student_info.html as well
+$from = array('{$studentNumber}', '{$sName}', '{$email}', '{$aaName}', '{$aaemail}', '{$lAccess}', '{$moduleRows}', '{$attRows}');
+$to = array($sid, $sName, $email, $aaName, $aaemail, $lAccess, $moduleRows, $attRows);
 $popupbodyhtml = str_replace($from, $to, $html);
 
 // Now send all that back

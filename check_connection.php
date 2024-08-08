@@ -32,6 +32,7 @@ try {
     exit;
 }
 //TODO handle 404 etc
+//xdebug.break();
 if ($status["Status"] != "OK") {
     if (is_null($status)) {
         $status = $curl_common->get_status_details();

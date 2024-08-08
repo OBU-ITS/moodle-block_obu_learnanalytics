@@ -73,9 +73,12 @@ class odds
                 }
             }
         }
-        //TODO option to return 'STUDENT'
         if (!isset($role) && is_siteadmin()) {
             $role = $roleNeeded ?? 'TUTOR';   // If role passed admin can be it, else give Tutor
+            }
+        //TODO option to return 'STUDENT' (proper version)
+        if (!isset($role)) {
+            $role = 'STUDENT';
         }
         if (!isset($role) && $justDIE) {
             die("Permission Denied");
@@ -84,22 +87,21 @@ class odds
     }
 
     /**
-     * store_Parameters, mimics behavior of javascript storeParameters function
+     * store_Parameters, mimics behavior of javascript store_Parameters function
      * given the same name in the hope we find it when changing the js
      * So that may need changing if you change this one
      * Doesn't actualy store it, jus returns the formatted value
      *
      * @param  mixed $programme
-     * @param  mixed $studyStage
+     * @param  mixed $modLevel
      * @param  mixed $studentNumber
      * @param  mixed $studentName
      * @return string               The Value to store in the tag
      *
      */
-    public function store_parameters($programme, $studyStage, $studentNumber, $studentName)
+    public function store_parameters($programme, $modLevel, $studentNumber, $studentName)
     {
-        // TODO think about moving it to utility class
-        $params = array($programme, $studyStage, $studentNumber, $studentName);
+        $params = array($programme, $modLevel, $studentNumber, $studentName);
         // Don't think I need htmlspecialchars equiv, but if so https://stackoverflow.com/questions/1787322/htmlspecialchars-equivalent-in-javascript
         return json_encode($params);
     }
@@ -137,6 +139,10 @@ class odds
             --$n;
         }
         return sqrt($carry / $n);
+    }
+
+    public function get_semester() {
+        //return $this::$semester;
     }
 
 // End of class

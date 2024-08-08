@@ -64,6 +64,6 @@ This file describes changes in the obu_learnanalytics block code.
 === 1.11.1 ===
 * Hide block if user not valid
 
-=== 1.12.1 ===
+=== 1.12.2 ===
 * Change hide/unhide and positioning logic for Moodle 4.1
 

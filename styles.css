@@ -108,6 +108,13 @@
     vertical-align: bottom;
 }
 
+.block_obu_learnanalytics th.key-fact, td.key-fact {
+    padding-right: 16px;
+    vertical-align: bottom;
+    font-weight: bold;
+    font-size: large;
+}
+
 .block_obu_learnanalytics table.students {
     border-collapse: collapse;
 }
@@ -115,6 +122,13 @@
 .block_obu_learnanalytics th.students, .block_obu_learnanalytics td.students {
     border: 1px solid black;
     padding: 0 4px 0 4px;
+}
+
+.block_obu_learnanalytics td.students-icon {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 80%;
 }
 
 /* th-span is headings over headings*/

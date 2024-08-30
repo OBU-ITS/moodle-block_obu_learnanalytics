@@ -92,9 +92,8 @@ foreach ($studentAttendance as $attendance) {
 header('Content-type: application/json');
 $title = $sName;
 // TODO hunt for other languages
-$url = new moodle_url("/blocks/obu_learnanalytics/lang/en/student_info.html");
-//$popupbodyhtml = file_get_contents($url, false);
-// get it as an array so I can exclude lines
+$url = "lang/en/student_info.html";
+
 $fileLines = file($url);
 $html = "";
 foreach ($fileLines as $line) {

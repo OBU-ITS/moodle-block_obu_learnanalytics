@@ -49,19 +49,11 @@ foreach ($studentAttendance as $attendance) {
 header('Content-type: application/json');
 $title = $sName;
 // TODO hunt for other languages
-$url = new moodle_url("/blocks/obu_learnanalytics/lang/en/student_alerts.html");
-//$popupbodyhtml = file_get_contents($url, false);
-// get it as an array so I can exclude lines
-$fileLines = file($url);
-$html = "";
-foreach ($fileLines as $line) {
-    if ($advisor != "" || !strpos($line, "id=obula_aaemail")) {
-        $html .= $line;
-    }
-}
+$url = "lang/en/student_alerts.html";
+$html = file_get_contents($url, false);
 
 // Next line does not use ", because we don't want PHP to try and replace the variables yet
-// If adding more detail then change student_info.html as well
+// If adding more detail then change student_alerts.html as well
 $from = array('{$alertRows}');
 $to = array($alertRows);
 $popupbodyhtml = str_replace($from, $to, $html);

@@ -78,7 +78,10 @@ class odds
             }
         //TODO option to return 'STUDENT' (proper version)
         if (!isset($role)) {
-            $role = 'STUDENT';
+            $temp = \get_config('block_obu_learnanalytics', 'obula_config_student_access');
+            if ($temp != false && $temp != "" && $temp == "1") {
+                $role = 'STUDENT';
+            }
         }
         if (!isset($role) && $justDIE) {
             die("Permission Denied");

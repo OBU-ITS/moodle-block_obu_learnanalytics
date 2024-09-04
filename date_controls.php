@@ -1,6 +1,7 @@
 <?php
 /**
- * Optionally Provides Week Commencing and Semester controls for student and tuto pages
+ * Provides Week Commencing and Semester controls for student and tutor pages
+ * Called on initial load and semester changed event
  */
 ob_start();
 //echo __DIR__;
@@ -37,9 +38,9 @@ foreach ($semesters as $semesterRow) {
     $label = $semesterRow['label'];
     $default_sem = $semesterRow['default'];
     $semesterHTML .= "<option value='{$code}' title='{$code}'";
+    // So if called from semesterChanged event, option will be semester
     if (($option == "getcurrent" && ($default_sem == '1' || $default_sem == 'true'))
         || ($option == "semester" && $code == $newSemester)) {
-    // if ($default_sem == '1' || $default_sem == 'true') {
         $semesterHTML .= " selected='selected'";
         //$semesterStart = $semesterRow['start_date'];
         $semesterEnd = $semesterRow['end_date'];

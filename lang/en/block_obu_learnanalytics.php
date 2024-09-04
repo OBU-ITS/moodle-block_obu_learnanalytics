@@ -48,6 +48,8 @@ $string['ws_curl_timeout_cc'] = 'Curl Execute Timeout Initial Check';
 $string['ws_curl_timeout_cc_info'] = 'Execute timeout in seconds for initial Check Connection';
 $string['ws_curl_timeout'] = 'Curl Execute Timeout Data';
 $string['ws_curl_timeout_info'] = 'Execute timeout in seconds for Data Requests';
+$string['obula_config_student_access'] = 'Enable Student Access';
+$string['obula_config_student_access_info'] = 'Controls if Students can access their engagement data';
 
 // Error strings
 $string['edw_connect_error'] = 'Error connecting to Enterprise Data Warehouse, please try later';

@@ -92,11 +92,11 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
      */
     public function tutor_dashboard_summary()
     {
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=1.12.2');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=1.12.3');
         $outScripts = html_writer::script(null, $scriptUrl);
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/tutor_dashboard.js?version=1.12.2');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/tutor_dashboard.js?version=1.12.3');
         $outScripts .= html_writer::script(null, $scriptUrl);
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/check_connection.js?version=1.12.2');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/check_connection.js?version=1.12.3');
         $outScripts .= html_writer::script(null, $scriptUrl);
         // End of scripts
         $out = $outScripts;
@@ -190,11 +190,11 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
      */
     public function ssc_dashboard()
     {
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=1.12.2');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=1.12.3');
         $outScripts = html_writer::script(null, $scriptUrl);
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/ssc_dashboard.js?version=1.12.2');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/ssc_dashboard.js?version=1.12.3');
         $outScripts .= html_writer::script(null, $scriptUrl);
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/check_connection.js?version=1.12.2');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/check_connection.js?version=1.12.3');
         $outScripts .= html_writer::script(null, $scriptUrl);
         // End of scripts
         $out = $outScripts;
@@ -349,11 +349,11 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         $outScripts = "";
         if (!$subDashboard) {
             // Only loaded if it's not a subDashboard as parent should have loaded these
-            $scriptUrl = new moodle_url('common.js?version=1.12.2');
+            $scriptUrl = new moodle_url('common.js?version=1.12.3');
             $outScripts .= html_writer::script(null, $scriptUrl);
         }
         // Now the main one that we always want to load
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/tutor_grid.js?version=1.12.2');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/tutor_grid.js?version=1.12.3');
         $outScripts .= html_writer::script(null, $scriptUrl);
         // End of scripts
 
@@ -584,7 +584,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         }
         $outScripts = "";
         // TODO check if student_charts still needed now common.js created
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/student_charts.js?version=1.12.2');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/student_charts.js?version=1.12.3');
         $outScripts .= html_writer::script(null, $scriptUrl);
         // End of scripts
 
@@ -593,7 +593,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         // If we are a student then there is some more to output before the charts
         if (!$fromtutordb) {
             $curl_common = new \block_obu_learnanalytics\curl\common();
-            $advisorDetails = $curl_common->get_academic_advisor($USER->username);
+            $advisorDetails = $curl_common->get_academic_advisor($USER->username, '202409');      //TODO needs to pass semester properly
             if ($advisorDetails == null) {
                 $out .= html_writer::tag('h3', 'You do not have an Academic Adviser assigned');
             } else {
@@ -748,10 +748,10 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
             global $SESSION;
             $outScripts = "";
             if (!$subDashboard) {
-                $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=1.12.2');
+                $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=1.12.3');
                 $outScripts .= html_writer::script(null, $scriptUrl);
             }
-            $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/student_dashboard.js?version=1.12.2');
+            $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/student_dashboard.js?version=1.12.3');
             $outScripts .= html_writer::script(null, $scriptUrl);
             // End of scripts
 
@@ -764,7 +764,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
             $out .= html_writer::empty_tag("link", array("rel" => "stylesheet", "href" => "https://fonts.googleapis.com/icon?family=Material+Icons"));
             // for fun try         $out .= html_writer::tag("i", "face", array("class" => "material-icons"));
 
-            $advisorDetails = $curl_common->get_academic_advisor($USER->username);
+            $advisorDetails = $curl_common->get_academic_advisor($USER->username,'202409');      //TODO needs to pass semester not hardcoded
             if ($advisorDetails == null) {
                 $out .= html_writer::tag('h5', "Hi {$fname}, you do not have an Academic Adviser assigned");
             } else {
@@ -826,6 +826,8 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
             if ($studentDetails != null && $studentDetails["study_stage"] != '') {
                 // Get two weeks in one go for comparisons
                 $current = $util_dates->get_current_week();
+                // Next will not work until we change the WS to take the semester
+                // But I don't think we want to show this anymore
                 $params = "student/cohorteng/$programme/*/*/$weeks/$simpleCurrent/";
                 $curl_common = new \block_obu_learnanalytics\curl\common();
                 $studentsData = $curl_common->send_request($params);

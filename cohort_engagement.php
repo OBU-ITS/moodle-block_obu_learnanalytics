@@ -58,6 +58,8 @@ if ($programme != '') {             // Just a safety check, should never get cal
     $weeks = $util_dates->interprete_duration_code($durationCode);
     $simpleCurrent = $util_dates->createSimpleCurrentParam($current);
     $enc_pgm = htmlspecialchars(urlencode(str_replace('/','~',$programme)));
+    // Next will not work until we change the WS to take the semester
+    // But as this page is not used - no hurry
     $params = "tutor/cohorteng/$enc_pgm/$studyStage/$studyType/$weeks/$simpleCurrent/";
     $studentsData = $curl_common->send_request($params);
     

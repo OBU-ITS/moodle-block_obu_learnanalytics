@@ -230,9 +230,9 @@ class common
      * @param  string $userName
      * @return array  PNumber/Name/userid
      */
-    public function get_academic_advisor(string $userName)
+    public function get_academic_advisor(string $userName, string $semester)
     {
-        $params = "student/advisor/$userName/";
+        $params = "student/advisor/$userName/$semester/";
         $rows = $this->send_request($params);
         if ($rows == null) {
             return null;

@@ -77,6 +77,14 @@ if ($ADMIN->fulltree) {   // also tried $hassiteconfig ||
         PARAM_INT
     ));
     $settings->add(new admin_setting_configcheckbox(
+        'block_obu_learnanalytics/obula_config_student_access',
+        get_string('obula_config_student_access', 'block_obu_learnanalytics'),
+        get_string('obula_config_student_access_info', 'block_obu_learnanalytics'),
+        '0',
+        '1',
+        '0'
+    ));
+    $settings->add(new admin_setting_configcheckbox(
         'block_obu_learnanalytics/ws_accept_selfcert',
         get_string('ws_accept_selfcert', 'block_obu_learnanalytics'),
         get_string('ws_accept_selfcert_info', 'block_obu_learnanalytics'),

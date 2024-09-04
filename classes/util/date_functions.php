@@ -64,7 +64,7 @@ class date_functions
     }
     
     /**
-     * Gets the start of the semester
+     * Gets the start of the semester, probably not needed anymore
      *
      * @param  string   $semesterCode   The code for example 202001
      * @return array    year as int, week_number as int, first_day_week as DateTime object
@@ -118,6 +118,14 @@ class date_functions
         // Not sure which is faster but performance isn't an issue
         date_default_timezone_set('UTC');
         $dateIn->setTime(0, 0, 0);
+        if ($semester != '??????') {
+            // So called from date_controls.php, where the default or select semester could be the next one
+            $today = new DateTime();
+            $today->setTime(0, 0, 0);
+            if ($dateIn > $today) {
+                $dateIn = $today->sub(new DateInterval('P7D'));
+            }
+        }
         $weekDayNumber = $dateIn->format('N');
         // was $weekDayNumber = date('N', $dateIn->getTimestamp()); // ISO addition 1 = Monday and 7 = Sunday
         // So now work out the previous W/C Monday for the date

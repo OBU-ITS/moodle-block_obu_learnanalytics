@@ -103,11 +103,10 @@ if ($success && !isset($studentsComparitives) || count($studentsComparitives) ==
 if ($success) {
     // Now work out if we should show the various study_ fields
     $typesCountValues = array_count_values(array_column($studentsComparitives, "study_type"));
-    $levelsCountValues = array_count_values(array_column($studentsComparitives, "study_level"));
-    $mLevelColumn = 1;
+    $levelsCountValues = array_count_values(array_column($studentsComparitives, "module_level"));
+    $mLevelColumn = 1;      // Always show
     $typeColumn = (count($typesCountValues) > 1) ? 1 : 0;
-    $levelColumn = (count($levelsCountValues) > 1) ? 1 : 0;
-    $studyColumns = $mLevelColumn + $typeColumn + $levelColumn;
+    $studyColumns = $mLevelColumn + $typeColumn;
 
     $campusCountValues = array_count_values(array_column($studentsComparitives, "campus_code"));
     $campusColumn = (count($campusCountValues) > 1) ? 1 : 0;
@@ -191,9 +190,6 @@ if ($success) {
     }
     if ($typeColumn > 0) {
         $html .= "<th class='students-hideable'>Mode</th>";
-    }
-    if ($levelColumn > 0) {
-        $html .= "<th class='students-hideable'>Level</th>";
     }
     $html .= "<th class='students-hideable'>ISP</th>";
     $html .= "<th class='students-hideable'>Modules</th>";
@@ -323,9 +319,6 @@ if ($success) {
         }
         if ($typeColumn > 0) {
             $html .= "<td class='students-hideable'>" . $data["study_type"] . "</td>";
-        }
-        if ($levelColumn > 0) {
-            $html .= "<td class='students-hideable'>" . $data["study_level"] . "</td>";
         }
         $html .= "<td class='students'>";
         if ($data["isp_flag"] != null && $data["isp_flag"] == 't') {

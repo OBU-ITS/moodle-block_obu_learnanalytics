@@ -217,7 +217,7 @@ try {
                 break;
             case "attperc":
                 $graphTitle = "Attendance percentage of Lectures/Events attended";
-                $plotType = "comb";
+                $plotType = "bar";          // Or line if that doesn't work
                 break;
             case "attsessions":
                 $graphTitle = "Attendance - Number of Lectures";
@@ -263,7 +263,7 @@ try {
                     $p2 = new BarPlot($plot2Counts);
                     $p2->SetWeight(1);
                     $p2->SetColor("orange");
-                    $p2->SetLegend("Study Stage {$sStage} Median Average");
+                    $p2->SetLegend("Median Average");
                 }
                 // if (count($plot3Counts) > 0) {
                 //     $p3 = new BarPlot($plot3Counts);
@@ -310,13 +310,13 @@ try {
                     $p2 = new BarPlot($plot2Counts);
                     $p2->SetWeight(1);
                     $p2->SetColor("orange");
-                    $p2->SetLegend("Study Stage {$sStage} Median Average");
+                    $p2->SetLegend("Median Average");
                 }
                 // if (count($plot3Counts) > 0) {
                 //     $p3 = new BarPlot($plot3Counts);
                 //     $p3->SetWeight(1);
                 //     $p3->SetColor("green");
-                //     $p3->SetLegend("Study Stage {$sStage} Median Average");
+                //     $p3->SetLegend("Median Average");
                 // }
 
                 if (count($plot1Counts) > 0) {
@@ -357,7 +357,7 @@ try {
                 // Create the Average plots
                 if (count($plot2Counts) > 0) {
                     $p2 = new LinePlot($plot2Counts);
-                    $p2->SetLegend("Study Stage {$sStage} Median Average");
+                    $p2->SetLegend("Median Average");
                     $graph->Add($p2);
                     //$p2->SetWeight(1);
                     //$p2->SetColor("orange");
@@ -366,7 +366,7 @@ try {
                 }
                 // if (count($plot3Counts) > 0) {
                 //     $p3 = new LinePlot($plot3Counts);
-                //     $p3->SetLegend("Study Stage {$sStage} Mean Average");
+                //     $p3->SetLegend("Mean Average");
                 //     $graph->Add($p3);
                 //     $p3->SetColor('darkgreen');
                 // }

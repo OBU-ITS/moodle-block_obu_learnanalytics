@@ -217,7 +217,7 @@ try {
                 break;
             case "attperc":
                 $graphTitle = "Attendance percentage of Lectures/Events attended";
-                $plotType = "bar";          // Or line if that doesn't work
+                //$plotType = "bar";          // Or line if that doesn't work
                 break;
             case "attsessions":
                 $graphTitle = "Attendance - Number of Lectures";

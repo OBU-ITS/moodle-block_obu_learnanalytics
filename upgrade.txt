@@ -67,7 +67,7 @@ This file describes changes in the obu_learnanalytics block code.
 === 1.12.2 ===
 * Change hide/unhide and positioning logic for Moodle 4.1
 
-=== 1.12.3 ===
+=== 1.12.4 ===
 * Upgrade jpgraph from 4.3.1 to 4.4.2
 * Added option to enable/disable stdudent access
 * Changes to date calculations

@@ -296,7 +296,7 @@ function showStudentAlerts(studentNumber) {
  * @param sname The student's name
  * @param advisor The advisor's p number 
  */
-function showStudentInfo(studentNumber, sname, advisor) {
+function showStudentInfo(studentNumber, sname, advisor, estatus, wstatus) {
     var element = document.getElementById("selSemester");
     var semester;
     if (element == null) {
@@ -311,6 +311,8 @@ function showStudentInfo(studentNumber, sname, advisor) {
         , "sName": sname
         , "advisor": advisor
         , "semester": semester
+        , "eStatus": estatus
+        , "wStatus": wstatus
     };
     $.ajax({
         type: 'POST',

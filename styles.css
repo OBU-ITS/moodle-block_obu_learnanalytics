@@ -147,6 +147,15 @@
     padding-right: 10px;
 }
 
+/* -ne is not enrolled */
+.block_obu_learnanalytics td.students-name-ne { 
+    border-left: 1px solid black;
+    border-top: 1px solid black;
+    border-bottom: 1px solid black;
+    padding-right: 10px;
+    text-decoration: line-through;
+}
+
 .block_obu_learnanalytics td.students-pos {
     text-align: center;
 }

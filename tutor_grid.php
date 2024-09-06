@@ -124,7 +124,15 @@ if ($success) {
     $modlevels = array();
     $campuscodes = array();
     $adviseesCount = 0;
+    $enrolledCount = 0;
+    $notEnrolledCount = 0;
     foreach ($studentsComparitives as $studentKey => $data) {
+        $eStatus = $data['enrolment_status_code'];
+        if ($eStatus == 'AT' || $eStatus == 'UT') {
+            $notEnrolledCount++;
+            continue;
+        }
+        $enrolledCount++;
         if ($data["advisor_number"] == strtoupper($username)) {
             $adviseesCount++;
         }
@@ -134,7 +142,7 @@ if ($success) {
         $modlevels[$data["module_level"]] = 1;
         $campuscodes[$data["campus_code"]] = 1;
     }
-    $outOfCount = ($onlyMyAdvisees == "true") ? $adviseesCount : $count;
+    $outOfCount = ($onlyMyAdvisees == "true") ? $adviseesCount : $enrolledCount;
 
     $html .= "<td class='key-fact' style='min-width:240px'>";
     $html .= "{$outOfCount} - Students</label>";
@@ -145,7 +153,7 @@ if ($success) {
     // For now put the show scatter chart here, but for now taken away :)
     // TODO see if we want this back $schart = '<a href="javascript:showMarksvEng()" id="obula_chart_scatter" name="obula_chart_scatter">Plot</a>';
     //$html .= "<th class='students' colspan='3'>$headerText $schart</th>";
-    $html .= "<th class='students th-span' colspan='3'>$headerText</th>";
+    $html .= "<th class='students th-span' colspan='4'>$headerText</th>";
     // was a gap $html .= "<th class='students'></th>";
     $headerText = "Average Mark";
     $html .= "<th class='students-hideable th-span' colspan='2'>$headerText</th>";
@@ -179,6 +187,7 @@ if ($success) {
     $html .= $studyStageCell;
     $html .= $studentCell;
     $html .= "<th class='students-hideable'>Alert</th>";
+    $html .= "<th class='students-hideable'>Att %</th>";
 
     // Now a dividing cell
     // $html .= "<td>&nbsp</td>";
@@ -217,21 +226,31 @@ if ($success) {
         if ($onlyMyAdvisees == "true" && $data["advisor_number"] != strtoupper($username)) {
             continue;
         }
+        $eStatus = $data['enrolment_status_code'];
+        $wStatus = $data['enrolment_withdrawal_status_code'];
+        if ($eStatus == 'AT' || $eStatus == 'UT') {
+            continue;
+        }
         
         $loopCount++;
 
         $imageUrlISP = get_image_url4Comparison("isp", 't');
-        $html .= "<tr class='students' id='sid_" . $studentKey . "'><td class='students-name'>";
+        if (($eStatus == 'EN' || $eStatus == 'EL') && $wStatus === null) {
+            $cssClass = 'students-name';
+        } else {
+            $cssClass = 'students-name-ne';
+        }
+        $html .= "<tr class='students' id='sid_" . $studentKey . "'><td class='{$cssClass}'>";
         // Various articles on best way to make a link to javascript
         // such as https://stackoverflow.com/questions/10070232/how-to-make-a-cell-of-table-hyperlink
-        //$studentAtts = array("href"=>"javascript:void(0);","onclick"=>"clickStudent('$studentKey')");
+        //$studentAtts = array("href"=>"javascript:void(0);","onclick"=>"clickStudent('$studentKey','{$estatus}','{$wstatus}')");
         $sname = $data["student_name"];
         // Note tried various urlencode functions and &apos; but that get swapped back n the browser and it still wouldn't work
         $urlName = addslashes($sname);
         $advisor = $data["advisor_number"];
         // Do not try simplifying the following verbose lines of code unless you have time to spare
         // Seems to be a problem with the 's inside the "'s
-        // $html .= "<a href='javascript:clickStudent('{$programme}','{$studyStage}','{$studentKey}','{$sname}')'>{$sname}</a></td>";
+        // $html .= "<a href='javascript:clickStudent('{$programme}','{$studyStage}','{$studentKey}','{$sname}','{$eStatus}','{$wStatus}')'>{$sname}</a></td>";
         $temp = $data["study_stage"];
         $html .= '<a href="javascript:clickStudent(';
         $html .= "'$programme',";
@@ -241,7 +260,7 @@ if ($success) {
         $html .= "true)";
         $html .= '">'; // Note the closing "
         $html .= "{$sname}</a></td>";
-        $onclick = "showStudentInfo('{$studentKey}','{$urlName}','{$advisor}')";
+        $onclick = "showStudentInfo('{$studentKey}','{$urlName}','{$advisor}','{$eStatus}','{$wStatus}')";
         $class = "material-icons students-info";
         if ($advisor == "") {
             $class .= " students-warning";
@@ -294,9 +313,9 @@ if ($success) {
             $alertCell = "<td class='students-hideable'></td>";
         }
         $html .= $alertCell;
+        $xx = $data["attended_percentage"];
+        $html .= "<td class='students-hideable'>{$xx}</td>";
 
-        // Now a dividing cell
-        // $html .= "<td>&nbsp</td>";
         // And cells for marks
         for ($i = 0; $i < 2; $i++) {
             $html .= "<td class='students-hideable'>";      // TODO right justify mark
@@ -336,6 +355,8 @@ if ($success) {
             $html .= "$cc";
             $html .= "</td>";
         }
+        $html .= "<td class='obula-block-hidden'>{$eStatus}</td>";        // or obula-block-hidden
+        $html .= "<td class='obula-block-hidden'>{$wStatus}</td>";
 
         // Row done
         $html .= "</tr>";

@@ -16,6 +16,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $sName = $_POST["sName"] ?? "";
     $advisor = $_POST["advisor"] ?? "";
     $semester = $_POST["semester"] ?? "";
+    $eStatus = $_POST["eStatus"] ?? "";
+    $wStatus = $_POST["wStatus"] ?? "";
 } else {
     exit("Brookes Learning Analytics - GET not supported");
 }
@@ -48,6 +50,11 @@ if ($studentUserObj != false) {
     if ($last != null) {
         $lAccess = date('d-M-Y h:i:s', $last);
     }
+}
+if ($wStatus == null || $wStatus == '') {
+    $enrolmentText = "Enrolled ({$eStatus})";
+} else {
+    $enrolmentText = "Withdrawn ({$wStatus})";
 }
 
 $moduleRows = '<tr><th>Module Code</th><th>Module</th><th>Credits</th><th>Compulsory</th>';
@@ -104,8 +111,8 @@ foreach ($fileLines as $line) {
 }
 // Next line does not use ", because we don't want PHP to try and replace the variables yet
 // If adding more detail then change student_info.html as well
-$from = array('{$studentNumber}', '{$sName}', '{$email}', '{$aaName}', '{$aaemail}', '{$lAccess}', '{$moduleRows}', '{$attRows}');
-$to = array($sid, $sName, $email, $aaName, $aaemail, $lAccess, $moduleRows, $attRows);
+$from = array('{$studentNumber}', '{$sName}', '{$email}', '{$aaName}', '{$aaemail}', '{$lAccess}', '{$enrolmentText}', '{$moduleRows}', '{$attRows}');
+$to = array($sid, $sName, $email, $aaName, $aaemail, $lAccess, $enrolmentText, $moduleRows, $attRows);
 $popupbodyhtml = str_replace($from, $to, $html);
 
 // Now send all that back

@@ -92,11 +92,11 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
      */
     public function tutor_dashboard_summary()
     {
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=1.12.1');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=1.12.5');
         $outScripts = html_writer::script(null, $scriptUrl);
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/tutor_dashboard.js?version=1.12.1');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/tutor_dashboard.js?version=1.12.5');
         $outScripts .= html_writer::script(null, $scriptUrl);
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/check_connection.js?version=1.12.1');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/check_connection.js?version=1.12.5');
         $outScripts .= html_writer::script(null, $scriptUrl);
         // End of scripts
         $out = $outScripts;
@@ -110,7 +110,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
 
         global $USER;
 
-        $userPrefs = get_user_preferences();
+        $userPrefs = get_user_preferences();        // Moodle function get's values from database
         if (array_key_exists("obula_last_tutor_grid_date", $userPrefs)) {
             $today = new DateTime();
             $today->setTime(0, 0, 0);
@@ -136,7 +136,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
 
         // Links for Help and Feedback
         $links = html_writer::tag("a", "Help", array("href" => "javascript:showHelp('tutor')", "class" => "link-right link-help"));
-        $links .= html_writer::tag("a", "Feedback", array("href" => "javascript:gotoFeedback('tutor')", "class" => "link-right"));
+        //$links .= html_writer::tag("a", "Feedback", array("href" => "javascript:gotoFeedback('tutor')", "class" => "link-right"));
 
         // Button for either panel
         $temp = get_string("tutor-show", 'block_obu_learnanalytics');
@@ -190,11 +190,11 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
      */
     public function ssc_dashboard()
     {
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=1.12.1');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=1.12.5');
         $outScripts = html_writer::script(null, $scriptUrl);
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/ssc_dashboard.js?version=1.12.1');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/ssc_dashboard.js?version=1.12.5');
         $outScripts .= html_writer::script(null, $scriptUrl);
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/check_connection.js?version=1.12.1');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/check_connection.js?version=1.12.5');
         $outScripts .= html_writer::script(null, $scriptUrl);
         // End of scripts
         $out = $outScripts;
@@ -349,11 +349,11 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         $outScripts = "";
         if (!$subDashboard) {
             // Only loaded if it's not a subDashboard as parent should have loaded these
-            $scriptUrl = new moodle_url('common.js?version=1.12.1');
+            $scriptUrl = new moodle_url('common.js?version=1.12.5');
             $outScripts .= html_writer::script(null, $scriptUrl);
         }
         // Now the main one that we always want to load
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/tutor_grid.js?version=1.12.1');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/tutor_grid.js?version=1.12.5');
         $outScripts .= html_writer::script(null, $scriptUrl);
         // End of scripts
 
@@ -391,73 +391,60 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         $outParams .= html_writer::tag("a", "search", $buttonAtts);
         $outParams .= html_writer::end_tag('td');
 
-        // Now study stages
-        $params = "tutor/allsstages/1/";
-        $curl_common = new \block_obu_learnanalytics\curl\common();
-        $allSStages = $curl_common->send_request($params);
-        // But if there is only 1 then take it (* only returned if there is more than 1)
-        $study_stage = (count($allSStages) == 1) ? array_keys($allSStages)[0] : "*";
-
+        // Now study stages (replaced by Level)
+        // Now Module Level, no point in calling for them
+        $options = array(
+            "*" => "All",
+            "0" => "Level 0",
+            "1" => "Level 1",
+            "2" => "Level 2",
+            "3" => "Level 3",
+            "4" => "Level 4",
+            "5" => "Level 5",
+            "6" => "Level 6",
+            "7" => "Level 7",
+            "8" => "Level 8"
+        );
+        // Just render them all, post load sorts it out
         $outParams .= html_writer::start_tag('td', array("class" => "parameters"));
-        $outParams .= html_writer::tag('label', 'Study Stage', array('for' => 'selStudyStage', 'style' => 'min-width:100px'));
-        $selectAtts = array("name" => "StudyStages", "id" => "selStudyStage", "onchange" => "studyStageChanged()", "style" => "min-width:160px;max-width:160px");
+        $outParams .= html_writer::tag('label', 'Level', array('for' => 'selModLevel', 'style' => 'min-width:100px'));
+        $selectAtts = array("name" => "ModLevels", "id" => "selModLevel", "onchange" => "modLevelChanged()", "style" => "min-width:160px;max-width:160px");
 
         $outParams .= html_writer::start_tag('select', $selectAtts);
-
-        foreach ($allSStages as $key => $data) {
-            $name = $data['study_stage_desc'];
-            if ($key == $study_stage) {
-                $atts = array("value" => $key, "selected" => "selected");
-            } else {
-                $atts = array("value" => $key);
+        $count = 0;
+        foreach ($options as $key => $data) {
+            $atts = array("value" => "$key");
+            if (++$count == 1) {
+                $atts['selected'] = 'selected';
             }
-            $outParams .= html_writer::tag("option", $name, $atts);
+            $outParams .= html_writer::tag("option", $data, $atts);
         }
 
         $outParams .= html_writer::end_tag("select");
-
+        
         $outParams .= html_writer::end_tag("td");
 
         // Placeholder for date_controls.php
-        $outParams .= html_writer::empty_tag("td", array("id" => "obula_week_control_cell", "class" => "parameters"));
+        $outParams .= html_writer::empty_tag("td", array("id" => "obula_semester_control_cell", "class" => "parameters"));
 
         $outParams .= html_writer::end_tag("tr");
 
         // Now some more
         $outParams .= html_writer::start_tag("tr", array("class" => "parameters"));
 
-        // Banding
+        // Campus
         $outParams .= html_writer::start_tag('td', array("class" => "parameters"));
-        // Hidden field to hold current banding, TODO if we are keeping this as an option then pick up from saved preference
-        $outParams .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_banding_calc', "value" => 'MED-20-4'));
-
-        $options = array(
-            //"AVG-10-1" => "Mean Average +/- 10% - 1 Week",
-            "AVG-20-1" => "Mean Average +/- 20% - 1 Week",
-            //"AVG-30-1" => "Mean Average +/- 30% - 1 Week",
-            //"AVG-10-4" => "Mean Average +/- 10% - 4 Weeks",
-            //"AVG-20-4" => "Mean Average +/- 20% - 4 Weeks",
-            //"AVG-30-4" => "Mean Average +/- 30% - 4 Weeks",
-            //"MED-10-1" => "Median Average +/- 10% - 1 Week",
-            "MED-20-1" => "Median Average +/- 20% - 1 Week",
-            "MED-20-2" => "Median Average +/- 20% - 2 Weeks",
-            "MED-20-3" => "Median Average +/- 20% - 3 Weeks",
-            "MED-20-4" => "Median Average +/- 20% - 4 Weeks",
-            "MED-30-1" => "Median Average +/- 30% - 1 Week",
-            "MED-30-2" => "Median Average +/- 30% - 2 Weeks",
-            "MED-30-3" => "Median Average +/- 30% - 3 Weeks",
-            "MED-30-4" => "Median Average +/- 30% - 4 Weeks",
-            //"MED-30-4" => "Median Average +/- 30% - 4 Weeks",
-        );
-        $outParams .= html_writer::tag('label', 'Banding', array('for' => 'selBanding', 'style' => 'min-width:100px'));
-        $selectAtts = array("name" => "Banding", "id" => "selBanding", "onchange" => "bandingChanged()");
+        $outParams .= html_writer::tag('label', 'Campus', array('for' => 'selCampusCode', 'style' => 'min-width:100px'));
+        $selectAtts = array("name" => "Campus", "id" => "selCampusCode", "onchange" => "campusCodeChanged()");
         $outParams .= html_writer::start_tag('select', $selectAtts);
-        foreach ($options as $key => $data) {
-            $atts = array("value" => "$key");
-            if ($key == 'MED-20-4') {
+        $params = 'tutor/allCampus/';
+        $activeCampus = $curl_common->send_request($params);
+        foreach ($activeCampus as $key => $data) {
+            $atts = array("value" => "$key", "title" => $data["campus_code"]);
+            if ($key == '*') {
                 $atts['selected'] = 'selected';
             }
-            $outParams .= html_writer::tag("option", $data, $atts);
+            $outParams .= html_writer::tag("option", $data["campus"], $atts);
         }
         $outParams .= html_writer::end_tag('select');
         $outParams .= html_writer::end_tag('td');
@@ -486,7 +473,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         // End of Study Mode
 
         // Placeholder for date_controls.php
-        $outParams .= html_writer::empty_tag("td", array("id" => "obula_semester_control_cell", "class" => "parameters"));
+        $outParams .= html_writer::empty_tag("td", array("id" => "obula_week_control_cell", "class" => "parameters"));
         $outParams .= html_writer::end_tag("tr");
         // End of selection row
 
@@ -524,11 +511,12 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
 
         $outPlaceHolders .= html_writer::start_tag("tr");
         $outPlaceHolders .= html_writer::start_tag("td", array("id" => "obula_tutor_grid_chart"));
-        // Rather than try and load the chart on load, just give a show link
-        $chartAtts = array("href" => "javascript:showChart()", "id" => "obula_chart_show", "class" => "chart-links");
-        $chartAtts['style'] = "display:none";
-        $outPlaceHolders .= html_writer::tag('a', 'Chart engagement', $chartAtts);
+        // // Rather than try and load the chart on load, just give a show link
+        // $chartAtts = array("href" => "javascript:showChart()", "id" => "obula_chart_show", "class" => "chart-links");
+        // $chartAtts['style'] = "display:none";
+        // $outPlaceHolders .= html_writer::tag('a', 'Chart engagement', $chartAtts);
         // To make things simpler, add an an empty img
+        // TODO revamp - remove extra cell that housed chart
         $outPlaceHolders .= html_writer::tag("img", null, array('src' => '', 'id' => 'obula_tutorsGraph_img', 'style' => 'display:none'));
         $outPlaceHolders .= html_writer::end_tag("td");
         $outPlaceHolders .= html_writer::end_tag("tr");
@@ -596,7 +584,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         }
         $outScripts = "";
         // TODO check if student_charts still needed now common.js created
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/student_charts.js?version=1.12.1');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/student_charts.js?version=1.12.5');
         $outScripts .= html_writer::script(null, $scriptUrl);
         // End of scripts
 
@@ -605,7 +593,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         // If we are a student then there is some more to output before the charts
         if (!$fromtutordb) {
             $curl_common = new \block_obu_learnanalytics\curl\common();
-            $advisorDetails = $curl_common->get_academic_advisor($USER->username);
+            $advisorDetails = $curl_common->get_academic_advisor($USER->username, '202409');      //TODO needs to pass semester properly
             if ($advisorDetails == null) {
                 $out .= html_writer::tag('h3', 'You do not have an Academic Adviser assigned');
             } else {
@@ -689,13 +677,14 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         }
 
         // Setup to output the graphs
-        $types = array("vle", "ez", "loans", "att");
+        $types = array("vle", "att", "ez"); //, "loans", "att");
         $buttonsData = array();
         $buttonsData[] = array("vleduration", "Duration", "vlesessions", "Visits", "vleviews", "Page Views");
+        $buttonsData[] = array("attperc", "Percentage");
         $buttonsData[] = array("ezduration", "Duration", "ezsessions", "Visits", "ezsize", "Downloaded (MB)");
         //$buttonsData[] = array("loansline", "Line Chart", "loansbar", "Bar Chart", "loanscomb", "Combined");
         //$buttonsData[] = array("attduration", "Duration", "attsessions", "Lectures");
-        $noCharts = 2; // Was a parameter once
+        $noCharts = 3; // Was a parameter once
 
         for ($i = 1; $i <= $noCharts; $i++) {
             $buttonData = $buttonsData[$i - 1];
@@ -759,10 +748,10 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
             global $SESSION;
             $outScripts = "";
             if (!$subDashboard) {
-                $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=1.12.1');
+                $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=1.12.5');
                 $outScripts .= html_writer::script(null, $scriptUrl);
             }
-            $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/student_dashboard.js?version=1.12.1');
+            $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/student_dashboard.js?version=1.12.5');
             $outScripts .= html_writer::script(null, $scriptUrl);
             // End of scripts
 
@@ -775,7 +764,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
             $out .= html_writer::empty_tag("link", array("rel" => "stylesheet", "href" => "https://fonts.googleapis.com/icon?family=Material+Icons"));
             // for fun try         $out .= html_writer::tag("i", "face", array("class" => "material-icons"));
 
-            $advisorDetails = $curl_common->get_academic_advisor($USER->username);
+            $advisorDetails = $curl_common->get_academic_advisor($USER->username,'202409');      //TODO needs to pass semester not hardcoded
             if ($advisorDetails == null) {
                 $out .= html_writer::tag('h5', "Hi {$fname}, you do not have an Academic Adviser assigned");
             } else {
@@ -837,6 +826,8 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
             if ($studentDetails != null && $studentDetails["study_stage"] != '') {
                 // Get two weeks in one go for comparisons
                 $current = $util_dates->get_current_week();
+                // Next will not work until we change the WS to take the semester
+                // But I don't think we want to show this anymore
                 $params = "student/cohorteng/$programme/*/*/$weeks/$simpleCurrent/";
                 $curl_common = new \block_obu_learnanalytics\curl\common();
                 $studentsData = $curl_common->send_request($params);

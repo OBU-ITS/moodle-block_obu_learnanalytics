@@ -18,7 +18,7 @@ $(document).ready(function () {
         }
         var data = {
             "programme": getProgrammeParameter()
-            , "sStage": getStudyStageParameter()
+            , "sStage": getModLevelParameter()
             , "studentNumber": getStudentNumberParameter()
             // , "studentName": getStudentNameParameter()
             , "currentWeek": currentWeek
@@ -36,7 +36,8 @@ $(document).ready(function () {
             });
         // Now the 3 graphs
         loadStudentGraph('vleduration', 1);
-        loadStudentGraph('ezduration', 2);
+        loadStudentGraph('attperc', 2);
+        loadStudentGraph('ezduration', 3);
         //loadStudentGraph('loansline', 3);
         //loadStudentGraph('attduration', 4);
         }

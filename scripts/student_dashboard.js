@@ -30,7 +30,7 @@ function showCohortComparison(duration = 'il') {
     if (duration == 'il') {         // Initial load
         initialLoad = true;
         duration = '1wk'
-        showWeekControl();          // It does spacer as well
+        //showWeekControl();          // It does spacer as well
     }
     var currentWeek = $("#obula_currentweek").val();       // Don't parse the JSON
     if (currentWeek == null || currentWeek == undefined) {
@@ -38,7 +38,7 @@ function showCohortComparison(duration = 'il') {
     }
     var data = {
         "programme": getProgrammeParameter()
-        , "sStage": getStudyStageParameter()
+        , "sStage": getModLevelParameter()
         , "studentNumber": getStudentNumberParameter()
         // , "studentName": getStudentNameParameter()
         , "currentWeek": currentWeek
@@ -74,7 +74,7 @@ function showELibraryHistory(duration = '1wk') {
     if (currentWeek == null || currentWeek == undefined) {
         currentWeek = "";
     }
-    showWeekControl();          // It does spacer as well
+    //showWeekControl();          // It does spacer as well
     var data = {
         "programme": getProgrammeParameter()
         , "studentNumber": getStudentNumberParameter()
@@ -109,7 +109,6 @@ function showStudentConsistency(version) {
     if (currentWeek == null || currentWeek == undefined) {
         currentWeek = "";
     }
-    showWeekControl();          // It does spacer as well
     var data = {
         "studentNumber": getStudentNumberParameter()
         , "studentName": getStudentNameParameter()
@@ -139,7 +138,6 @@ function showStudentConsistency(version) {
     if (currentWeek == null || currentWeek == undefined) {
         currentWeek = "";
     }
-    showWeekControl();          // It does spacer as well
     var data = {
         "studentNumber": getStudentNumberParameter()
         , "studentName": getStudentNameParameter()
@@ -164,51 +162,16 @@ function showStudentConsistency(version) {
 }*/
 
 function showStudentGraphs() {
-    showWeekControl();          // It does spacer as well
+    //showWeekControl();          // It does spacer as well
     // Now the 3 graphs
     loadStudentGraph('vleduration', 1, null, true);
-    loadStudentGraph('ezduration', 2, null, false);
+    loadStudentGraph('attperc', 2, null, false);
+    loadStudentGraph('ezduration', 3, null, false);
     //loadStudentGraph('loansline', 3, null, false);
     //loadStudentGraph('attduration', 4, null, false);
 
     // Now the data currency
     showDataCurrency();
-}
-
-function clickChangeWeek(direction) {
-    var newWeek = (direction > 0) ? JSON.parse($("#obula_nextweek").val()) : JSON.parse($("#obula_prevweek").val());
-    // Now put it back and reload grid and chart(s), reload of weekcontrol will recalculate next/prev
-    $("#obula_currentweek").val(JSON.stringify(newWeek));
-    var newDate = new Date(newWeek.first_day_week.date);
-    var y = newDate.toString();
-    // NO this uses jqueryUI var z = $.datepicker.formatDate('dd-M-yy', newDate);
-    // And as I don't want to introduce another libary, do it manually
-    // with no regard to i18n  - TODO put months in lang file 
-    var year = newDate.getFullYear();
-    var month = newDate.getMonth();
-    var day = newDate.getDate();
-    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    // getMonth is 0 based so don't subtract 1
-    var formattedDate = (day < 10 ? "0" + day : day) + "-" + months[(month)] + "-" + year;
-    // Now put it back
-    $("#obula_weekdate").text(formattedDate);
-    showWeekControl(JSON.stringify(newWeek));
-    // Now we just need to work out what to reload
-    if (document.getElementById("obula_cohort_comparison_row").style.display == "table-row") {
-        showCohortComparison();
-    }
-    //if (document.getElementById("obula_student_consistency_row").style.display == "table-row") {
-    //    showStudentConsistency('v1');
-    //}
-    if (document.getElementById("obula_elibrary_history_row").style.display == "table-row") {
-        showELibraryHistory();
-    }
-    if (document.getElementById("obula_studentGraphs_div").style.display == "block") {
-        loadStudentGraph('vleduration', 1, null, true);
-        loadStudentGraph('ezduration', 2, null, false);
-        loadStudentGraph('loansline', 3, null, false);
-        loadStudentGraph('attduration', 4, null, false);
-    }
 }
 
 

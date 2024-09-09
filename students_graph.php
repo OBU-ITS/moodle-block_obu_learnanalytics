@@ -67,15 +67,19 @@ try {
                 $column = "vle_sessions";
                 break;
             case "vleduration":
-                $column = "vle_duration_total";     // Needs to be _minutes in the future
+                $column = "vle_duration_minutes";
                 break;
             case "vleviews":
-                $column = "vle_page_views";
+                $column = "vle_page_hits";
                 break;
             case "loansline":
             case "loansbar":
             case "loanscomb":
                 $column = "library_resources_loaned";
+                break;
+            case "attperc":
+                $column = "attendance_percentage";
+                //$column = "vle_page_hits";
                 break;
             case "attsessions":
                 $column = "attendance_sessions";
@@ -87,7 +91,7 @@ try {
         // Note exception isn't caught if next line fails
         $curl_common = new \block_obu_learnanalytics\curl\common();
         $enc_pgm = htmlspecialchars(urlencode(str_replace('/','~',$programme)));
-        $params = "student/pgmgraphdata/$sid/{$enc_pgm}/{$sStage}/$simpleCurrent/both/{$column}/";
+        $params = "student/pgmgraphdata/$sid/{$enc_pgm}/{$sStage}/$simpleCurrent/median/{$column}/";
         try {
             $studentGraphData = $curl_common->send_request($params);
         } catch (\Exception $ex) {
@@ -105,7 +109,7 @@ try {
         $weeks = [];
         $plot1Counts = [];
         $plot2Counts = [];
-        $plot3Counts = [];
+//        $plot3Counts = [];
 
         if ($studentGraphData != null) {
             foreach ($studentGraphData as $key => $row) {
@@ -117,50 +121,55 @@ try {
                 switch ($chartType) {
                     case "ezsessions":
                         $plot1Counts[] = $row["ez_sessions"] ?? 0;
-                        $plot2Counts[] = $row["mean_ez_sessions"] ?? 0;
-                        $plot3Counts[] = $row["median_ez_sessions"] ?? 0;
+                        $plot2Counts[] = $row["avg_ez_sessions"] ?? 0;
+                        //$plot3Counts[] = $row["mean_ez_sessions"] ?? 0;
                         break;
                     case "ezduration":
                         $plot1Counts[] = $row["ez_duration_total"] ?? 0;
-                        $plot2Counts[] = $row["mean_ez_duration_total"] ?? 0;
-                        $plot3Counts[] = $row["median_ez_duration_total"] ?? 0;
+                        $plot2Counts[] = $row["avg_ez_duration_total"] ?? 0;
+                        //$plot3Counts[] = $row["mean_ez_duration_total"] ?? 0;
                         break;
                     case "ezsize":
                         $plot1Counts[] = $row["ez_size"] ?? 0;
-                        $plot2Counts[] = $row["mean_ez_size"] ?? 0;
-                        $plot3Counts[] = $row["median_ez_size"] ?? 0;
+                        $plot2Counts[] = $row["avg_ez_size"] ?? 0;
+                        //$plot3Counts[] = $row["mean_ez_size"] ?? 0;
                         break;
                     case "vlesessions":
                         $plot1Counts[] = $row["vle_sessions"] ?? 0;
-                        $plot2Counts[] = $row["mean_vle_sessions"] ?? 0;
-                        $plot3Counts[] = $row["median_vle_sessions"] ?? 0;
+                        $plot2Counts[] = $row["avg_vle_sessions"] ?? 0;
+                        //$plot3Counts[] = $row["mean_vle_sessions"] ?? 0;
                         break;
                     case "vleduration":
-                        $plot1Counts[] = $row["vle_duration_total"] ?? 0;
-                        $plot2Counts[] = $row["mean_vle_duration_total"] ?? 0;
-                        $plot3Counts[] = $row["median_vle_duration_total"] ?? 0;
+                        $plot1Counts[] = $row["vle_duration_minutes"] ?? 0;
+                        $plot2Counts[] = $row["avg_vle_duration_minutes"] ?? 0;
+                        //$plot3Counts[] = $row["mean_vle_duration_minutes"] ?? 0;
                         break;
                     case "vleviews":
-                        $plot1Counts[] = $row["vle_page_views"] ?? 0;
-                        $plot2Counts[] = $row["mean_vle_page_views"] ?? 0;
-                        $plot3Counts[] = $row["median_vle_page_views"] ?? 0;
+                        $plot1Counts[] = $row["vle_page_hits"] ?? 0;
+                        $plot2Counts[] = $row["avg_vle_page_hits"] ?? 0;
+                        //$plot3Counts[] = $row["mean_vle_page_hits"] ?? 0;
                         break;
                     case "loansline":
                     case "loansbar":
                     case "loanscomb":
                         $plot1Counts[] = $row["library_resources_loaned"] ?? 0;
-                        $plot2Counts[] = $row["mean_library_resources_loaned"] ?? 0;
-                        $plot3Counts[] = $row["median_library_resources_loaned"] ?? 0;
+                        $plot2Counts[] = $row["avg_library_resources_loaned"] ?? 0;
+                        //$plot3Counts[] = $row["mean_library_resources_loaned"] ?? 0;
+                        break;
+                    case "attperc":
+                        $plot1Counts[] = $row["attendance_percentage"] ?? 0;
+                        $plot2Counts[] = $row["avg_attendance_percentage"] ?? 0;
+                        //$plot3Counts[] = $row["mean_attendance_percentage"] ?? 0;
                         break;
                     case "attsessions":
                         $plot1Counts[] = $row["attendance_sessions"] ?? 0;
-                        $plot2Counts[] = $row["mean_attendance_sessions"] ?? 0;
-                        $plot3Counts[] = $row["median_attendance_sessions"] ?? 0;
+                        $plot2Counts[] = $row["avg_attendance_sessions"] ?? 0;
+                        //$plot3Counts[] = $row["mean_attendance_sessions"] ?? 0;
                         break;
                     case "attduration":
                         $plot1Counts[] = $row["attendance_duration_total"] ?? 0;
-                        $plot2Counts[] = $row["mean_attendance_duration_total"] ?? 0;
-                        $plot3Counts[] = $row["median_attendance_duration_total"] ?? 0;
+                        $plot2Counts[] = $row["avg_attendance_duration_total"] ?? 0;
+                        //$plot3Counts[] = $row["median_attendance_duration_total"] ?? 0;
                         break;
                 }
             }
@@ -206,6 +215,10 @@ try {
                 $graphTitle = "Campus Library Engagement - Loans";
                 $plotType = substr($chartType, 5);
                 break;
+            case "attperc":
+                $graphTitle = "Attendance percentage of Lectures/Events attended";
+                //$plotType = "bar";          // Or line if that doesn't work
+                break;
             case "attsessions":
                 $graphTitle = "Attendance - Number of Lectures";
                 break;
@@ -250,17 +263,17 @@ try {
                     $p2 = new BarPlot($plot2Counts);
                     $p2->SetWeight(1);
                     $p2->SetColor("orange");
-                    $p2->SetLegend("Study Stage {$sStage} Mean Average");
+                    $p2->SetLegend("Median Average");
                 }
-                if (count($plot3Counts) > 0) {
-                    $p3 = new BarPlot($plot3Counts);
-                    $p3->SetWeight(1);
-                    $p3->SetColor("orange");
-                    $p3->SetLegend("Study Stage {$sStage} Median Average");
-                }
+                // if (count($plot3Counts) > 0) {
+                //     $p3 = new BarPlot($plot3Counts);
+                //     $p3->SetWeight(1);
+                //     $p3->SetColor("orange");
+                //     $p3->SetLegend("Study Stage {$sStage} Mean Average");
+                // }
 
                 if (count($plot1Counts) > 0) {
-                    $gbplot = new GroupBarPlot(array($p3, $p2, $p1));
+                    $gbplot = new GroupBarPlot(array($p2, $p1));
                     $graph->Add($gbplot);
                 }
                 break;
@@ -297,17 +310,17 @@ try {
                     $p2 = new BarPlot($plot2Counts);
                     $p2->SetWeight(1);
                     $p2->SetColor("orange");
-                    $p2->SetLegend("Study Stage {$sStage} Mean Average");
+                    $p2->SetLegend("Median Average");
                 }
-                if (count($plot3Counts) > 0) {
-                    $p3 = new BarPlot($plot3Counts);
-                    $p3->SetWeight(1);
-                    $p3->SetColor("green");
-                    $p3->SetLegend("Study Stage {$sStage} Median Average");
-                }
+                // if (count($plot3Counts) > 0) {
+                //     $p3 = new BarPlot($plot3Counts);
+                //     $p3->SetWeight(1);
+                //     $p3->SetColor("green");
+                //     $p3->SetLegend("Median Average");
+                // }
 
                 if (count($plot1Counts) > 0) {
-                    $gbplot = new GroupBarPlot(array($p3, $p2, $p1));
+                    $gbplot = new GroupBarPlot(array($p2, $p1));
                     $graph->Add($gbplot);
                 }
                 break;
@@ -344,19 +357,19 @@ try {
                 // Create the Average plots
                 if (count($plot2Counts) > 0) {
                     $p2 = new LinePlot($plot2Counts);
-                    $p2->SetLegend("Study Stage {$sStage} Mean Average");
+                    $p2->SetLegend("Median Average");
                     $graph->Add($p2);
                     //$p2->SetWeight(1);
                     //$p2->SetColor("orange");
                     //$p2->SetColor("#fc9d03");
                     $p2->SetColor('darkred');
                 }
-                if (count($plot3Counts) > 0) {
-                    $p3 = new LinePlot($plot3Counts);
-                    $p3->SetLegend("Study Stage {$sStage} Median Average");
-                    $graph->Add($p3);
-                    $p3->SetColor('darkgreen');
-                }
+                // if (count($plot3Counts) > 0) {
+                //     $p3 = new LinePlot($plot3Counts);
+                //     $p3->SetLegend("Mean Average");
+                //     $graph->Add($p3);
+                //     $p3->SetColor('darkgreen');
+                // }
                 break;
         }
 

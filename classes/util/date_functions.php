@@ -39,40 +39,39 @@ class date_functions
         return self::get_week_for_date($today);
     }
 
-    public function get_semesters($maxDate = null)
+    public function get_semesters()
     {
-        $semesters = array();           //TODO find where I can pick this up OR move to config
-        $semesters[] = array('code' => '201809', 'from' => new DateTime('2018-09-17 00:00'), 'to' => new DateTime('2018-12-20 23:59'), 'label' => "2018/19 Sem 1");
-        $semesters[] = array('code' => '201901', 'from' => new DateTime('2019-01-21 00:00'), 'to' => new DateTime('2019-05-18 23:59'), 'label' => "2018/19 Sem 2");
-        $semesters[] = array('code' => '201909', 'from' => new DateTime('2019-09-16 00:00'), 'to' => new DateTime('2019-12-19 23:59'), 'label' => "2019/20 Sem 1");
-        $semesters[] = array('code' => '202001', 'from' => new DateTime('2020-01-20 00:00'), 'to' => new DateTime('2020-05-16 23:59'), 'label' => "2019/20 Sem 2");
-        $semesters[] = array('code' => '202009', 'from' => new DateTime('2020-09-14 00:00'), 'to' => new DateTime('2020-12-19 23:59'), 'label' => "2020/21 Sem 1");
-        $semesters[] = array('code' => '202101', 'from' => new DateTime('2021-01-18 00:00'), 'to' => new DateTime('2021-05-15 23:59'), 'label' => "2020/21 Sem 2");
-        $semesters[] = array('code' => '202109', 'from' => new DateTime('2021-09-13 00:00'), 'to' => new DateTime('2021-12-17 23:59'), 'label' => "2021/22 Sem 1");
-        $semesters[] = array('code' => '202201', 'from' => new DateTime('2022-01-17 00:00'), 'to' => new DateTime('2022-05-14 23:59'), 'label' => "2021/22 Sem 2");
-        //Seems crude but now let's delete any past $maxDate
-        if ($maxDate != null) {
-            $currentSemesters = array();
-            foreach ($semesters as $semester) {
-                if ($maxDate < $semester['from']) {
-                    break;
-                }
-                $currentSemesters[] = $semester;
-            }
-            return $currentSemesters;
+        try {
+            $params = 'utils/getsemesters/';
+            $curl_common = new \block_obu_learnanalytics\curl\common();
+            $semesterList = $curl_common->send_request($params);
+        } catch (Exception $ex) {
+            $curl_common->echo_error_console_log($ex);
+            exit;
+        }
+
+        $semesters = array();
+        foreach($semesterList as $row) {
+            $semesters[] = array('code' => $row["semester"], 
+                'start_date' => new DateTime($row["start_date"]),
+                'end_date' => new DateTime($row["end_date"]),
+                'label' => $row["drop_down_desc"],
+                'default' => $row["default_semester"]
+            );
         }
 
         return $semesters;
     }
     
     /**
-     * Gets the monday for the last week in the semester
+     * Gets the start of the semester, probably not needed anymore
      *
      * @param  string   $semesterCode   The code for example 202001
      * @return array    year as int, week_number as int, first_day_week as DateTime object
      */
-    public function get_semester_wc($semesterCode)
+    public function get_semester_date($semesterCode)
     {
+        //TODO check not needed and remove
         $semesters = self::get_semesters();         // TODO store in cache if we can
         $codeCol = array_column($semesters, "code");
         $key = array_search($semesterCode, $codeCol);
@@ -80,25 +79,10 @@ class date_functions
             throw new Exception("Error matching semester", 1);
         }
         $semester = $semesters[$key];
-        $endDate = $semester["to"];
-        return self::get_week_for_date($endDate, true);
+        $semesterDate = $semester["start_date"];        // or should it be end date?
+        return self::get_week_for_date($semesterDate, true);
     }
 
-    public function get_current_semester_start()
-    {
-        $semesters = self::get_semesters();
-
-        date_default_timezone_set('UTC');
-        $today = new DateTime();
-        $today->setTime(0, 0, 0);
-        foreach ($semesters as $semester) {
-            if ($today >= $semester[1] && $today <= $semester[2]) {
-                return self::get_week_for_date($semester[0]);
-            }
-        }
-        return null;
-    }
-    
     /**
      * Not intended for use in project but as a tool to calculate academic week for a date
      * Can be used from debug console - self::get_week_for_ymd(2020,1,29);
@@ -123,7 +107,7 @@ class date_functions
      * @param  bool $incompleteWeek, true if want the actual W/C rather than the previous complete week
      * @return array            year as int, week_number as int, first_day_week as DateTime object
      */
-    public function get_week_for_date($dateIn, $incompleteWeek = false)
+    public function get_week_for_date($dateIn, $incompleteWeek = false, $semester = '??????')
     {
         // Data is fixed so calculate it from current date
         // Dates in most languages are horrible - PHP included
@@ -134,7 +118,16 @@ class date_functions
         // Not sure which is faster but performance isn't an issue
         date_default_timezone_set('UTC');
         $dateIn->setTime(0, 0, 0);
-        $weekDayNumber = date('N', $dateIn->getTimestamp()); // ISO addition 1 = Monday and 7 = Sunday
+        if ($semester != '??????') {
+            // So called from date_controls.php, where the default or select semester could be the next one
+            $today = new DateTime();
+            $today->setTime(0, 0, 0);
+            if ($dateIn > $today) {
+                $dateIn = $today->sub(new DateInterval('P7D'));
+            }
+        }
+        $weekDayNumber = $dateIn->format('N');
+        // was $weekDayNumber = date('N', $dateIn->getTimestamp()); // ISO addition 1 = Monday and 7 = Sunday
         // So now work out the previous W/C Monday for the date
         // TODO test/cope with say the 2nd August or the 8th etc
         $days = ($incompleteWeek) ? 0 : 7;
@@ -178,6 +171,7 @@ class date_functions
 
         $result = array();
         $result["year"] = $last_year;
+        $result["semester"] = $semester;
         $result["week_number"] = $last_week;
         $result["first_day_week"] = $last_fdw;
 
@@ -231,6 +225,7 @@ class date_functions
 
         $result = array();
         $result["year"] = $decoded->year;
+        $result["semester"] = $decoded->semester;
         $result["week_number"] = $decoded->week_number;
         $strDate = $decoded->first_day_week->date; // This is not a date type, it's got mangled somewhere
         $phpDate = date_create_from_format('Y-m-d G:i:s.u', $strDate); //TODO, $decoded->first_day_week->timezone);

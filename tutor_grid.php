@@ -19,50 +19,32 @@ $data_tutor = new \block_obu_learnanalytics\data\tutor_functions();
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // The request is using the POST method
     $programme = $_POST["programme"];
-    $studyStage = $_POST["sStage"];
+    $modLevel = $_POST["modLevel"];
     $studyType = ($_POST["studyType"]);
-    $maxShow = $_POST["maxShow"];
-    if ($maxShow == '*') {
-        $maxShow = 999999;
-    }
-    $cohortSort = $_POST["sStageSort"];
+    $cohortSort = $_POST["cohortSort"];
     $studentSort = $_POST["studentSort"];
-    $cohortFirst = $_POST["cohortfirst"];
     $currentWeek = $_POST["currentWeek"]; // In JSON
     $onlyMyAdvisees = ($_POST["onlyMyAdvisees"] ?? "true");
-    $bandingCalcOptions = ($_POST["bandingCalc"]);
+    $bandingCalcOptions = "MED-30-4"; //($_POST["bandingCalc"]);
     $semester = $_POST["semester"] ?? "";
+    $campusCode = $_POST["campusCode"] ?? "*";
     $option = ($_POST["option"]);
     $oldProgramme = $_POST["oldProgramme"] ?? "";
 } else {
     exit("Brookes Learning Analytics - GET not supported for tutor grid");
 }
 
-$fullDataSet = ($studyStage == "*" && $studyType == "*");
+$fullDataSet = ($modLevel == "*" && $studyType == "*" && $campusCode == "*");
 
 // So if we've been passed the semester or other instruction, recalculate the date
-$dateRecalculated = false;
 switch ($option) {
     case 'semester':
-        $current = $util_dates->get_semester_wc($semester);
-        $dateRecalculated = true;
+        // Nothing todo
         break;
     
     case 'getcurrent':
         $current = $util_dates->get_current_week();
         // NO not needed $dateRecalculated = true;
-        break;
-
-    case 'nextweek':
-        $current = $util_dates->json_2_current_week($currentWeek);
-        $current = $util_dates->get_next_week($current);
-        $dateRecalculated = true;
-        break;
-
-    case 'prevweek':
-        $current = $util_dates->json_2_current_week($currentWeek);
-        $current = $util_dates->get_prev_week($current);
-        $dateRecalculated = true;
         break;
 
     case 'programme':
@@ -74,9 +56,11 @@ switch ($option) {
         ));
         $event->trigger();
         $current = $util_dates->json_2_current_week($currentWeek);
+        $semester = $current["semester"];
         break;
     default:
         $current = $util_dates->json_2_current_week($currentWeek);
+        $semester = $current["semester"];
         break;
 }
 
@@ -95,11 +79,11 @@ set_user_preference('obula_last_tutor_grid_pgm', $programme);
 $success = true;        // Hopefully
 try {
     $simpleCurrent = $util_dates->createSimpleCurrentParam($current);
-    // We don't want to filter by academic advisor, because cohort/studyStage averages etc should include all students
+    // We don't want to filter by academic advisor, because cohort/modLevel averages etc should include all students
     // Had to encode programme as it can have / for example BA/BSH-PKPO, but that wasn't enough because decode happened before htaccess
     // so swap / to ~ (and back in web service)
     $enc_pgm = htmlspecialchars(urlencode(str_replace('/','~',$programme)));
-    $params = "tutor/studentsgridv2/$enc_pgm/$bandingCalcOptions/$simpleCurrent/$studyStage/$studyType/*/";
+    $params = "tutor/studentsgridv3/$enc_pgm/$bandingCalcOptions/$simpleCurrent/$modLevel/$studyType/*/$semester/$campusCode/";
     $curl_common = new \block_obu_learnanalytics\curl\common();
     $result = $curl_common->send_request($params);
     $studentsComparitives = $result["data"];
@@ -118,13 +102,14 @@ if ($success && !isset($studentsComparitives) || count($studentsComparitives) ==
 
 if ($success) {
     // Now work out if we should show the various study_ fields
-    $stagesCountValues = array_count_values(array_column($studentsComparitives, "study_stage"));
     $typesCountValues = array_count_values(array_column($studentsComparitives, "study_type"));
-    $levelsCountValues = array_count_values(array_column($studentsComparitives, "study_level"));
-    $stageColumn = (count($stagesCountValues) > 1) ? 1 : 0;
+    $levelsCountValues = array_count_values(array_column($studentsComparitives, "module_level"));
+    $mLevelColumn = 1;      // Always show
     $typeColumn = (count($typesCountValues) > 1) ? 1 : 0;
-    $levelColumn = (count($levelsCountValues) > 1) ? 1 : 0;
-    $studyColumns = $stageColumn + $typeColumn + $levelColumn;
+    $studyColumns = $mLevelColumn + $typeColumn;
+
+    $campusCountValues = array_count_values(array_column($studentsComparitives, "campus_code"));
+    $campusColumn = (count($campusCountValues) > 1) ? 1 : 0;
 
     $html = "<td><table>";
     // Output a 2 line heading, but with Show x selection drop down to save vertical space
@@ -136,38 +121,31 @@ if ($success) {
     $count = count($studentsComparitives);
     $stypes = array();
     $sstages = array();
+    $modlevels = array();
+    $campuscodes = array();
     $adviseesCount = 0;
+    $enrolledCount = 0;
+    $notEnrolledCount = 0;
     foreach ($studentsComparitives as $studentKey => $data) {
+        $eStatus = $data['enrolment_status_code'];
+        if ($eStatus == 'AT' || $eStatus == 'UT') {
+            $notEnrolledCount++;
+            continue;
+        }
+        $enrolledCount++;
         if ($data["advisor_number"] == strtoupper($username)) {
             $adviseesCount++;
         }
         // Now save actual study types and stages that we have (even if not shown)
         $stypes[$data["study_type"]] = 1;
         $sstages[$data["study_stage"]] = 1;
+        $modlevels[$data["module_level"]] = 1;
+        $campuscodes[$data["campus_code"]] = 1;
     }
-    $outOfCount = ($onlyMyAdvisees == "true") ? $adviseesCount : $count;
+    $outOfCount = ($onlyMyAdvisees == "true") ? $adviseesCount : $enrolledCount;
 
-    $html .= "<td class='parameters' style='min-width:240px'>";
-    $html .= '<label for "selMaxShow" style="min-width:100px">Show</label>';
-    $html .= '<select name="showMax" id="selMaxShow" onchange="maxShowChanged()">';
-    if ($outOfCount <= 10) {
-        $html .= "<option value='10' selected='selected'>$outOfCount</option>";
-    } else {
-        $selatt = ($maxShow == 10) ? "selected='selected'" : "";
-        $html .= "<option value='10' $selatt>10</option>";
-        if ($outOfCount >= 20) {
-            $selatt = ($maxShow == 20) ? "selected='selected'" : "";
-            $html .= "<option value='20' $selatt>20</option>";
-        }
-        if ($outOfCount >= 50) {
-            $selatt = ($maxShow == 50) ? "selected='selected'" : "";
-            $html .= "<option value='50' $selatt>50</option>";
-        }
-        $selatt = ($maxShow > 999) ? "selected='selected'" : "";
-        $html .= "<option value='*' $selatt>All</option>";
-    }
-    $html .= '</select>';
-    $html .= '<label style="padding-left:8px">of ' . $outOfCount . '</label>';
+    $html .= "<td class='key-fact' style='min-width:240px'>";
+    $html .= "{$outOfCount} - Students</label>";
     $html .= '</td>';
     $html .= '<td></td>';       // for the info button
 
@@ -175,7 +153,7 @@ if ($success) {
     // For now put the show scatter chart here, but for now taken away :)
     // TODO see if we want this back $schart = '<a href="javascript:showMarksvEng()" id="obula_chart_scatter" name="obula_chart_scatter">Plot</a>';
     //$html .= "<th class='students' colspan='3'>$headerText $schart</th>";
-    $html .= "<th class='students th-span' colspan='3'>$headerText</th>";
+    $html .= "<th class='students th-span' colspan='4'>$headerText</th>";
     // was a gap $html .= "<th class='students'></th>";
     $headerText = "Average Mark";
     $html .= "<th class='students-hideable th-span' colspan='2'>$headerText</th>";
@@ -198,49 +176,42 @@ if ($success) {
 
     $imageUrl = get_image_url("Actions-go-" . $cohortSort . "-view-icon");
     // tip won't go away on click $studyStageCell = "<th class='students' style='min-width:75px' data-toggle='tooltip' title = 'Compared to Average' onclick='clickCohortHeading()'>Position";
-    $studyStageCell = "<th class='students-clickable' style='min-width:75px' onclick='clickCohortHeading()'>Position";
+    $studyStageCell = "<th class='students-clickable' style='min-width:75px' onclick='clickCohortHeading()'>Rank";
     $studyStageCell .= "<img src = $imageUrl style = 'max-height:20px' id='obula_cohort_sort'  name='obula_cohort_{$cohortSort}'>";
     $studyStageCell .= "</th>";
-    $imageUrl = get_image_url("column-swap-icon");
-    $swapCell = "<th class='students-clickable' style='min-width:25px' title = 'Click to swap columns' onclick='clickSwapHeading()'>";
-    $swapCell .= "<img src = $imageUrl style = 'max-height:20px' id='obula_swap_sort' name='obula_cohortfirst_{$cohortFirst}'>";
-    $swapCell .= "</th>";
     $imageUrl = get_image_url("Actions-go-" . $studentSort . "-view-icon");
     // tip won't go away on click$studentCell = "<th class='students' style='min-width:75px' data-toggle='tooltip' title = 'Compared to Students Average (over 6 weeks)' onclick='clickStudentHeading()'>Trend";
     $studentCell = "<th class='students-clickable' style='min-width:75px' onclick='clickStudentHeading()'>Trend";
     $studentCell .= "<img src = $imageUrl style = 'max-height:20px' id='obula_student_sort' name='obula_student_{$studentSort}'>";
     $studentCell .= "</th>";
-    if ($cohortFirst == 1) {
-        $html .= $studyStageCell;
-        $html .= $swapCell;
-        $html .= $studentCell;
-    } else {
-        $html .= $studentCell;
-        $html .= $swapCell;
-        $html .= $studyStageCell;
-    }
+    $html .= $studyStageCell;
+    $html .= $studentCell;
+    $html .= "<th class='students-hideable'>Alert</th>";
+    $html .= "<th class='students-hideable'>Att %</th>";
 
     // Now a dividing cell
     // $html .= "<td>&nbsp</td>";
     // And a header for marks
     $html .= "<th class='students-hideable'>" . $headings['lastTermHeading'] . "</th>";
     $html .= "<th class='students-hideable'>" . $headings['thisTermHeading'] . "</th>";
-    if ($stageColumn > 0) {
-        $html .= "<th class='students-hideable'>Stage</th>";
+    if ($mLevelColumn > 0) {
+        $html .= "<th class='students-hideable'>Level</th>";
     }
     if ($typeColumn > 0) {
         $html .= "<th class='students-hideable'>Mode</th>";
     }
-    if ($levelColumn > 0) {
-        $html .= "<th class='students-hideable'>Level</th>";
+    $html .= "<th class='students-hideable'>ISP</th>";
+    $html .= "<th class='students-hideable'>Modules</th>";
+    if ($campusColumn) {
+        $html .= "<th class='students-hideable'>Campus</th>";
     }
 
     $html .= "</tr>";
 
-    // Sort it here rather than in the web service for now, check if we could use local storage to save trip
+    // Sort is here rather than in the web service for now, check if we could use local storage to save trip
     // TODO If not move this to web service
     try {
-        $data_tutor->sort_student_comparitives($studentsComparitives, ($cohortSort == 'down'), ($studentSort == 'down'), ($cohortFirst == 1));
+        $data_tutor->sort_student_comparitives($studentsComparitives, ($cohortSort == 'down'), ($studentSort == 'down'), true);
     } catch (Exception $e) {
         // Just output it in big bold red, shouldn't happen so no CSS for this
         $html .= "<br><b><font size='6'><style='color:red'>Exception from sort_student_comparitives: {$e}</style></font></b>";
@@ -255,24 +226,31 @@ if ($success) {
         if ($onlyMyAdvisees == "true" && $data["advisor_number"] != strtoupper($username)) {
             continue;
         }
-        
-        // Already have count so we can break again
-        $loopCount++;
-        if ($loopCount > $maxShow) {
-            break;
+        $eStatus = $data['enrolment_status_code'];
+        $wStatus = $data['enrolment_withdrawal_status_code'];
+        if ($eStatus == 'AT' || $eStatus == 'UT') {
+            continue;
         }
+        
+        $loopCount++;
 
-        $html .= "<tr class='students' id='sid_" . $studentKey . "'><td class='students-name'>";
+        $imageUrlISP = get_image_url4Comparison("isp", 't');
+        if (($eStatus == 'EN' || $eStatus == 'EL') && $wStatus === null) {
+            $cssClass = 'students-name';
+        } else {
+            $cssClass = 'students-name-ne';
+        }
+        $html .= "<tr class='students' id='sid_" . $studentKey . "'><td class='{$cssClass}'>";
         // Various articles on best way to make a link to javascript
         // such as https://stackoverflow.com/questions/10070232/how-to-make-a-cell-of-table-hyperlink
-        //$studentAtts = array("href"=>"javascript:void(0);","onclick"=>"clickStudent('$studentKey')");
+        //$studentAtts = array("href"=>"javascript:void(0);","onclick"=>"clickStudent('$studentKey','{$estatus}','{$wstatus}')");
         $sname = $data["student_name"];
         // Note tried various urlencode functions and &apos; but that get swapped back n the browser and it still wouldn't work
         $urlName = addslashes($sname);
         $advisor = $data["advisor_number"];
         // Do not try simplifying the following verbose lines of code unless you have time to spare
         // Seems to be a problem with the 's inside the "'s
-        // $html .= "<a href='javascript:clickStudent('{$programme}','{$studyStage}','{$studentKey}','{$sname}')'>{$sname}</a></td>";
+        // $html .= "<a href='javascript:clickStudent('{$programme}','{$studyStage}','{$studentKey}','{$sname}','{$eStatus}','{$wStatus}')'>{$sname}</a></td>";
         $temp = $data["study_stage"];
         $html .= '<a href="javascript:clickStudent(';
         $html .= "'$programme',";
@@ -282,47 +260,62 @@ if ($success) {
         $html .= "true)";
         $html .= '">'; // Note the closing "
         $html .= "{$sname}</a></td>";
-        $onclick = "showStudentInfo('{$studentKey}','{$urlName}','{$advisor}')";
+        $onclick = "showStudentInfo('{$studentKey}','{$urlName}','{$advisor}','{$eStatus}','{$wStatus}')";
         $class = "material-icons students-info";
         if ($advisor == "") {
             $class .= " students-warning";
         }
         $html .= '<td class="' . $class . '" title="Student Info" onclick="' . $onclick . '">info</td>';       // the info button, preview is good too
 
-        $imageUrl = get_image_url4Comparison("sStage", $data["cohort_comparison"]);
-        $hint = $data['cohort_comparison_hint'];
-        $studyStageCell = "<td class='students students-pos' data-toggle='tooltip' title = '$hint'>"; // Simple hint for now TODO one using CSS
-        $studyStageCell .= "<img src = $imageUrl style = 'max-height:18px'>";
+        //$imageUrl = get_image_url4Comparison("sStage", $data["cohort_comparison"]);
+        $posText = '?';
+        if ($data["student_engagement"] == 0) {
+            $posText = "Zero";
+        } else {
+            switch ($data["cohort_comparison"]) {
+                case 'Red':
+                    $posText = 'Low';
+                    break;
+                case 'Amber':
+                    $posText = 'Medium';
+                    break;
+                case 'Green':
+                    $posText = 'High';
+                    break;
+            }
+        }
+        $studyStageCell = "<td class='students' data-toggle='tooltip' title = '$hint'>"; // Simple hint for now TODO one using CSS
+        $studyStageCell .= $posText;
         //$studyStageCell .= " (" . sprintf('%.0f', $data["student_engagement"]) . "/" . sprintf('%.0f', $data["student_weighted_engagement"]) . ")";
         $studyStageCell .= "</td>";
-
-        $emptyCell = "<td class='students'/>";
 
         $imageUrl0 = get_image_url4Comparison("student", $data["student_comparison_prev0"]);
         $imageUrl1 = get_image_url4Comparison("student", $data["student_comparison_prev1"]);
         $imageUrl2 = get_image_url4Comparison("student", $data["student_comparison_prev2"]);
+        $imageUrl3 = get_image_url4Comparison("student", $data["student_comparison_prev3"]);
         $studentCell = "<td class='students'>";
         // Simple hints for now TODO one using CSS
-        $hint = $data['student_comparison_prev0_hint'];
-        $studentCell .= "<img src = $imageUrl0 style = 'max-height:18px' data-toggle='tooltip' title = '$hint'>";
-        $hint = $data['student_comparison_prev1_hint'];
-        $studentCell .= "<img src = $imageUrl1 style = 'max-height:18px' data-toggle='tooltip' title = '$hint'>";
+        $hint = $data['student_comparison_prev3_hint'];
+        $studentCell .= "<img src = $imageUrl3 style = 'max-height:18px' data-toggle='tooltip' title = '$hint'>";
         $hint = $data['student_comparison_prev2_hint'];
         $studentCell .= "<img src = $imageUrl2 style = 'max-height:18px' data-toggle='tooltip' title = '$hint'>";
+        $hint = $data['student_comparison_prev1_hint'];
+        $studentCell .= "<img src = $imageUrl1 style = 'max-height:18px' data-toggle='tooltip' title = '$hint'>";
+        $hint = $data['student_comparison_prev0_hint'];
+        $studentCell .= "<img src = $imageUrl0 style = 'max-height:18px' data-toggle='tooltip' title = '$hint'>";
         $studentCell .= "</td>";
-
-        if ($cohortFirst == 1) {
-            $html .= $studyStageCell;
-            $html .= $emptyCell;
-            $html .= $studentCell;
-        } else {
-            $html .= $studentCell;
-            $html .= $emptyCell;
-            $html .= $studyStageCell;
+        $html .= $studyStageCell;
+        $html .= $studentCell;
+        if ($data['alert_level'] != null) {
+            $alertCell = "<td class='students-hideable'><a href='javascript:showStudentAlerts({$studentKey})'>" . $data['alert_level'] . "</a></td>";
         }
+        else {
+            $alertCell = "<td class='students-hideable'></td>";
+        }
+        $html .= $alertCell;
+        $xx = $data["attended_percentage"];
+        $html .= "<td class='students-hideable'>{$xx}</td>";
 
-        // Now a dividing cell
-        // $html .= "<td>&nbsp</td>";
         // And cells for marks
         for ($i = 0; $i < 2; $i++) {
             $html .= "<td class='students-hideable'>";      // TODO right justify mark
@@ -340,15 +333,31 @@ if ($success) {
         }
 
         // Now study stage/mode/level if needed
-        if ($stageColumn > 0) {
-            $html .= "<td class='students-hideable'>" . $data["study_stage"] . "</td>";
+        if ($mLevelColumn > 0) {
+            $html .= "<td class='students-hideable'>" . $data["module_level"] . "</td>";
         }
         if ($typeColumn > 0) {
             $html .= "<td class='students-hideable'>" . $data["study_type"] . "</td>";
         }
-        if ($levelColumn > 0) {
-            $html .= "<td class='students-hideable'>" . $data["study_level"] . "</td>";
+        $html .= "<td class='students'>";
+        if ($data["isp_flag"] != null && $data["isp_flag"] == 't') {
+            $html .= "<img class='students-icon' src = $imageUrlISP style = 'max-height:18px'>";
+            // $html .= "<td class='students-hideable'>" . $data["isp_flag"] . "</td>";
+       }
+        $html .= "</td>";
+        $html .= "<td class='students' data-toggle='tooltip' title = 'No of registered modules'>"; // Simple hint for now TODO one using CSS
+        $mc = $data['module_count'];
+        $html .= "$mc";
+        $html .= "</td>";
+        if ($campusColumn) {
+            $html .= "<td class='students'>";       // data-toggle='tooltip' title = 'No of registered modules'>"; // Simple hint for now TODO one using CSS
+            $cc = $data['campus_code'];
+            $html .= "$cc";
+            $html .= "</td>";
         }
+        $html .= "<td class='obula-block-hidden'>{$eStatus}</td>";        // or obula-block-hidden
+        $html .= "<td class='obula-block-hidden'>{$wStatus}</td>";
+
         // Row done
         $html .= "</tr>";
 
@@ -371,18 +380,26 @@ if ($success) {
     foreach ($sstages as $key => $value) {
         $sstagesFilter .= $key . "|";
     }
+    $modlevelsFilter = "";
+    foreach ($modlevels as $key => $value) {
+        $modlevelsFilter .= $key . "|";
+    }
+    $campusCodeFilter = "";
+    foreach ($campuscodes as $key => $value) {
+        $campusCodeFilter .= $key . "|";
+    }
 } else {
     $count = $adviseesCount = 0;
-    $stypesFilter = $sstagesFilter = "";
+    $stypesFilter = $sstagesFilter = $modlevelsFilter = $campusCodeFilter= "";
 }
 
-$returnDate = ($dateRecalculated) ? json_encode($current) : "";     // No htmlspecialchars
 header('Content-type: application/json');
 // student_count is used to determine if we should show charting link
-$json = json_encode(array('success' => $success, 'html' => $html, 'date' => $returnDate
+$json = json_encode(array('success' => $success, 'html' => $html
                             , 'full_data_set' => $fullDataSet
                             , 'students_count' => $count, 'advisees_count' => $adviseesCount
                             , 'study_stages' => $sstagesFilter, 'study_types' => $stypesFilter
+                            , 'mod_levels' => $modlevelsFilter, "campus_codes" => $campusCodeFilter
                         ));
 if ($json) {
     echo $json;
@@ -412,9 +429,15 @@ function get_image_url4Comparison($type, $colour)
 {
     $imageName = "";
 
-    if ($type == "sStage") {
-        $imageName = $colour . "Circle";
-    } else {
+    switch ($type) {
+        case 'sStage':
+            $imageName = $colour . "Circle";
+            break;
+        case 'isp':
+            $imageName = "tick";
+            break;
+            
+        default:
         switch ($colour) {
             case 'Red':
                 $imageName = "RedArrowDown";
@@ -426,6 +449,7 @@ function get_image_url4Comparison($type, $colour)
                 $imageName = "BlueEquals";
                 break;
         }
+            break;
     }
 
     // TODO I think there is an approved way of getting an url to an image that will then use cache etc

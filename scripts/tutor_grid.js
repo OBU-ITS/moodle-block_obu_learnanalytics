@@ -18,51 +18,15 @@ $(document).ready(function () {
     });  global replace of data-toggle="ztooltip" to data-toggle="tooltip"
         when ready for next attempt*/
 
-    var programme = document.getElementById("selProgramme").value;
-    // Cohort dropdown won't even have been loaded yet
-    var cohort = '*';
-    var cohElement = document.getElementById("selStudyStage");
-    if (cohElement != null) {
-        var cohort = cohElement.value;
-    }
-    // But Study Mode/Type should have been
-    var stElement = document.getElementById("selStudyType");
-    var studyType = (stElement == null) ? '*' : stElement.value;
+    // var programme = document.getElementById("selProgramme").value;
+    // var mlElement = document.getElementById("selModLevel");
+    // var modLevel = (mlElement == null) ? '*' : mlElement.value;
+    // // But Study Mode/Type should have been
+    // var stElement = document.getElementById("selStudyType");
+    // var studyType = (stElement == null) ? '*' : stElement.value;
 
-    showDateControls("getcurrent", false, true);
-    //var currentWeek = $("#obula_currentweek").val();       // Don't parse the JSON
-    // So is this a load from SSC dash, if so there is a hidden field of obula_ssc_student
-    // if it is then set maxShow to *
-    var maxShow = 10;
-    var studentNumber = '';
-    var sno = $("#obula_ssc_student").val();
-    if (sno != null && sno != '?') {
-        maxShow = '*';
-        studentNumber = sno;
-    }
-    var data = {
-        "programme": programme, "sStage": cohort, "maxShow": maxShow, "sStageSort": "down", "studentSort": "down"
-        , "cohortfirst": 1, "currentWeek": "", "bandingCalc": "MED-20-4", "studyType": studyType
-        , "onlyMyAdvisees": "false", "semester": "", option: "getcurrent", "studentNumber": studentNumber
-    };
-    $.ajax({
-        type: 'POST',
-        url: "../blocks/obu_learnanalytics/tutor_grid.php",
-        data: data
-    })
-        .done(function (res) {
-            //debugger;
-            var studentNumber = '';
-            var sno = $("#obula_ssc_student").val();
-            if (sno != null && sno != '?') {
-                studentNumber = sno;
-            }
-            tutor_grid_done(true, res, programme, cohort, studentNumber);
-        })
-        .fail(function (errMsg) {
-            alert('reloadGrid 1 post failed:' + errMsg);
-        })
-        ;           // End of .ajax 'line'
+    showDateControls("getcurrent", false, "", true);
+    // It used to load the tutor grid here, but as the showDateControls calculates week, semester let it do it
 });             // End of inline function
 
 function set_gridLoading(state) {
@@ -115,37 +79,39 @@ function set_somethingLoading(state) {
     }
 }
 
-function tutor_grid_done(fromReadyEvent, res, programme, cohort, studentNumber, refreshChart = false, updateDate = false, redrawSemester = false) {
+function tutor_grid_done(fromReadyEvent, res, programme, modLevel, studentNumber, refreshChart = false) {
     // Fix the Bootstrap Tooltip behavior (it wasn't closing if you clicked on the hovered control)
     $('[data-toggle="ztooltip"]').tooltip({
         trigger: 'hover'
     })
     $('#obula_tutor_grid_div').html(res.html).delay(100);
-    //debugger;
-    store_parameters(programme, cohort, null, null);
-    // Now hide values that aren't in grid from study stage and type drop downs
+    // debugger;
+    store_parameters(programme, modLevel, null, null);
+    // Now hide values that aren't in grid from module level and type drop downs
     if (res.full_data_set == 1 && !res.success) {
-        $("#selStudyStage").prop("disabled", true);
+        $("#selModLevel").prop("disabled", true);
         $("#selStudyType").prop("disabled", true);
+        $("#selCampusCode").prop("disabled", true);
     } else {
-        $("#selStudyStage").prop("disabled", false);
+        $("#selModLevel").prop("disabled", false);
         $("#selStudyType").prop("disabled", false);
-        if (res.study_stages !== undefined && res.study_stages != '') {
-            sstages = res.study_stages.split('|');
-            sstages.pop();          // Last element is empty
+        $("#selCampusCode").prop("disabled", false);
+        if (res.mod_levels !== undefined && res.mod_levels != '') {
+            mlevels = res.mod_levels.split('|');
+            mlevels.pop();          // Last element is empty
             // Now hide/show them (Note there are some cross browser concerns)
-            // But only hide if we have been sent a full dataset 
+            // But only hide if we have been sent a full dataset (not sure how a non full dataset happens now)
             // - see https://stackoverflow.com/questions/9234830/how-to-hide-a-option-in-a-select-menu-with-css
-            $("#selStudyStage option").each(function () {
-                if (($(this).val() == '*' && sstages.length > 1) || sstages.includes($(this).val())) {
+            $("#selModLevel option").each(function () {
+                if (($(this).val() == '*' && mlevels.length > 1) || mlevels.includes($(this).val())) {
                     $(this).show();
                 } else {
                     if (res.full_data_set == 1) {
                         $(this).hide()
                     }
                 }
-                if (sstages.length == 1) {
-                    $("#selStudyStage").val(sstages[0]);
+                if (mlevels.length == 1) {
+                    $("#selModLevel").val(mlevels[0]);
                 }
             });
             stypes = res.study_types.split('|');
@@ -162,6 +128,20 @@ function tutor_grid_done(fromReadyEvent, res, programme, cohort, studentNumber, 
                     $("#selStudyType").val(stypes[0]);
                 }
             });
+            ccodes = res.campus_codes.split('|');
+            ccodes.pop();          // Last element is empty
+            $("#selCampusCode option").each(function () {
+                if (($(this).val() == '*' && stypes.length > 1) || ccodes.includes($(this).val())) {
+                    $(this).show();
+                } else {
+                    if (res.full_data_set == 1) {
+                        $(this).hide()
+                    }
+                }
+                if (ccodes.length == 1) {
+                    $("#selCampusCode").val(ccodes[0]);
+                }
+            });
         }
     }
 
@@ -170,20 +150,13 @@ function tutor_grid_done(fromReadyEvent, res, programme, cohort, studentNumber, 
         $("#obula_advisor").show();
     }
 
-    if (updateDate) {
-        // And now the date controls
-        // tutor_grid should only return a date if it changed it
-        if (res.date != "") {
-            showDateControls(res.date, false, redrawSemester);
-        }
-    }
     if (res.success) {
         if (fromReadyEvent) {
             if (studentNumber != '') {
                 highlightStudentRow(studentNumber);
             }
         } else {
-            checkRefreshStudentBits(res.date, redrawSemester);
+            checkRefreshStudentBits();
         }
         if (refreshChart) {
             showChart();        // The cohort engagement chart
@@ -222,13 +195,13 @@ function clickStudent(programme, studyStage, studentNumber, studentName, scrollI
     highlightStudentRow(studentNumber);
     store_parameters(programme, studyStage, studentNumber, studentName);
     // Now the graphs
-    for (var i = 1; i <= 2; i++) {
+    for (var i = 1; i <= 3; i++) {
         set_studentLoading(true);       // Yes inside the loop, it counts them started and done
-        var lastOne = (i == 2);
+        var lastOne = (i == 3);
         var imgElement = document.getElementById("obula_studentGraph_img_" + i);
         if (imgElement != null) {
             // Pick up the currently selected chart type, needs jquery see https://www.geeksforgeeks.org/how-to-know-which-radio-button-is-selected-using-jquery/ 
-            var types = ["vle", "ez", "loans", "att"];
+            var types = ["vle", "att", "ez", "loans"];
             var rbname = types[i - 1] + 'charttype';
             var selectedType = $('input[name=' + rbname + ']:checked', '#obula_studentGraphs_div').val();
             // Now we need the Banding
@@ -260,16 +233,86 @@ function unClickStudent() {
 }
 
 /**
+ * Handles population and showing of alerts popup (that form needs to have already rendered)
+ * @param studentNumber The student number
+ */
+function showStudentAlerts(studentNumber) {
+    //debugger;
+    var element = document.getElementById("selSemester");
+    var semester;
+    if (element == null) {
+            alert('showStudentInfo exception - No Semester found');
+            return;
+        } else {
+            semester = element.value;
+        }
+        var data = {
+            "studentNumber": studentNumber
+            , "semester": semester
+        };
+        $.ajax({
+            type: 'POST',
+            url: "../blocks/obu_learnanalytics/get_student_alerts.php",
+            data: data,
+            beforeSend: function () {
+                $("#obula_error_row").hide();
+            }
+        })
+            .done(function (resp) {
+                if (resp != null && resp.success) {
+                    $('#obula_modal_popup_title').html(resp.title);
+                    $('.modal-body').html(resp.popupbodyhtml);
+                    // Display Modal, but make sure correct buttons will show
+                    $('#obula_modal_body').removeClass('popup-pgm-search');
+                    $('#obula_modal_close').show();
+                    $('#obula_modal_close').prop('disabled', false);
+                    $('#obula_modal_ok').hide();
+                    $('#obula_modal_ok').prop('disabled', true);
+                    $('#obula_modal_cancel').hide();
+                    $("#obula_modal_footer_text").text("");
+                    $('#obula_modal_footer_text').removeAttr('title');
+                    $('#obula_modal_popup').modal('show');
+                }
+            })
+            .fail(function (resp) {
+                // only way to trigger a fail is with a non 200 response, 404, 500 etc
+                // but that seems extreme for a simple validation
+                // So reserving this for exceptions
+                alert('showStudentAlerts exception ' + resp.responseText);
+            })
+            // .always(function(resp) {
+            //         // Code will always get executed after done or fail, like a try/catch finally
+            //     })
+            ;           // End of .ajax 'line'
+    
+
+
+}
+
+
+/**
  * Handles population and showing of help popup (that form needs to have already rendered)
  * @param studentNumber The student number
  * @param sname The student's name
  * @param advisor The advisor's p number 
  */
-function showStudentInfo(studentNumber, sname, advisor) {
+function showStudentInfo(studentNumber, sname, advisor, estatus, wstatus) {
+    var element = document.getElementById("selSemester");
+    var semester;
+    if (element == null) {
+            alert('showStudentInfo exception - No Semester found');
+            return;
+        } else {
+            semester = element.value;
+        }
+
     var data = {
         "studentNumber": studentNumber
         , "sName": sname
         , "advisor": advisor
+        , "semester": semester
+        , "eStatus": estatus
+        , "wStatus": wstatus
     };
     $.ajax({
         type: 'POST',
@@ -308,6 +351,7 @@ function showStudentInfo(studentNumber, sname, advisor) {
 }
 
 function showModuleEng() {
+    //debugger;
     var currentWeek = $("#obula_currentweek").val();       // Don't parse the JSON
     var studentNumber = getStudentNumberParameter();
     var studentName = getStudentNameParameter();
@@ -410,29 +454,18 @@ function hideOtherMarksChanged() {
     }
 };
 
-function clickChangeWeek(direction) {
-    var changeDirection = (direction > 0) ? "nextweek" : "prevweek";
-    wcDateChanged(changeDirection, null);
-}
-
 function semesterChanged() {
     if (gridLoading) { return };
+    unClickStudent();
     var element = document.getElementById("selSemester");
     if (element != null) {
         var semester = element.value;
-        wcDateChanged(null, semester);
+        showDateControls('semester', false, semester, true);
+// done in showDateControls        reloadTutorGrid('semester', semester);
     }
 }
 
-function wcDateChanged(changeDirection, semester) {
-    if (changeDirection != null) {
-        reloadGrid(changeDirection);       // Also reloads total engagement chart
-    } else {
-        reloadGrid(semester);
-    }
-}
-
-function checkRefreshStudentBits(newDate, semesterChanged) {
+function checkRefreshStudentBits() {
     // So we need to work out what's showing and if that student is still valid
     var sid = getStudentNumberParameter();
     var idsElement = document.getElementById('obula_ids2chart').value;
@@ -443,29 +476,30 @@ function checkRefreshStudentBits(newDate, semesterChanged) {
 
     var studentGraphsDisplay = document.getElementById("obula_studentGraphs_div").style.display;
     if (studentGraphsDisplay != "none") {
-        clickStudent(getProgrammeParameter(), getStudyStageParameter(), getStudentNumberParameter(), getStudentNameParameter(), false, newDate);
+        clickStudent(getProgrammeParameter(), getModLevelParameter(), getStudentNumberParameter(), getStudentNameParameter(), false);
     }
     // And if the marks v eng scatter chart is visible, refresh or hide that
     var mveDisplayEle = document.getElementById("obula_marksveng_tbl");
     if (mveDisplayEle != null && mveDisplayEle.style.display != "none") {
-        if (semesterChanged) {
-            $("#obula_marksveng_tbl").hide();
-        } else {
-            showMarksvEng('rl', newDate);
-        }
+        // if (semesterChanged) {
+        //     $("#obula_marksveng_tbl").hide();
+        // } else {
+            showMarksvEng('rl');
+        // }
     }
 }
 
 function showChart() {
     // Let's hide some columns so we have more space
     // TODO see if we can just query table rather than whole dom
+    alert("Unexpected use of showChart");
     $(".students-hideable").addClass('students-hidden');
     $(".students-hideable").removeClass('students-hideable');
     //debugger;
 
     // Now get and set the programme in a hidden field so it's available
     var programme = document.getElementById("selProgramme").value;
-    var sStage = document.getElementById("selStudyStage").value;
+    var modLevel = document.getElementById("selModLevel").value;
     var sType = document.getElementById("selStudyType").value;
     if (programme != '') {
         set_chartLoading(true);
@@ -474,7 +508,7 @@ function showChart() {
         var currentWeek = $("#obula_currentweek").val();       // Don't parse the JSON
         var data = {
             "programme": programme
-            , "sStage": sStage
+            , "modLevel": modLevel
             , "sType": sType
             , "studentNumber": getStudentNumberParameter()
             , "studentName": getStudentNameParameter()
@@ -504,6 +538,7 @@ function showChart() {
     }
 }
 
+// TODO remove after testing
 function expandChart() {
     if ($("#obula_tutor_grid_div").is(":visible")) {
         $("#obula_tutor_grid_div").hide();
@@ -533,7 +568,7 @@ function hideCharts(hideOthers = false) {
     }
 }
 
-function showMarksvEng(duration = 'il', newDate = null) {
+function showMarksvEng(duration = 'il') {
     var initialLoad = false;
     if (duration == 'il') {         // Initial load
         initialLoad = true;
@@ -547,15 +582,10 @@ function showMarksvEng(duration = 'il', newDate = null) {
     }
     // Now get and set the programme in a hidden field so it's available
     var programme = getProgrammeParameter();
-    var cohort = getStudyStageParameter();
+    //var modLevel = getModLevelParameter();
     if (programme != '') {
         var idsElement = document.getElementById('obula_ids2chart').value;
-        var currentWeek = null;
-        if (newDate == null) {
-            currentWeek = $("#obula_currentweek").val();       // Don't parse the JSON
-        } else {
-            currentWeek = newDate;
-        }
+        var currentWeek = $("#obula_currentweek").val();       // Don't parse the JSON
         var data = { "programme": programme, "ids2Chart": idsElement, "currentWeek": currentWeek, "duration": duration };
         $.ajax({
             type: 'POST',
@@ -575,7 +605,7 @@ function showMarksvEng(duration = 'il', newDate = null) {
 
 function programmeChanged() {
     if (gridLoading) { return };
-    //debugger;
+    // debugger;
     // Get the old one
     var oldProgramme = getProgrammeParameter();
     // Store it, but clear student and cohort
@@ -587,7 +617,7 @@ function programmeChanged() {
     $("#obula_title").text("Learning Analytics");     //In case this is/was the SSC dash
     $("#obula_title").removeClass('ssc-title');
     $("#obula_title").addClass('tutor-title');
-    reloadGrid('programme', oldProgramme);
+    reloadTutorGrid('programme', oldProgramme);
 };
 
 function clickSearchProgrammeOld() {
@@ -771,24 +801,14 @@ function unpickPGMCode() {
     $('#obula_modal_ok').prop('disabled', true);
 }
 
-function studyStageChanged() {
+function modLevelChanged() {
     if (gridLoading) { return };
     unClickStudent();
     // Now reload
     $("#obula_myacc").prop("checked", false);
-    reloadGrid();
+    reloadTutorGrid();
 }
 
-function bandingChanged() {
-    if (gridLoading) { return };
-    var element = document.getElementById("selBanding");
-    if (element != null) {
-        $("#obula_banding_calc").val(element.value);
-        // Now just reload, other charts can stay visible
-        reloadGrid();
-    }
-    // TODO error if null
-}
 
 function studyTypeChanged() {
     if (gridLoading) { return };
@@ -796,7 +816,18 @@ function studyTypeChanged() {
     var element = document.getElementById("selStudyType");
     if (element != null) {
         unClickStudent();
-        reloadGrid();
+        reloadTutorGrid();
+    }
+    // TODO error if null
+}
+
+function campusCodeChanged() {
+    if (gridLoading) { return };
+    // debugger;
+    var element = document.getElementById("selCampusCode");
+    if (element != null) {
+        unClickStudent();
+        reloadTutorGrid();
     }
     // TODO error if null
 }
@@ -805,14 +836,8 @@ function studyTypeChanged() {
 function myaccChanged() {
     if (gridLoading) { return };
     unClickStudent();
-    reloadGrid();
+    reloadTutorGrid();
 }
-
-function maxShowChanged() {
-    if (gridLoading) { return };
-    // Just reload
-    reloadGrid();
-};
 
 function clickCohortHeading() {
     if (gridLoading) { return };
@@ -857,79 +882,64 @@ function clickHeading(column) {
         $("#obula_" + swapOther + "_sort").prop('name', newName);
     }
     // And reload
-    reloadGrid();
+    reloadTutorGrid();
 };
 
-function clickSwapHeading() {
-    if (gridLoading) { return };
-    unClickStudent();
-    // So swap the columns
-    var imgName = $("#obula_swap_sort").prop('name');
-    var newName = '?';
-    if (imgName == "obula_cohortfirst_1") {
-        newName = "obula_cohortfirst_0";
-    } else {
-        newName = "obula_cohortfirst_1";
-    }
-    $("#obula_swap_sort").prop('name', newName);
-    // And reload
-    reloadGrid();
-};
-
-function reloadGrid(option = null, oldProgramme = null) {
+function reloadTutorGrid(option = null, p2 = null, currentWeek = null) {
     if (gridLoading) { return };
     //debugger;
     set_gridLoading(true);
-    var maxElement = document.getElementById("selMaxShow");     // Can be null grid not shown
-    var maxShow = (maxElement == null) ? 10 : maxElement.value;
     var programme = document.getElementById("selProgramme").value;
     // Controls might not even have been loaded yet
-    var cohElement = document.getElementById("selStudyStage");
-    var cohort = (cohElement == null) ? '*' : cohElement.value;
+    var mlElement = document.getElementById("selModLevel");
+    var modLevel = (mlElement == null) ? '*' : mlElement.value;
     var stElement = document.getElementById("selStudyType");
     var studyType = (stElement == null) ? '*' : stElement.value;
+    var ccElement = document.getElementById("selCampusCode");
+    var campusCode = (ccElement == null) ? '*' : ccElement.value;
     var myaccElement = document.getElementById("obula_myacc");
-    var cohortfirst = 1;
-    var sStageSort = 'down';
+    var cohortSort = 'down';
     var studentSort = 'down';
     if (option != null && option == 'programme') {
         // Assume loaded if we are called from programme changed
-        cohElement.value = cohort = '*';
+        mlElement.value = modLevel = '*';
         stElement.value = studyType = '*';
+        ccElement.value = campusCode = '*';
         if (myaccElement != null) {     // It will be null if previous grid was not loaded because no activity
             myaccElement.checked = false;
         }
-        maxShow = 10;
     } else {
-        if ($("#obula_swap_sort").prop('name') !== undefined) {
-            cohortfirst = ($("#obula_swap_sort").prop('name') == 'obula_cohortfirst_1') ? 1 : 0;
-        }
-        sStageSort = ($("#obula_cohort_sort").prop('name') == 'obula_cohort_down') ? 'down' : 'up';
-        studentSort = ($("#obula_student_sort").prop('name') == 'obula_student_down') ? 'down' : 'up';
+        cohortSort = ($("#obula_cohort_sort").prop('name') == 'obula_cohort_up') ? 'up' : 'down';
+        studentSort = ($("#obula_student_sort").prop('name') == 'obula_student_up') ? 'up' : 'down';
     }
 
     //debugger;
     var refreshChart = (document.getElementById("obula_tutorsGraph_img").style.display == "none") ? false : true;
     // or can use $("#obula_tutorsGraph_img").is(":visible")
-    var bandingCalc = $("#obula_banding_calc").val();
-    var currentWeek = $("#obula_currentweek").val();       // Don't parse the JSON
+    var bandingCalc = "MED-30-4";    //$("#obula_banding_calc").val();
+    if (currentWeek == null) {
+        var currentWeek = $("#obula_currentweek").val();       // Don't parse the JSON
+    }
     var onlyMyAdvisees = "false";
     if (myaccElement != null && myaccElement.checked) {
         onlyMyAdvisees = "true";
     }
-    var semester = null;
-    var redrawSemester = true;
-    if (option != null && option != "programme" && option != "nextweek" && option != "prevweek") {
-        // Must be a semester
-        semester = option;
-        option = "semester";
-        redrawSemester = false;
+    var semester;
+    if (option != null && option == "semester") {
+        semester = p2;
+    } else {
+    var element = document.getElementById("selSemester");
+    if (element == null) {
+            alert('reloadGrid exception - No Semester found');
+            return;
+        } else {
+            semester = element.value;
+        }
     }
-    //TODO see if we can common up the similar logic on ready event
     var data = {
-        "programme": programme, "sStage": cohort, "maxShow": maxShow, "sStageSort": sStageSort, "studentSort": studentSort
-        , "cohortfirst": cohortfirst, "currentWeek": currentWeek, "bandingCalc": bandingCalc, "studyType": studyType
-        , "onlyMyAdvisees": onlyMyAdvisees, "semester": semester, "option": option, "oldProgramme": oldProgramme
+        "programme": programme, "modLevel": modLevel, "cohortSort": cohortSort, "studentSort": studentSort
+        , "cohortfirst": 1, "currentWeek": currentWeek, "bandingCalc": bandingCalc, "studyType": studyType
+        , "onlyMyAdvisees": onlyMyAdvisees, "semester": semester, "option": option, "oldProgramme": p2, "campusCode": campusCode
     };
     $.ajax({
         type: 'POST',
@@ -937,10 +947,12 @@ function reloadGrid(option = null, oldProgramme = null) {
         data: data
     })
         .done(function (res) {
-            tutor_grid_done(false, res, programme, cohort, '', refreshChart, true, redrawSemester);
+            //debugger;
+            tutor_grid_done(false, res, programme, modLevel, '', refreshChart);
         })
         .fail(function (jqXHR, textStatus, errorThrown) {
-            alert('reloadGrid 2 post failed:' + errorThrown);
+            //debugger;
+            alert('reloadTutorGrid 2 post failed:' + errorThrown);
         })
         ;           // End of .ajax 'line'
 };

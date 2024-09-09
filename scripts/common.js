@@ -10,12 +10,12 @@
  * 
  * @Note There is an equivalant PHP function that may need changing if you change this one
  */
-function store_parameters(programme, cohort, studentNumber, studentName) {
+function store_parameters(programme, modLevel, studentNumber, studentName) {
     if (programme == null) {        // Don't overwrite
         programme = getProgrammeParameter();
     }
-    if (cohort == null) {        // Don't overwrite
-        cohort = getStudyStageParameter();
+    if (modLevel == null) {        // Don't overwrite
+        modLevel = getModLevelParameter();
     }
     if (studentNumber == null) {        // Don't overwrite
         studentNumber = getStudentNumberParameter();
@@ -23,7 +23,7 @@ function store_parameters(programme, cohort, studentNumber, studentName) {
     if (studentName == null) {        // Don't overwrite
         studentName = getStudentNameParameter();
     }
-    var params = new Array(programme, cohort, studentNumber, studentName);
+    var params = new Array(programme, modLevel, studentNumber, studentName);
     // Don't think I need htmlspecialchars equiv, but if so https://stackoverflow.com/questions/1787322/htmlspecialchars-equivalent-in-javascript 
     $("#obula_parameters").val(JSON.stringify(params));
 }
@@ -38,7 +38,7 @@ function getProgrammeParameter() {
     return result;
 }
 
-function getStudyStageParameter() {
+function getModLevelParameter() {
     var result = "";
     var paramsStr = $("#obula_parameters").val();
     if (paramsStr != null && paramsStr != "") {
@@ -80,11 +80,11 @@ function loadStudentGraph(chartType, chartNo, newDate = null, scrollIntoView = f
     if (currentWeek == null || currentWeek == undefined) {
         currentWeek = "";
     }
-    var bandingCalc = $("#obula_banding_calc").val();
+    var bandingCalc = 'MED-20-4';
     var data = {
         "programme": getProgrammeParameter(), "studentNumber": getStudentNumberParameter()
         , "studentName": getStudentNameParameter(), "chartType": chartType
-        , "currentWeek": currentWeek, "bandingCalc": bandingCalc, "sStage": getStudyStageParameter()
+        , "currentWeek": currentWeek, "bandingCalc": bandingCalc, "sStage": getModLevelParameter()
     };
     $.ajax({
         type: 'POST',
@@ -101,14 +101,14 @@ function loadStudentGraph(chartType, chartNo, newDate = null, scrollIntoView = f
                 //if (res.startsWith('<div display=')) {
                 $('#obula_error_cell').html(res.consolehtml);
                 $("#obula_error_row").show();       // Probably won't as consolehtml has display none in it
-                alert('loadStudentGraph returned error, see console');
+                alert("loadStudentGraph returned error 1 chartType=" + chartType + ", see console");
                 doneFunction(false);
             } else {
                 // Could still be an exception I didn't format, it seems they normally start <br />
                 if (res.startsWith('<br />')) {
                     $('#obula_error_cell').html(res);
                     $("#obula_error_row").show();
-                    alert('loadStudentGraph returned error, see #obula_error_cell');
+                    alert("loadStudentGraph returned error 2 chartType=" + chartType + ", see #obula_error_cell");
                 } else {
                     $("#obula_error_row").hide();
                     var imgID = '#obula_studentGraph_img_' + chartNo;
@@ -149,42 +149,21 @@ function changeChartTypeRB(chartType, chartNo) {
     loadStudentGraph(chartType, chartNo);
 }
 
-function showWeekControl(newDate = null) {
-    // See if it's already visible, because if it's not it will need the control loaded
-    // but if a new date has been passed it need's reloading anyway
-    var invisible = (document.getElementById("obula_before_week_row").style.display == 'none');
-    if (newDate != null || invisible) {
-        var data = {
-            "date": newDate
-        };
-        $.ajax({
-            type: 'POST',
-            url: "../blocks/obu_learnanalytics/week_control.php",
-            data: data,
-            success: function (res) {
-                $('#obula_week_control_cell').html(res);            //.delay(1000);
-                if (invisible) {
-                    document.getElementById("obula_before_placeholders_row").style.display = "table-row";
-                    document.getElementById("obula_before_week_row").style.display = "table-row";
-                }
-            },
-            error: function (errMsg) {
-                alert('showWeekControl post failed:' + errMsg);
-            }
-        });
-    }
+function showWeekControl() {
+    alert('showWeekControl should no longer used');
+    // TODO remove function and commented out calls when fully tested
 }
 
-function showDateControls(newDate = null, studentDashboard = false, drawSemester = true) {
+function showDateControls(option = 'getcurrent', studentDashboard = false, semester = "", load_tutorgrid = false) {
     // See if it's already loaded/visible, because if it's not it will need the control loaded
     // but if a new date has been passed it need's updating
+    //debugger;
     var title = document.getElementById("obula_weekdate");
     var invisible = (title == null) || (title.style.display == 'none');
-    if (newDate != null || invisible) {
+    if (option != null || invisible) {
         var data = {
-            "date": newDate,
-            "weekControl": true,
-            "semesterControl": drawSemester
+            "option": option,
+            "semester": semester
         };
         $.ajax({
             type: 'POST',
@@ -196,6 +175,9 @@ function showDateControls(newDate = null, studentDashboard = false, drawSemester
         })
             .done(function (resp) {
                 if (resp != null && resp.success) {
+                    if (!studentDashboard && resp.semesterControl != "") {
+                        $('#obula_semester_control_cell').html(resp.semesterControl);
+                    }
                     $('#obula_week_control_cell').html(resp.weekControl);
                     if (invisible) {
                         if (studentDashboard) {
@@ -203,8 +185,13 @@ function showDateControls(newDate = null, studentDashboard = false, drawSemester
                             document.getElementById("obula_before_week_row").style.display = "table-row";
                         }
                     }
-                    if (drawSemester && !studentDashboard && resp.semesterControl != "") {
-                        $('#obula_semester_control_cell').html(resp.semesterControl);
+                    if (load_tutorgrid == true) {
+                        set_gridLoading(false);     // Or reload will just exit
+                        rtgOption = false;
+                        if (option == 'getcurrent') {
+                            rtgOption = 'justload'
+                        }
+                        reloadTutorGrid(rtgOption, false, resp.current);
                     }
                 }
             })

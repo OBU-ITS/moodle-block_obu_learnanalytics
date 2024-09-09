@@ -124,4 +124,5 @@ class tutor_functions
         $routine .= ($bycohortfirst) ? "Cohort" : "Student";
         uasort($comparitives, $routine);
     }
+
 } // End of class

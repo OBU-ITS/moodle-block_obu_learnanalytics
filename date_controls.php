@@ -1,6 +1,7 @@
 <?php
 /**
- * Optionally Provides Week Commencing and Semester controls for student and tuto pages
+ * Provides Week Commencing and Semester controls for student and tutor pages
+ * Called on initial load and semester changed event
  */
 ob_start();
 //echo __DIR__;
@@ -21,52 +22,48 @@ $util_dates = new \block_obu_learnanalytics\util\date_functions();
 
 // Click event posts the request so we can pick up parameters from the data
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $date = $_POST["date"];
-    $weekControl = filter_var($_POST["weekControl"] ?? true, FILTER_VALIDATE_BOOLEAN);
-    $semesterControl = filter_var($_POST["semesterControl"] ?? true, FILTER_VALIDATE_BOOLEAN);
+    $option = $_POST["option"];
+    $newSemester = $_POST["semester"];
 } else {
     exit("Brookes Learning Analytics - GET not supported");
 }
 
-if ($date == "getcurrent" || $date == null) {       // Shouldn't be null anymore
-    $current = $util_dates->get_current_week();
-} else {
-    $current = $util_dates->json_2_current_week($date);
-}
-
-$weekHTML = "";
-if ($weekControl) {
-    $weekHTML .=  '<label for="obula_weekdate" style="min-width:150px">Week Commencing</label>';
-    $weekHTML .=  '<a class="material-icons nextprev" onclick="clickChangeWeek(-1)" data-toggle="ztooltip" title="Previous Week">chevron_left</a>';
-    // $weekHTML .=  '<a class="material-icons" onclick="clickChangeWeek(1)" title="Next Week">arrow_forward_ios</a>';         // Does not Match icon in google calendar
-    $weekHTML .=  '<span id="obula_weekdate" class="wc_date">';
-    $weekHTML .=  $current["first_day_week"]->format('d-M-Y');
-    $weekHTML .=  '</span>';
-    $weekHTML .=  '<a class="material-icons nextprev" onclick="clickChangeWeek(1)" data-toggle="ztooltip" title="Next Week">chevron_right</a>';         // Matches icon in google calendar
-        
-    // Now the hidden values for the javascript to pick up
-    //$encoded = htmlspecialchars(json_encode($current)); // Don't think I need to worry about specialchars
-    $encoded = json_encode($current); // Just Serialize as json so I can get it from javascript
-    $weekHTML .=  "<input type='hidden' id='obula_currentweek' value = '" . $encoded . "'>";
-}
-
 $semesterHTML = "";
-if ($semesterControl) {
-    $today = new DateTime();
-    $semesters = $util_dates->get_semesters($today);
-
-    $semesterHTML .= "<label for='selSemester' style='min-width:150px'>Semester</label>";
-    $semesterHTML .= "<select name='semester' id='selSemester' onchange='semesterChanged()' style='min-width:100px'>";
-    $semesterHTML .= "<option value='week' selected='selected'>Specified Week</option>";
-    foreach ($semesters as $semester) {
-        $code = $semester['code'];
-        $label = $semester['label'];
-        $semesterHTML .= "<option value='{$code}'>{$label}</option>";
+$semesters = $util_dates->get_semesters();
+$semesterHTML .= "<label for='selSemester' style='min-width:150px'>Semester</label>";
+$semesterHTML .= "<select name='semester' id='selSemester' onchange='semesterChanged()' style='min-width:100px'>";
+//$semesterHTML .= "<option value='week' selected='selected'>Specified Week</option>";
+foreach ($semesters as $semesterRow) {
+    $code = $semesterRow['code'];
+    $label = $semesterRow['label'];
+    $default_sem = $semesterRow['default'];
+    $semesterHTML .= "<option value='{$code}' title='{$code}'";
+    // So if called from semesterChanged event, option will be semester
+    if (($option == "getcurrent" && ($default_sem == '1' || $default_sem == 'true'))
+        || ($option == "semester" && $code == $newSemester)) {
+        $semesterHTML .= " selected='selected'";
+        //$semesterStart = $semesterRow['start_date'];
+        $semesterEnd = $semesterRow['end_date'];
+        $current = $util_dates->get_week_for_date($semesterEnd, true, $code);
     }
-    $semesterHTML .= "</select>";
+    $semesterHTML .= ">{$label}</option>";
 }
+$semesterHTML .= "</select>";
+
+// Week is always shown
+$weekHTML .= '<label for="obula_weekdate" style="min-width:150px">Data to W/C</label>';
+$weekHTML .= '<span id="obula_weekdate" class="wc_date">';
+if ($current != null) {
+    $weekHTML .= $current['first_day_week']->format('d-M-Y');
+}
+$weekHTML .= '</span>';
+    
+// Now the hidden values for the javascript to pick up
+//$encoded = htmlspecialchars(json_encode($current)); // Don't think I need to worry about specialchars
+$encoded = json_encode($current); // Just Serialize as json so I can get it from javascript
+$weekHTML .= "<input type='hidden' id='obula_currentweek' value = '" . $encoded . "'>";
 
 header('Content-type: application/json');
 // Now send all that back
-echo json_encode(array('success' => true, 'weekControl' => $weekHTML, 'semesterControl' => $semesterHTML));
+echo json_encode(array('success' => true, 'weekControl' => $weekHTML, 'semesterControl' => $semesterHTML, 'current' => $encoded));
 exit;

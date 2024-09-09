@@ -2,21 +2,38 @@
 
 <body lang=EN-GB>
 	<!-- <a text-align:right class="material-icons copyclip" onclick="copyTextToClipboard('{$studentNumber}')" data-toggle="ztooltip" title="Copy Student Number to Clipboard">content_copy</a> -->
-	<p>
-	<h3>Student</h3>
-	<span>{$sName}</span>
-	<br>
-	<span>Last Accessed Moodle: {$lAccess}</span>
-	<br>
-	<a href="mailto:{$email}" target="_blank" rel="noopener noreferrer">{$email}</a>
+	 <table style="width:100%">
+		<tr style="vertical-align:top">
+			<td>
+				<h3>Student</h3>
+				<span>{$sName} ({$studentNumber})</span>
+				<br>
+				<span>Last Accessed Moodle: {$lAccess}</span>
+				<br>
+				<span>Enrollment Status: {$enrolmentText}</span>
+				<br>
+				<a href="mailto:{$email}" target="_blank" rel="noopener noreferrer">{$email}</a>
+		</td>
+			<td>
+				<h3>Academic Advisor</h3>
+				<span>{$aaName}</span>
+				<br>
+				<a href="mailto:{$aaemail}?subject=Your Student {$sName} ({$studentNumber})" target="_blank" rel="noopener noreferrer" id=obula_aaemail>{$aaemail}</a>
+				</td>
+	</tr>
+	 </table>
 	</p>
-
-	<p>
-	<h3>Academic Advisor</h3>
-	<span>{$aaName}</span>
-	<br>
-	<a href="mailto:{$aaemail}?subject=Your Student {$sName} ({$studentNumber})" target="_blank" rel="noopener noreferrer" id=obula_aaemail>{$aaemail}</a>
-	</p>
+	<table class="student-marks">
+		<tbody>
+			{$moduleRows}
+		</tbody>
+	</table>
+</p>
+	<table class="student-marks">
+		<tbody>
+			{$attRows}
+		</tbody>
+	</table>
 </body>
 
 </html>

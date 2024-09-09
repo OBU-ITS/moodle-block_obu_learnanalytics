@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 header('Content-type: application/json');
 // TODO hunt for other languages
 $title = get_string("{$helpType}-help-title", 'block_obu_learnanalytics');
-$helpUrl = new moodle_url("/blocks/obu_learnanalytics/lang/en/{$helpType}_explain.html");
+$helpUrl = "lang/en/{$helpType}_explain.html";
 $popupbodyhtml = file_get_contents($helpUrl, false);
 // Now send all that back
 echo json_encode(array('success' => true, 'title' => $title, 'popupbodyhtml' => $popupbodyhtml));

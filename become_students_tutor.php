@@ -14,6 +14,7 @@ $laRole = $util_odds->get_la_role();    // Protects against attacks, wrong roles
 // Click event posts the request so we can pick up parameters from the data
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $studentNumber = $_POST["studentNumber"];
+    $type = $_POST["type"];
 } else {
     exit("Brookes Learning Analytics - GET not supported");
 }
@@ -56,8 +57,12 @@ switch ($studentNumber) {
             $sname = $studentNumber;
         }
         $summaryMessage = "<span class='ssc-title' id='obula_title'>You are viewing the Tutors Dashboard for {$sname}'s Programme</span>";
-        $summaryMessage .= "   <a href='javascript:clearSSC()' class='link-right'>Clear</a>";
-        $summaryMessage .= "   <a href='javascript:collapseSSC()' class='link-right'>Close</a>";
+        if ($type == 'A') {
+            $summaryMessage .= "   <a href='javascript:backToAdvisorGrid()' class='link-right'>Back</a>";
+        } else {
+            // not sure we need clear - see if anyone complains $summaryMessage .= "   <a href='javascript:clearSSC()' class='link-right'>Clear</a>";
+            $summaryMessage .= "   <a href='javascript:collapseSSC()' class='link-right'>Close</a>";
+        }
 
         // Now work out the programme (code nearly the same code in block_obu_learnanalytics.php and elsewhere)
         $params = "student/programmes/$studentNumber/";
@@ -72,7 +77,7 @@ switch ($studentNumber) {
         // Now let's get the renderer class so I can call functions from it
         $renderer = $PAGE->get_renderer('block_obu_learnanalytics');
         try {
-            $dashboard = $renderer->tutor_dashboard($pgm, true, $studentNumber);
+            $dashboard = $renderer->tutor_dashboard($pgm, true, $studentNumber, $type);
         } catch (\Exception $ex) {
             header('HTTP/1.0 500 Internal Server Error');
             echo json_encode(array('success' => false, 'dashboardhtml' => 'BIGGG Bang :)'));

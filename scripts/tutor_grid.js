@@ -25,7 +25,7 @@ $(document).ready(function () {
     // var stElement = document.getElementById("selStudyType");
     // var studyType = (stElement == null) ? '*' : stElement.value;
 
-    showDateControls("getcurrent", false, "", true);
+    showDateControls("getcurrent", "Tutor", "", true);
     // It used to load the tutor grid here, but as the showDateControls calculates week, semester let it do it
 });             // End of inline function
 
@@ -85,7 +85,7 @@ function tutor_grid_done(fromReadyEvent, res, programme, modLevel, studentNumber
         trigger: 'hover'
     })
     $('#obula_tutor_grid_div').html(res.html).delay(100);
-    // debugger;
+    //debugger;
     store_parameters(programme, modLevel, null, null);
     // Now hide values that aren't in grid from module level and type drop downs
     if (res.full_data_set == 1 && !res.success) {
@@ -241,7 +241,7 @@ function showStudentAlerts(studentNumber) {
     var element = document.getElementById("selSemester");
     var semester;
     if (element == null) {
-            alert('showStudentInfo exception - No Semester found');
+            alert('showStudentAlerts exception - No Semester found');
             return;
         } else {
             semester = element.value;
@@ -287,67 +287,6 @@ function showStudentAlerts(studentNumber) {
     
 
 
-}
-
-
-/**
- * Handles population and showing of help popup (that form needs to have already rendered)
- * @param studentNumber The student number
- * @param sname The student's name
- * @param advisor The advisor's p number 
- */
-function showStudentInfo(studentNumber, sname, advisor, estatus, wstatus) {
-    var element = document.getElementById("selSemester");
-    var semester;
-    if (element == null) {
-            alert('showStudentInfo exception - No Semester found');
-            return;
-        } else {
-            semester = element.value;
-        }
-
-    var data = {
-        "studentNumber": studentNumber
-        , "sName": sname
-        , "advisor": advisor
-        , "semester": semester
-        , "eStatus": estatus
-        , "wStatus": wstatus
-    };
-    $.ajax({
-        type: 'POST',
-        url: "../blocks/obu_learnanalytics/get_student_info.php",
-        data: data,
-        beforeSend: function () {
-            $("#obula_error_row").hide();
-        }
-    })
-        .done(function (resp) {
-            if (resp != null && resp.success) {
-                $('#obula_modal_popup_title').html(resp.title);
-                $('.modal-body').html(resp.popupbodyhtml);
-                // Display Modal, but make sure correct buttons will show
-                $('#obula_modal_body').removeClass('popup-pgm-search');
-                $('#obula_modal_close').show();
-                $('#obula_modal_close').prop('disabled', false);
-                $('#obula_modal_ok').hide();
-                $('#obula_modal_ok').prop('disabled', true);
-                $('#obula_modal_cancel').hide();
-                $("#obula_modal_footer_text").text("");
-                $('#obula_modal_footer_text').removeAttr('title');
-                $('#obula_modal_popup').modal('show');
-            }
-        })
-        .fail(function (resp) {
-            // only way to trigger a fail is with a non 200 response, 404, 500 etc
-            // but that seems extreme for a simple validation
-            // So reserving this for exceptions
-            alert('showStudentInfo exception ' + resp.responseText);
-        })
-        // .always(function(resp) {
-        //         // Code will always get executed after done or fail, like a try/catch finally
-        //     })
-        ;           // End of .ajax 'line'
 }
 
 function showModuleEng() {
@@ -460,7 +399,7 @@ function semesterChanged() {
     var element = document.getElementById("selSemester");
     if (element != null) {
         var semester = element.value;
-        showDateControls('semester', false, semester, true);
+        showDateControls('semester', "Tutor", semester, true);
 // done in showDateControls        reloadTutorGrid('semester', semester);
     }
 }
@@ -605,7 +544,7 @@ function showMarksvEng(duration = 'il') {
 
 function programmeChanged() {
     if (gridLoading) { return };
-    // debugger;
+    //debugger;
     // Get the old one
     var oldProgramme = getProgrammeParameter();
     // Store it, but clear student and cohort
@@ -619,27 +558,6 @@ function programmeChanged() {
     $("#obula_title").addClass('tutor-title');
     reloadTutorGrid('programme', oldProgramme);
 };
-
-function clickSearchProgrammeOld() {
-    if (gridLoading) { return };
-    //debugger;
-    var selProgElement = document.getElementById("selProgramme");
-    var oldValue = selProgElement.value;
-    if (selProgElement != null) {
-        var progCode = prompt("Enter Programme Code", selProgElement.value);
-        if (progCode != null && progCode != "") {
-            selProgElement.value = progCode.toUpperCase();
-            // Now validate it and popup error if not valid
-            if (selProgElement.value == "") {
-                // It wasn't in the list
-                alert("Invalid Programme Code, try again");
-                selProgElement.value = oldValue;
-            } else {
-                programmeChanged();
-            }
-        }
-    }
-}
 
 function clickSearchProgramme() {
     if (gridLoading) { return };
@@ -823,7 +741,7 @@ function studyTypeChanged() {
 
 function campusCodeChanged() {
     if (gridLoading) { return };
-    // debugger;
+    //debugger;
     var element = document.getElementById("selCampusCode");
     if (element != null) {
         unClickStudent();
@@ -844,10 +762,10 @@ function clickCohortHeading() {
     clickHeading('cohort');
 };
 
-function clickStudentHeading() {
-    if (gridLoading) { return };
-    clickHeading('student');
-};
+// function clickStudentHeading() {
+//     if (gridLoading) { return };
+//     clickHeading('student');
+// };
 
 function clickHeading(column) {
     if (gridLoading) { return };
@@ -890,6 +808,10 @@ function reloadTutorGrid(option = null, p2 = null, currentWeek = null) {
     //debugger;
     set_gridLoading(true);
     var programme = document.getElementById("selProgramme").value;
+    var sel = document.getElementById("selProgramme");
+    var programme_text = sel.options[sel.selectedIndex].text;
+    $('#obula_pgm_sid_sml').val(programme);
+    $('#obula_pgm_sid_sml').attr('title', programme_text);
     // Controls might not even have been loaded yet
     var mlElement = document.getElementById("selModLevel");
     var modLevel = (mlElement == null) ? '*' : mlElement.value;
@@ -937,7 +859,7 @@ function reloadTutorGrid(option = null, p2 = null, currentWeek = null) {
         }
     }
     var data = {
-        "programme": programme, "modLevel": modLevel, "cohortSort": cohortSort, "studentSort": studentSort
+        "programme": programme, "programmeText": programme_text, "modLevel": modLevel, "cohortSort": cohortSort, "studentSort": studentSort
         , "cohortfirst": 1, "currentWeek": currentWeek, "bandingCalc": bandingCalc, "studyType": studyType
         , "onlyMyAdvisees": onlyMyAdvisees, "semester": semester, "option": option, "oldProgramme": p2, "campusCode": campusCode
     };

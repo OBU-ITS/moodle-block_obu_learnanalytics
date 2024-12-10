@@ -148,5 +148,40 @@ class odds
         //return $this::$semester;
     }
 
+    function get_image_url4Comparison($type, $colour)
+{
+    $imageName = "";
+
+    switch ($type) {
+        case 'sStage':
+            $imageName = $colour . "Circle";
+            break;
+        case 'isp':
+            $imageName = "tick";
+            break;
+            
+        default:
+        switch ($colour) {
+            case 'Red':
+                $imageName = "ArrowDown";
+                break;
+            case 'Green':
+                $imageName = "ArrowUp";
+                break;
+            default:
+                $imageName = "BlueEquals";
+                break;
+        }
+            break;
+    }
+
+    // TODO I think there is an approved way of getting an url to an image that will then use cache etc
+    // But looking at the network traffic, the browser is already doing some optimisation
+    $ret = '../blocks/obu_learnanalytics/pix/' . $imageName . '.png';
+    //image_url($imageName, "obu_learnanalytics");
+    // or resolve_image_location
+    return $ret;
+}
+
 // End of class
 }

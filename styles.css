@@ -359,13 +359,13 @@ a.material-icons.nextprev:hover {
 }
 
 .block_obu_learnanalytics .ssc-button {
-    float: right;
+    /* float: right; */
     margin-left: 5px;
     margin-right: 5px;
 }
 
 .block_obu_learnanalytics .ssc-sid-sml {
-    float: right;
+    /* float: right; */
     margin-left: 5px;
     margin-right: 5px;
 }

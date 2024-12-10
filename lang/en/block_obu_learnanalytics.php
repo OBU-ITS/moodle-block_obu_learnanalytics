@@ -62,6 +62,12 @@ $string['marks-notpublished'] = 'Provisional';
 $string['student-help-title'] = 'Student Help';
 
 $string['tutor-show'] = 'Show';
+$string['tutor-show-pgm'] = 'Programme';
+$string['tutor-show-pgm-hint'] = 'Show Programme';
+$string['tutor-show-stud'] = 'Student';
+$string['tutor-show-stud-hint'] = "Show Student's Programme";
+$string['show-advisees'] = 'My Advisees';
+$string['show-advisees-hint'] = 'Show all my Advisees';
 $string['tutor-help-title'] = 'Tutor Help';
 $string['tutor-dash-title-sml'] = 'Learning Analytics';
 $string['tutor-dash-title-med'] = 'Welcome to Learning Analytics';

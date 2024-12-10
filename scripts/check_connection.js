@@ -6,7 +6,7 @@
 $(document).ready(function () {
     //debugger;
     // var anyNode = document.getElementById("obula_ssc_heading_sml");
-    // Above line fails and I don't know why - it works in tutor_dashboard.js
+    // Above line fails and I don't know why - it works in staff_dashboard.js
     //var sideNode = checkColumn(anyNode);
     $.ajax({
         type: 'POST',

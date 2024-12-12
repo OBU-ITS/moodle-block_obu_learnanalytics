@@ -358,24 +358,20 @@ a.material-icons.nextprev:hover {
     font-size: 1rem;
 }
 
-.block_obu_learnanalytics .ssc-button {
-    float: right;
+.block_obu_learnanalytics .summ-show-button {
+    /* float: right; */
+    margin-left: 5px;
+    margin-right: 5px;
+    min-width: 110px;       /* temp fix*/
+}
+
+.block_obu_learnanalytics .summ-show-id {
+    /* float: right; */
     margin-left: 5px;
     margin-right: 5px;
 }
 
-.block_obu_learnanalytics .ssc-sid-sml {
-    float: right;
-    margin-left: 5px;
-    margin-right: 5px;
-}
-
-.block_obu_learnanalytics .ssc-sid-med {
-    margin-left: 5px;
-    margin-right: 5px;
-}
-
-.block_obu_learnanalytics .ssc-title {
+.block_obu_learnanalytics .summ-title {
     font-weight: 600;
     font-size: 1.17rem;
     line-height: 1.2;

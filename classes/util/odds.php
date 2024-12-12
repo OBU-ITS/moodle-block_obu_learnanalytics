@@ -47,16 +47,14 @@ class odds
             }
             die("Not Authenticated");
         }
-        if (!isset($USER->ignoressc) || $USER->ignoressc != "1") {
-            if (!isset($role) && ($roleNeeded == null || $roleNeeded == 'SSC')) {
-                global $DB;
-                $course = $DB->get_record('course', array('idnumber' => 'SUBS_LA_SSCS'));   //TODO move to config
-                if ($course) {
-                    $context = \context_course::instance($course->id);
-                    if ($context != null) {
-                        if (is_enrolled($context, $USER->id, '', true)) {
-                            $role = 'SSC';
-                        }
+        if (!isset($role) && ($roleNeeded == null || $roleNeeded == 'SSC')) {
+            global $DB;
+            $course = $DB->get_record('course', array('idnumber' => 'SUBS_LA_SSCS'));   //TODO move to config
+            if ($course) {
+                $context = \context_course::instance($course->id);
+                if ($context != null) {
+                    if (is_enrolled($context, $USER->id, '', true)) {
+                        $role = 'SSC';
                     }
                 }
             }
@@ -147,6 +145,41 @@ class odds
     public function get_semester() {
         //return $this::$semester;
     }
+
+    function get_image_url4Comparison($type, $colour)
+{
+    $imageName = "";
+
+    switch ($type) {
+        case 'sStage':
+            $imageName = $colour . "Circle";
+            break;
+        case 'isp':
+            $imageName = "tick";
+            break;
+            
+        default:
+        switch ($colour) {
+            case 'Red':
+                $imageName = "ArrowDown";
+                break;
+            case 'Green':
+                $imageName = "ArrowUp";
+                break;
+            default:
+                $imageName = "BlueEquals";
+                break;
+        }
+            break;
+    }
+
+    // TODO I think there is an approved way of getting an url to an image that will then use cache etc
+    // But looking at the network traffic, the browser is already doing some optimisation
+    $ret = '../blocks/obu_learnanalytics/pix/' . $imageName . '.png';
+    //image_url($imageName, "obu_learnanalytics");
+    // or resolve_image_location
+    return $ret;
+}
 
 // End of class
 }

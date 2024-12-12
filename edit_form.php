@@ -33,7 +33,5 @@ class block_obu_learnanalytics_edit_form extends block_edit_form
         $mform->addElement('selectyesno', 'config_demomode', get_string('demomode', 'block_obu_learnanalytics'));
         $mform->setDefault('config_demomode', 0);
 
-        $mform->addElement('selectyesno', 'config_ignoressc', get_string('ignoressc', 'block_obu_learnanalytics'));
-        $mform->setDefault('config_ignoressc', 0);
     }
 }

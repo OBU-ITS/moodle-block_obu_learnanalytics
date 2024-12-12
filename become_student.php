@@ -59,9 +59,9 @@ switch ($studentNumber) {
             $sname = $studentNumber;
             $fname = $studentNumber;
         }
-        $summaryMessage = "<span class='ssc-title' id='obula_title'>You are viewing the Learning Analytics Dashboard for {$sname}</span>";
-        $summaryMessage .= "   <a href='javascript:clearSSC() class='link-right''>Clear</a>";
-        $summaryMessage .= "   <a href='javascript:collapseSSC() class='link-right''>Close</a>";
+        $summaryMessage = "<span class='summ-title' id='obula_title'>You are viewing the Learning Analytics Dashboard for {$sname}</span>";
+        //$summaryMessage .= "   <a href='javascript:clearSSC() class='link-right''>Clear</a>";
+        $summaryMessage .= "   <a href='javascript:collapseDetail() class='link-right''>Close</a>";
 
         // Now let's get the renderer class so I can call functions from it
         $renderer = $PAGE->get_renderer('block_obu_learnanalytics');

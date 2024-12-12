@@ -57,7 +57,6 @@ class block_obu_learnanalytics extends block_base
         // Add some local config changes to user global as that seems to persist fine
         global $USER;
         if ($this->config != null) {
-            $USER->ignoressc = $this->config->ignoressc;
             $USER->demomode = $this->config->demomode;
         }
 
@@ -87,15 +86,10 @@ class block_obu_learnanalytics extends block_base
         $this->content->footer = "<div id='obula_footer' style='display:none'>Data Currency</div>";
         switch ($laRole) {
             case ("SSC"):
-                $this->content->text = $renderer->ssc_dashboard();
+                $this->content->text = $renderer->staff_dashboard_summary();
                 break;
             case ("TUTOR"):
-                // // TODO find way to pick up programme for Tutor
-                // $pgm = "MBA";
-                // if (strtoupper($USER->username) == "P0074883") {
-                //     $pgm = "MSC-ASE";
-                // }
-                $this->content->text = $renderer->tutor_dashboard_summary();
+                $this->content->text = $renderer->staff_dashboard_summary();
                 break;
             case ("STUDENT"):
                 // This code is duplicated (nearly) in become_student.php
@@ -109,7 +103,7 @@ class block_obu_learnanalytics extends block_base
                 try {
                     $this->content->text = $renderer->students_dashboard(false, $USER->username, $USER->firstname, $sname, $pgm);
                 } catch (\Exception $ex) {
-                    $this->content->text = $renderer->error_page('Error Creating Student Dashboard', $ex);
+                    $this->content->text = $renderer->error_page('Error Creating Student Dashboard get_content', $ex);
                     return;      // $this->content;
                 }
                 break;

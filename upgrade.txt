@@ -81,3 +81,10 @@ This file describes changes in the obu_learnanalytics block code.
 * Added Attendance % to grid
 * Added enrolment status to info page
 
+=== 1.12.6 ===
+New Right panel with options to go by programme or student
+Acad Advisor grid (with enrolled and not enrolled grid)
+Changed help page to link to google site
+Changed Reg/Green arrows to grey
+Option to show attendance as bar chart
+

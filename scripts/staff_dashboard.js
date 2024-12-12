@@ -3,32 +3,21 @@
 
 $(document).ready(function () {
     var host = $("#obula_host").val();
-    var anyNode = document.getElementById("obula_ts_heading_sml");
+    var anyNode = document.getElementById("obula_staff_heading");
     var sideNode = checkColumn(anyNode);
-    debugger;
+    //debugger;
     // Enabling/disabling of controls is done in check connection
-    if (sideNode) {
-        $("#obula_ts_heading_sml").show();
-        $("#obula_ts_input_sml").show();
-    } else {
-        $("#obula_ts_heading_med").show();
-        $("#obula_ts_input_med").show();
-    }
-    // var host = $("#obula_host").val();
-    // if (host == "right") {
-    //     $("#obula_ts_heading_sml").show();
-    //     $("#obula_ts_input_sml").show();
-    // } else {
-    //     $("#obula_ts_heading_med").show();
-    //     $("#obula_ts_input_med").show();
-    // }
+    //if (sideNode) {
+        $("#obula_staff_heading").show();
+    //} else {
+    //}
 });
 
 /**
  * Clears the selected dashboard and parameters, and goes back to original home
  */
 function collapseTutor() {
-    giveBackPage("ts");
+    giveBackPage("staff");
 
     // Now log the event with an Ajax call, ignoring the response
     var data = {

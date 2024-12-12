@@ -554,7 +554,7 @@ function programmeChanged() {
     // Now reload
     $("#obula_myacc").prop("checked", false);
     $("#obula_title").text("Learning Analytics");     //In case this is/was the SSC dash
-    $("#obula_title").removeClass('ssc-title');
+    $("#obula_title").removeClass('summ-title');
     $("#obula_title").addClass('tutor-title');
     reloadTutorGrid('programme', oldProgramme);
 };
@@ -810,8 +810,8 @@ function reloadTutorGrid(option = null, p2 = null, currentWeek = null) {
     var programme = document.getElementById("selProgramme").value;
     var sel = document.getElementById("selProgramme");
     var programme_text = sel.options[sel.selectedIndex].text;
-    $('#obula_pgm_sid_sml').val(programme);
-    $('#obula_pgm_sid_sml').attr('title', programme_text);
+    $('#obula_show_pgm_code').val(programme);
+    $('#obula_show_pgm_code').attr('title', programme_text);
     // Controls might not even have been loaded yet
     var mlElement = document.getElementById("selModLevel");
     var modLevel = (mlElement == null) ? '*' : mlElement.value;

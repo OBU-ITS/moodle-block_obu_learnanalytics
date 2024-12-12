@@ -56,12 +56,12 @@ switch ($studentNumber) {
         } else {
             $sname = $studentNumber;
         }
-        $summaryMessage = "<span class='ssc-title' id='obula_title'>You are viewing the Tutors Dashboard for {$sname}'s Programme</span>";
+        $summaryMessage = "<span class='summ-title' id='obula_title'>You are viewing the Tutors Dashboard for {$sname}'s Programme</span>";
         if ($type == 'A') {
             $summaryMessage .= "   <a href='javascript:backToAdvisorGrid()' class='link-right'>Back</a>";
         } else {
             // not sure we need clear - see if anyone complains $summaryMessage .= "   <a href='javascript:clearSSC()' class='link-right'>Clear</a>";
-            $summaryMessage .= "   <a href='javascript:collapseSSC()' class='link-right'>Close</a>";
+            $summaryMessage .= "   <a href='javascript:collapseDetail()' class='link-right'>Close</a>";
         }
 
         // Now work out the programme (code nearly the same code in block_obu_learnanalytics.php and elsewhere)

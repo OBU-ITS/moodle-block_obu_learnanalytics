@@ -29,7 +29,7 @@ switch ($option) {
     case 'semester':
         // Nothing todoadv
         break;
-    
+
     case 'getcurrent':
         $current = $util_dates->get_current_week();
         // NO not needed $dateRecalculated = true;
@@ -50,10 +50,11 @@ $context = $PAGE->context;
 // Log last accessed
 //date_default_timezone_set('UTC');     Just use users timezone
 $today = new DateTime();
+set_user_preference('obula_last_tutor_grid_date', serialize($today));
 
 $success = true;        // Hopefully
 try {
-    $params = "tutor/adviseesgrid/$semester/p0087663/";
+    $params = "tutor/adviseesgrid/$semester/$USER->username/";
     $curl_common = new \block_obu_learnanalytics\curl\common();
     $results = $curl_common->send_request($params);
 } catch (Exception $e) {
@@ -78,28 +79,91 @@ if ($success) {
     // So count anything we might need
     $count = count($results);
     $enrolledCount = 0;
+    $enrollingCount = 0;
     $notEnrolledCount = 0;
     foreach ($results as $data) {
-        $eStatus = 'EN';  //TODO' = $data['enrolment_status_code'];
-        if ($eStatus == 'AT' || $eStatus == 'UT') {
+        $eStatus = $data['enrolment_status_code'];
+        if ($eStatus == 'EN' || $eStatus == 'EL') {
+            $enrolledCount++;
+            // Now save actual study types and stages that we have (even if not shown)
+            $stypes[$data["study_type"]] = 1;
+            $modlevels[$data["module_level"]] = 1;
+            $campuscodes[$data["campus_code"]] = 1;
+            if ($eStatus == 'EL') {
+                $enrollingCount++;
+            }
+        } else {
             $notEnrolledCount++;
-            continue;
         }
-        $enrolledCount++;
-        // Now save actual study types and stages that we have (even if not shown)
-        $stypes[$data["study_type"]] = 1;
-        $modlevels[$data["module_level"]] = 1;
-        $campuscodes[$data["campus_code"]] = 1;
     }
 
     $html .= "<td class='key-fact th-span' colspan='4' style='min-width:240px'>";
-    $html .= "{$count} - Advisees</label>";
+    if ($enrollingCount > 0) {
+        $html .= "<label>{$count} - Enrolled/Enrolling Advisees</label>";
+    } else {
+        $html .= "<label>{$count} - Enrolled Advisees</label>";
+    }
     $html .= '</td>';
 
-    $html .= "<th class='students th-span' colspan='2'>Attendance</th>";
-    // was a gap $html .= "<th class='students'></th>";
-    $headerText = "Study";
-    $html .= "<th class='students-hideable th-span' colspan=2>$headerText</th>";
+    $html .= outputGrid($results, $util_odds, 1);
+
+    $htmlGrid2 = "";
+    if ($notEnrolledCount > 0) {
+        $htmlGrid2 = "<td><table>";
+        // Output a 2 line heading, but with Show x selection drop down to save vertical space
+        $htmlGrid2 .= "<tr>";
+        $htmlGrid2 .= "<td class='key-fact th-span' colspan='4' style='min-width:240px'>";
+        $htmlGrid2 .= "<label>{$notEnrolledCount} - Advisee";
+        $htmlGrid2 .= ($notEnrolledCount == 1) ? " not enrolled</label>" : "s not enrolled<label>";
+        $htmlGrid2 .= '</td>';
+        $htmlGrid2 .= outputGrid($results, $util_odds, 2);
+    }
+
+    // Now send that back
+    $stypesFilter = "";
+    // TODO conditionally send filters for performance
+    foreach ($stypes as $key => $value) {
+        $stypesFilter .= $key . "|";
+    }
+    $sstagesFilter = "";
+    foreach ($sstages as $key => $value) {
+        $sstagesFilter .= $key . "|";
+    }
+    $modlevelsFilter = "";
+    foreach ($modlevels as $key => $value) {
+        $modlevelsFilter .= $key . "|";
+    }
+    $campusCodeFilter = "";
+    foreach ($campuscodes as $key => $value) {
+        $campusCodeFilter .= $key . "|";
+    }
+} else {
+    $count = $adviseesCount = 0;
+    $stypesFilter = $sstagesFilter = $modlevelsFilter = $campusCodeFilter = "";
+}
+
+header('Content-type: application/json');
+// student_count is used to determine if we should show charting link
+$json = json_encode(array(
+    'success' => $success,
+    'html' => $html,
+    'html2' => $htmlGrid2,
+    'full_data_set' => $fullDataSet,
+    'students_count' => $count
+));
+if ($json) {
+    echo $json;
+} else {
+    $json_error = json_last_error_msg();
+    echo json_encode(array('success' => false, 'json_error' => "{$json_error}"));
+}
+exit;
+
+function outputGrid($results, $util_odds, $gridNo)
+{
+    // row already started, just add headers, but then close row
+    $html = "<th class='students th-span' colspan='2'>Attendance</th>";
+    $html .= "<th class='students-hideable th-span' colspan=2>Study</th>";
     $html .= "</tr>";
 
     // 2nd header row
@@ -115,35 +179,37 @@ if ($success) {
     $html .= "<th class='students-hideable'>ISP</th>";
     $html .= "<th class='students-hideable'>Modules</th>";
     $html .= "<th class='students-hideable'>Campus</th>";
+    if ($gridNo != 1) {
+        $html .= "<th class='students-hideable'>En Status</th>";
+        $html .= "<th class='students-hideable'>Reason</th>";
+        $html .= "<th class='students-hideable'>Date</th>";
+    }
 
     $html .= "</tr>";
 
-    // No sort WS will return it student within programme
-
     // Loop through sorted students data and create rows
-    $loopCount = 0;
     $imageUrlISP = $util_odds->get_image_url4Comparison("isp", 't');
     foreach ($results as $data) {
-        $eStatus = "EN"; //$data['enrolment_status_code'];
-        $wStatus = null; //$data['enrolment_withdrawal_status_code'];
-        if ($eStatus == 'AT' || $eStatus == 'UT') {
-            continue;
+        $eStatus = $data['enrolment_status_code'];
+        $wStatus = $data['enrolment_withdrawal_reason_code'];
+        $wHint = $data['enrolment_withdrawal_reason'];
+        if ($gridNo == 1) {
+            if ($eStatus != 'EN' && $eStatus != 'EL') {
+                continue;
+            }
+        } else {
+            if ($eStatus == 'EN' || $eStatus == 'EL') {
+                continue;
+            }
         }
         $studentKey = $data["student_number"];
-        
-        $loopCount++;
 
         // Programme and code
         $html .= "<tr class='students' id='sid_" . $studentKey . "'>";
         $html .= "<td class='students-hideable'>" . $data["programme"] . "</td>";
         $html .= "<td class='students-hideable'>" . $data["programme_code"] . "</td>";
         // Student
-        if (($eStatus == 'EN' || $eStatus == 'EL') && $wStatus === null) {
-            $cssClass = 'students-name';
-        } else {
-            $cssClass = 'students-name-ne';
-        }
-        $html .= "<td class='{$cssClass}'>";
+        $html .= "<td class='students-name'>";
         $sname = $data["student_name"];
         // Note tried various urlencode functions and &apos; but that get swapped back n the browser and it still wouldn't work
         $urlName = addslashes($sname);
@@ -166,8 +232,7 @@ if ($success) {
         // Alert level
         if ($data['alert_level'] != null) {
             $alertCell = "<td class='students-hideable'><a href='javascript:showStudentAlerts({$studentKey})'>" . $data['alert_level'] . "</a></td>";
-        }
-        else {
+        } else {
             $alertCell = "<td class='students-hideable'>-</td>";
         }
         $html .= $alertCell;
@@ -187,8 +252,12 @@ if ($success) {
         $html .= $data['module_total'] . "</td>";
         // Campus code
         $html .= "<td class='students-hideable'>" . $data['campus_code'] . "</td>";
-        //$html .= "<td class='obula-block-hidden'>{$eStatus}</td>";        // or obula-block-hidden
-        //$html .= "<td class='obula-block-hidden'>{$wStatus}</td>";
+        if ($gridNo != 1) {
+            $fdate = date_format(date_create($data["end_date"]), "d-M-Y");
+            $html .= "<td class='students-hideable'>{$eStatus}</td>";
+            $html .= "<td class='students-hideable' title='{$wHint}'>{$wStatus}</td>";
+            $html .= "<td class='students-hideable'>{$fdate}</td>";
+        }
 
         // Row done
         $html .= "</tr>";
@@ -196,40 +265,5 @@ if ($success) {
 
     $html .= "</table></td>";
 
-    // Now send that back
-    $stypesFilter = "";
-    // TODO conditionally send filters for performance
-    foreach ($stypes as $key => $value) {
-        $stypesFilter .= $key . "|";
-    }
-    $sstagesFilter = "";
-    foreach ($sstages as $key => $value) {
-        $sstagesFilter .= $key . "|";
-    }
-    $modlevelsFilter = "";
-    foreach ($modlevels as $key => $value) {
-        $modlevelsFilter .= $key . "|";
-    }
-    $campusCodeFilter = "";
-    foreach ($campuscodes as $key => $value) {
-        $campusCodeFilter .= $key . "|";
-    }
-} else {
-    $count = $adviseesCount = 0;
-    $stypesFilter = $sstagesFilter = $modlevelsFilter = $campusCodeFilter= "";
+    return $html;
 }
-
-header('Content-type: application/json');
-// student_count is used to determine if we should show charting link
-$json = json_encode(array('success' => $success, 'html' => $html
-                            , 'full_data_set' => $fullDataSet
-                            , 'students_count' => $count
-                        ));
-if ($json) {
-    echo $json;
-} else {
-    $json_error = json_last_error_msg();
-    echo json_encode(array('success' => false, 'json_error' => "{$json_error}"));
-}
-exit;
-

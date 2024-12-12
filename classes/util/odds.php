@@ -47,16 +47,14 @@ class odds
             }
             die("Not Authenticated");
         }
-        if (!isset($USER->ignoressc) || $USER->ignoressc != "1") {
-            if (!isset($role) && ($roleNeeded == null || $roleNeeded == 'SSC')) {
-                global $DB;
-                $course = $DB->get_record('course', array('idnumber' => 'SUBS_LA_SSCS'));   //TODO move to config
-                if ($course) {
-                    $context = \context_course::instance($course->id);
-                    if ($context != null) {
-                        if (is_enrolled($context, $USER->id, '', true)) {
-                            $role = 'SSC';
-                        }
+        if (!isset($role) && ($roleNeeded == null || $roleNeeded == 'SSC')) {
+            global $DB;
+            $course = $DB->get_record('course', array('idnumber' => 'SUBS_LA_SSCS'));   //TODO move to config
+            if ($course) {
+                $context = \context_course::instance($course->id);
+                if ($context != null) {
+                    if (is_enrolled($context, $USER->id, '', true)) {
+                        $role = 'SSC';
                     }
                 }
             }

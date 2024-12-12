@@ -77,7 +77,8 @@ try {
             case "loanscomb":
                 $column = "library_resources_loaned";
                 break;
-            case "attperc":
+            case "attpercline":
+            case "attpercbar":
                 $column = "attendance_percentage";
                 //$column = "vle_page_hits";
                 break;
@@ -156,7 +157,8 @@ try {
                         $plot2Counts[] = $row["avg_library_resources_loaned"] ?? 0;
                         //$plot3Counts[] = $row["mean_library_resources_loaned"] ?? 0;
                         break;
-                    case "attperc":
+                    case "attpercline":
+                    case "attpercbar":
                         $plot1Counts[] = $row["attendance_percentage"] ?? 0;
                         $plot2Counts[] = $row["avg_attendance_percentage"] ?? 0;
                         //$plot3Counts[] = $row["mean_attendance_percentage"] ?? 0;
@@ -215,9 +217,13 @@ try {
                 $graphTitle = "Campus Library Engagement - Loans";
                 $plotType = substr($chartType, 5);
                 break;
-            case "attperc":
+            case "attpercbar":
                 $graphTitle = "Attendance percentage of Lectures/Events attended";
-                //$plotType = "bar";          // Or line if that doesn't work
+                $plotType = "bar";
+                break;
+            case "attpercline":
+                $graphTitle = "Attendance percentage of Lectures/Events attended";
+                $plotType = "Line";          // Or line if that doesn't work
                 break;
             case "attsessions":
                 $graphTitle = "Attendance - Number of Lectures";

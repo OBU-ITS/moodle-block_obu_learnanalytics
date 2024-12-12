@@ -40,6 +40,8 @@ function advisees_grid_done(res) {
         trigger: 'hover'
     })
     $('#obula_advisee_grid_div').html(res.html).delay(100);
+    $('#obula_advisee_grid2_div').html(res.html2).delay(100);
+
     //debugger;
 //    store_parameters(programme, modLevel, null, null);
 
@@ -69,10 +71,6 @@ function clickStudentAdvisee(studentNumber) {
             // So we can get errors and successes back
             if (resp.success) {
                 // Should already be taken over takeOverPage(tnode);
-                $("#obula_ssc_heading_sml").hide();
-                $("#obula_ssc_heading_med").hide();
-                $("#obula_ssc_input_sml").hide();
-                $("#obula_ssc_input_med").hide();
                 $('#obula_summary_cell').html(resp.summaryhtml);
                 $("#obula_summary_row").show();
                 $('#obula_dash_div').html(resp.dashboardhtml);
@@ -121,9 +119,9 @@ function reloadAdvisorGrid(currentWeek = null) {
     }
     var element = document.getElementById("selSemester");
     if (element == null) {
-            // alert('reloadGrid exception - No Semester found');
-            // return;
-            semester = '202409';    //TODO
+            alert('reloadGrid exception - No Semester found');
+            return;
+            //semester = '202409';    //TODO
         } else {
             semester = element.value;
         }

@@ -89,10 +89,7 @@ function showAdvisees(mode) {
             if (resp.success) {
                 if (mode != 'Back') {
                     takeOverPage(tnode);
-                    $("#obula_ts_heading_sml").hide();
-                    $("#obula_ts_input_sml").hide();
-                    $("#obula_ts_heading_med").hide();
-                    $("#obula_ts_input_med").hide();
+                    $("#obula_staff_heading").hide();
                 }
                 $('#obula_summary_cell').html(resp.summaryhtml);
                 $("#obula_summary_row").show();
@@ -138,10 +135,7 @@ function showTutorFull() {
             // So we can get errors and successes back
             if (resp.success) {
                 takeOverPage(tnode);
-                $("#obula_ts_heading_sml").hide();
-                $("#obula_ts_input_sml").hide();
-                $("#obula_ts_heading_med").hide();
-                $("#obula_ts_input_med").hide();
+                $("#obula_staff_heading").hide();
                 $('#obula_summary_cell').html(resp.summaryhtml);
                 $("#obula_summary_row").show();
                 $('#obula_dash_div').html(resp.dashboardhtml);
@@ -483,17 +477,10 @@ function giveBackPage(type) {
     var laBlockId = $("#obula_lablockid").val();
     var nextBlockId = $("#obula_nextblockid").val();
     var parentBlockId = $("#obula_parentblockid").val();
-    if (host == "right") {
-        $("#obula_" + type + "_heading_sml").show();
-        $("#obula_" + type + "_input_sml").show();
-        $("#obula_" + type + "_heading_med").hide();
-        $("#obula_" + type + "_input_med").hide();
-    } else {
-        $("#obula_" + type + "_heading_sml").hide();
-        $("#obula_" + type + "_input_sml").hide();
-        $("#obula_" + type + "_heading_med").show();
-        $("#obula_" + type + "_input_med").show();
-    }
+    //if (host == "right") {
+        $("#obula_" + type + "_heading").show();
+    //} else {
+    // }
     // So now work out where we are going back to 
     var newParent = document.getElementById(parentBlockId);
     var myBlock = document.getElementById(laBlockId);
@@ -719,8 +706,15 @@ function showHelp(helpType) {
  * Types = S-Student, T-Tutor, A-Tutor from AA dash
  */
 function showBecomeView(type, controlId) {
-    // As there are 2 inputs with the same id we'll use the class
+    // As there were 2 inputs with the same id we used the class
     var studentNumber = document.getElementById(controlId).value;
+    // Now some crude SQL injection protection
+    if (studentNumber.match(/^[0-9]{8}$/) == null) {
+        $('#obula_error_cell').html("Invalid Format for Student Number - must be 8 digits");
+        $("#obula_error_row").show();
+        $('#obula_footer').hide();
+        return;
+    }
     var data = {
         "studentNumber": studentNumber
         , "type": type
@@ -741,13 +735,7 @@ function showBecomeView(type, controlId) {
             // So we can get errors and successes back
             if (resp.success) {
                 takeOverPage(tnode);
-                $("#obula_ts_heading_sml").hide();
-                $("#obula_ts_heading_med").hide();
-                $("#obula_ssc_heading_sml").hide();
-                $("#obula_ssc_heading_med").hide();
-                // I think the above should hide the next 2 at least
-                $("#obula_ssc_input_sml").hide();
-                $("#obula_ssc_input_med").hide();
+                $("#obula_staff_heading").hide();
                 $('#obula_summary_cell').html(resp.summaryhtml);
                 $("#obula_summary_row").show();
                 $('#obula_dash_div').html(resp.dashboardhtml);
@@ -786,9 +774,12 @@ function backToAdvisorGrid() {
  * Clears the selected dashboard and parameters, and goes back to original home
  * Was in ssc .js
  */
-function collapseSSC() {
-    clearSSC();
-    giveBackPage("ts");
+function collapseDetail() {
+    $("#obula_show_stud_no").val('');
+    $("#obula_summary_row").hide();
+    $("#obula_dash_row").hide();
+    $('#obula_footer').hide();
+    giveBackPage("staff");
     // Now log the event with an Ajax call, ignoring the response
     var data = {
         "dashboard": "Tutor"        //TODO determine which dashboard we are closing for students go-live
@@ -805,20 +796,6 @@ $.ajax({
         alert('close_dashboard post failed:' + errorThrown);
     })
 ;           // End of .ajax 'line'
-}
-
-/**
- * Clears the selected dashboard and parameters, ready to try again
- */
-function clearSSC() {
-    $("#obula_ts_sid_sml").val('');
-    $("#obula_ts_sid_med").val('');
-    $("#obula_summary_row").hide();
-    $("#obula_dash_row").hide();
-    $('#obula_footer').hide();
-    // Only called when page open
-    $("#obula_ts_heading_med").show();
-    $("#obula_ts_input_med").show();
 }
 
 

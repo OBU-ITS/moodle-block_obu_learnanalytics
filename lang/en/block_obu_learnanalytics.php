@@ -69,14 +69,9 @@ $string['tutor-show-stud-hint'] = "Show Student's Programme";
 $string['show-advisees'] = 'My Advisees';
 $string['show-advisees-hint'] = 'Show all my Advisees';
 $string['tutor-help-title'] = 'Tutor Help';
-$string['tutor-dash-title-sml'] = 'Learning Analytics';
-$string['tutor-dash-title-med'] = 'Welcome to Learning Analytics';
-
-$string['ssc-help-title'] = 'Student Support Coordinator Help';
-$string['ssc-students-view'] = 'Students View';
-$string['ssc-tutors-view'] = 'Tutors View';
-$string['ssc-dash-title-sml'] = 'Learning Analytics';
-$string['ssc-dash-title-med'] = 'Learning Analytics (SSC View)';
+$string['staff-help-title'] = 'Help for Staff on Learning Analytics';
+$string['staff-dash-title'] = 'Learning Analytics';
+//$string['tutor-dash-title-med'] = 'Welcome to Learning Analytics';
 
 // Events
 $string['tutor_dashboard_opened'] = 'Tutor Dashboard Opened';
@@ -86,4 +81,3 @@ $string['dashboard_closed'] = 'Dashboard Closed';
 // Config
 $string['blocksettings'] = 'Personal Overrides';
 $string['demomode'] = 'Demo Mode (Obscure Student Details)';
-$string['ignoressc'] = 'Ignore SSC Capability';

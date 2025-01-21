@@ -2,7 +2,11 @@
 /**
  * Provides Week Commencing and Semester controls for student and tutor pages
  * Called on initial load and semester changed event
+ * Called by showDateControls which decides which controls to emit
  */
+
+use block_obu_learnanalytics\event\dashboard_closed;
+
 ob_start();
 //echo __DIR__;
 require_once __DIR__ . '/../../config.php';
@@ -24,6 +28,7 @@ $util_dates = new \block_obu_learnanalytics\util\date_functions();
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $option = $_POST["option"];
     $newSemester = $_POST["semester"];
+    $dashboardFor = $_POST["dashboardFor"];
 } else {
     exit("Brookes Learning Analytics - GET not supported");
 }
@@ -31,7 +36,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 $semesterHTML = "";
 $semesters = $util_dates->get_semesters();
 $semesterHTML .= "<label for='selSemester' style='min-width:150px'>Semester</label>";
-$semesterHTML .= "<select name='semester' id='selSemester' onchange='semesterChanged()' style='min-width:100px'>";
+$disabled = ($dashboardFor == 'Advisor' ? "disabled" : "");
+$semesterHTML .= "<select {$disabled} name='semester' id='selSemester' onchange='semesterChanged()' style='min-width:100px'>";
 //$semesterHTML .= "<option value='week' selected='selected'>Specified Week</option>";
 foreach ($semesters as $semesterRow) {
     $code = $semesterRow['code'];

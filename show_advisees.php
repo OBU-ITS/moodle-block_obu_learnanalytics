@@ -1,15 +1,15 @@
 <?php
 
 /**
- * Page used by Tutor Summary dashboard to show full tutor dashboard
- * so not really become but it's very similar to the others
+ * Page used Academic Advisor Summary dashboard to show list of their advisees
+ * similar to various become_xxx pages
  */
 
 ob_start();
 //echo __DIR__;
 require_once __DIR__ . '/../../config.php';
 $util_odds = new \block_obu_learnanalytics\util\odds();
-$laRole = $util_odds->get_la_role("TUTOR");    // Protects against attacks, wrong roles and everything
+$laRole = $util_odds->get_la_role("TUTOR");    // Protects against attacks, wrong roles and everything //TODO do we want a new role
 ?>
 <?php
 // Click event posts the request so we can pick up parameters from the data
@@ -33,18 +33,10 @@ global $PAGE;
 $summaryMessage = "<span class='tutor-title' id='obula_title'>Learning Analytics</span>";
 $summaryMessage .= "<a href='javascript:collapseTutor()' class = 'link-right'>Close</a></h5>";
 
-// TODO find way to pick up programme for Tutor or last viewed
-$userPrefs = get_user_preferences();
-if (array_key_exists("obula_last_tutor_grid_pgm", $userPrefs)) {
-    $pgm = $userPrefs["obula_last_tutor_grid_pgm"];
-} else {
-    $pgm = "BAH-AF";       //TODO make blank work or pick up from tutor tables see SSCSECT, SSRMEET, SSBSECT, SSASECT
-}
-
 // Now let's get the renderer class so I can call functions from it
 $renderer = $PAGE->get_renderer('block_obu_learnanalytics');
 try {
-    $dashboard = $renderer->tutor_dashboard($pgm, true, null, 'T');
+    $dashboard = $renderer->advisor_dashboard();
 } catch (\Exception $ex) {
     header('HTTP/1.0 500 Internal Server Error');
     echo json_encode(array('success' => false, 'dashboardhtml' => 'BIGGG Bang :)'));
@@ -54,7 +46,7 @@ try {
 // Log that
 // And log the event
 $context = context_system::instance();       // Swapped to using system context as page threw error on Poodle
-$other = array("From" => "Tutor_Summary", "Programme" => $pgm, "HTTP_USER_AGENT" => $_SERVER['HTTP_USER_AGENT']);
+$other = array("From" => "showbutton", "HTTP_USER_AGENT" => $_SERVER['HTTP_USER_AGENT']);
 $event = \block_obu_learnanalytics\event\tutor_dashboard_opened::create(array(
     'context' => $context, 'other' => json_encode($other)
 ));

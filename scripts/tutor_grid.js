@@ -3,7 +3,7 @@
 
 var gridLoading = studentLoading = chartLoading = marksLoading = false;
 var studentLoadingCount = 0;
-let globalStudentName = null;
+var globalStudentName = null;
 
 $(document).ready(function () {
     //debugger;
@@ -189,14 +189,56 @@ function highlightStudentRow(studentNumber) {
     }
 }
 
+function renderChart(chart_type, studentName) {
+    // Because the Tutor grid also loads some student charts
+    // This event will fire for both, but we can check the presence of the cohort placeholder
+    //debugger;
+    var currentWeek = $("#obula_currentweek").val();       // Don't parse the JSON
+    if (currentWeek == null || currentWeek == undefined) {
+        currentWeek = "";
+    }
+    var chart_style = null;
+    // Check if there is a specifi chart_style for that chart_type
+    if (chart_type.includes('_')) {
+        // Split on underscore
+        chart_style = chart_type.split('_')[1];
+        chart_type = chart_type.split('_')[0];
+      }
+      
+    
+    var data = {
+        programme: getProgrammeParameter(),
+        studentNumber: getStudentNumberParameter(),       
+        sStage: getModLevelParameter(),     
+        currentWeek: currentWeek,                   
+        chartType: chart_type
+    };
+    $.ajax({
+        type: 'POST',
+        url: "../blocks/obu_learnanalytics/students_graph_v2.php",
+        data: data,
+        dataType: 'json',
+        success: function (res) {
+            if (Array.isArray(res) && res.length) {
+                chartHandler(res[0], chart_type, studentName, chart_style);
+                } else {
+                chartHandler(res, chart_type, studentName, chart_style);
+                }
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            alert(`student ready Event post failed:${errorThrown}`);
+        }
+    });
+    set_studentLoading(false);    
+}
+
 function radioSwitch(value) {
     // If we wanted to do anything while they switch
-    console.log(value)
     renderChart(value, globalStudentName);
 }
 
 
-async function clickStudent(programme, studyStage, studentNumber, studentName, scrollIntoView = true, newDate = null) {
+function clickStudent(programme, studyStage, studentNumber, studentName, scrollIntoView = true, newDate = null) {
     //debugger;
     //$(this).blur();
     globalStudentName = studentName;
@@ -204,25 +246,23 @@ async function clickStudent(programme, studyStage, studentNumber, studentName, s
     highlightStudentRow(studentNumber);
     store_parameters(programme, studyStage, studentNumber, studentName);     
     set_studentLoading(true);
-
+    const checkedvleEngagementRadio = document.querySelector('input[name="vleEngagementRadio"]:checked');
     const checkedAttendanceRadio = document.querySelector('input[name="attendanceRadio"]:checked');
     const checkedELibEngagementRadio = document.querySelector('input[name="eLibEngagementRadio"]:checked');
-    const checkedvleEngagementRadio = document.querySelector('input[name="vleEngagementRadio"]:checked');
-    renderChart(checkedELibEngagementRadio.value, studentName)
-    renderChart(checkedAttendanceRadio.value, studentName)
-    renderChart(checkedvleEngagementRadio.value, studentName)
 
+    renderChart(checkedvleEngagementRadio.value, studentName)
+    renderChart(checkedAttendanceRadio.value, studentName)
+    renderChart(checkedELibEngagementRadio.value, studentName)
+
+    // Show the student graphs
     $("#obula_studentGraphs_div").show();
     // Hide Module graph
-    $("#obula_studentModule_img").hide();
-    $('#obula_studentModule_row').hide();
- 
+    $('#vleEngagementByModule').hide();
 
     if (scrollIntoView) {
         var imgElement = document.getElementById("obula_studentGraphs_div");
         imgElement.scrollIntoView(false);           // true is going too far
     }
-
 }
 
 function clickStudent_old(programme, studyStage, studentNumber, studentName, scrollIntoView = true, newDate = null) {
@@ -323,6 +363,46 @@ function showStudentAlerts(studentNumber) {
     
 
 
+}
+
+function showModuleEng_v2() {
+    //debugger;
+    var currentWeek = $("#obula_currentweek").val();       // Don't parse the JSON
+    var studentNumber = getStudentNumberParameter();
+    var studentName = getStudentNameParameter();
+    var chartType = "moduleEngagement";
+    var chart_style = null;
+
+
+    var data = {
+        "currentWeek": currentWeek, "studentNumber": studentNumber, "studentName": studentName, "chartType": chartType
+    };
+    $.ajax({
+        type: 'POST',
+        url: "../blocks/obu_learnanalytics/student_module_eng_v2.php",
+        data: data,
+        success: function (res) {
+            //debugger;
+            $resType = typeof res;
+            if ($resType === 'object') {    // Images actually come back as strings
+                // So this is actually an error structure
+                if (res.http_status == 204) {
+                    alert('No Module Engagement for this Student and Time Period');
+                } else {
+                    alert('Error from post, HTTP Status: ' + res.http_status + '\n' + res.message);
+                }
+            } else {
+                chartHandler(res, chartType, studentName, chart_style);
+
+                $('#vleEngagementByModule').css('display', 'flex');
+
+            }
+        },
+        error: function (errMsg) {
+            //debugger;
+            alert('showModuleEng Event post failed:' + errMsg);
+        }
+    });
 }
 
 function showModuleEng() {

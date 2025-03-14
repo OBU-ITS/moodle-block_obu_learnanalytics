@@ -791,9 +791,45 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
                     ]);
                     $out .= 'Page Views';
                     $out .= html_writer::end_tag('label');
+                     // Then add a button underneath
+                $out .= html_writer::start_tag('div', [
+                    'style' => 'margin-top: 10px;' // some spacing from the radios
+                ]);
+
+                // This creates a <button> with label "By Module" and some inline CSS
+                $out .= html_writer::tag('button', 'By Module', [
+                    'id' => 'byModuleButton',
+                    'type' => 'button',
+                    'onclick' => 'showModuleEng_v2()',
+                    'style' => 'padding: 10px 16px; background-color: #d10373; color: #fff; border: none; border-radius: 4px; cursor: pointer;'
+                ]);
+
+                $out .= html_writer::end_tag('div');
                 $out .= html_writer::end_tag('div'); // end radiosForVLEEngagement
+               
             $out .= html_writer::end_tag('div'); // end vleEngagementAndRadiosRow
         
+            // ──────────────────────────────────────────────────
+            // (1.5) Engagement by Module
+            // ──────────────────────────────────────────────────
+            $out .= html_writer::start_tag('div', [
+                'id' => 'vleEngagementByModule',
+                'style' => 'display: none; justify-content: center; align-items: center; margin-top: 20px;'
+            ]);
+
+                // A) Engagement Chart Container (left side)
+                $out .= html_writer::start_tag('div', [
+                    'id' => 'studentChartEngagementByModuleContainer',
+                    'style' => 'max-width: 60%; width: 100%; margin-top: 20px; display: flex; justify-content: center;'
+                ]);
+                    $out .= html_writer::tag('canvas', '', [
+                        'id' => 'studentChartEngagementByModule',
+                        'style' => 'display:block;' 
+                    ]);
+                $out .= html_writer::end_tag('div');
+            $out .= html_writer::end_tag('div'); // end EngagementbyModule row
+        
+
             // ──────────────────────────────────────────
             // (2) Attendance chart
             // ──────────────────────────────────────────
@@ -849,13 +885,13 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
             // ──────────────────────────────────────────
             $out .= html_writer::start_tag('div', [
                 'id' => 'eLibEngagement',
-                'style' => 'display: flex; justify-content: center; align-items: center; margin-top: 20px;'
+                'style' => 'display: flex; justify-content: center; align-items: center; margin-top: 20px;margin-bottom:20px;'
             ]);
 
                 // A) Engagement Chart Container (left side)
                 $out .= html_writer::start_tag('div', [
                     'id' => 'studentChartELibEngagementContainer',
-                    'style' => 'max-width: 60%; width: 100%; margin-top: 20px; display: flex; justify-content: center; align-items: center;'
+                    'style' => 'max-width: 60%; width: 100%; margin-top: 20px; display: flex; justify-content: center;'
                 ]);
                     $out .= html_writer::tag('canvas', '', [
                         'id' => 'studentChartELibEngagement',

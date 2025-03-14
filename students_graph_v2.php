@@ -76,6 +76,7 @@ try {
         $curl_common = new \block_obu_learnanalytics\curl\common();
         $enc_pgm = htmlspecialchars(urlencode(str_replace('/','~',$programme)));
         $params = "student/pgmgraphdata/$sid/{$enc_pgm}/{$sStage}/$simpleCurrent/median/{$column}/";
+        
         try {
             $studentGraphData = $curl_common->send_request($params);
             echo json_encode($studentGraphData);

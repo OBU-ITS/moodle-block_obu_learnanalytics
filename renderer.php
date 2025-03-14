@@ -109,10 +109,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         // Include our ChartJS chart functions
         $chartjsObjects = new moodle_url('/blocks/obu_learnanalytics/scripts/chartjs_objects.js?version=1.12.5');
         $outScripts .= html_writer::script(null, $chartjsObjects);
-
-        // Include student_dashboard.js script
-        $dashboardScriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/student_dashboard_v2.js?version=1.12.5');
-        $outScripts .= html_writer::script(null, $dashboardScriptUrl);
+        
         // End of scripts
         $out = $outScripts;
         $out .= self::modal_any_popup();           // For Help explanation

@@ -44,10 +44,29 @@ function studentVleMinutesLineChart(data, studentName) {
             ]
         },
         options: {
+            interaction: {
+                mode: 'index',      // <-- Show all data for that index
+                intersect: false    // <-- Even if the cursor isn't exactly on a bar
+            },
             plugins: {
                 title: {
                   display: true,
                   text: 'Moodle Engagement - Duration (Minutes)'
+                },
+                tooltip: {
+                    callbacks: {
+                      label: function(context) {
+                        let label = context.dataset.label || '';
+                        if (label) {
+                          label += ': ';
+                        }
+                        let value = context.parsed.y;
+                        if (!isNaN(value)) {
+                          value = value + ' minutes';
+                        }
+                        return label + value;
+                      }
+                    }
                 }
             },
             scales: {
@@ -94,10 +113,29 @@ function studentVleVisitsLineChart(data, studentName) {
             ]
         },
         options: {
+            interaction: {
+                mode: 'index',      // <-- Show all data for that index
+                intersect: false    // <-- Even if the cursor isn't exactly on a bar
+            },
             plugins: {
                 title: {
                   display: true,
                   text: 'Moodle Engagement - Visits (Sessions)'
+                },
+                tooltip: {
+                    callbacks: {
+                      label: function(context) {
+                        let label = context.dataset.label || '';
+                        if (label) {
+                          label += ': ';
+                        }
+                        let value = context.parsed.y;
+                        if (!isNaN(value)) {
+                          value = value + ' visits';
+                        }
+                        return label + value;
+                      }
+                    }
                 }
             },
             scales: {
@@ -144,10 +182,29 @@ function studentVlePageViewsLineChart(data, studentName) {
             ]
         },
         options: {
+            interaction: {
+                mode: 'index',      // <-- Show all data for that index
+                intersect: false    // <-- Even if the cursor isn't exactly on a bar
+            },
             plugins: {
                 title: {
                   display: true,
                   text: 'Moodle Engagement - Page Views'
+                },
+                tooltip: {
+                    callbacks: {
+                      label: function(context) {
+                        let label = context.dataset.label || '';
+                        if (label) {
+                          label += ': ';
+                        }
+                        let value = context.parsed.y;
+                        if (!isNaN(value)) {
+                          value = value + ' page views';
+                        }
+                        return label + value;
+                      }
+                    }
                 }
             },
             scales: {
@@ -213,10 +270,29 @@ function studentVLEDurationByModule(data) {
             datasets: allDatasets
         },
         options: {
+            interaction: {
+                mode: 'index',      // <-- Show all data for that index
+                intersect: false    // <-- Even if the cursor isn't exactly on a bar
+            },
             plugins: {
                 title: {
                     display: true,
                     text: 'Student Duration by Module (Minutes)'
+                },
+                tooltip: {
+                    callbacks: {
+                      label: function(context) {
+                        let label = context.dataset.label || '';
+                        if (label) {
+                          label += ': ';
+                        }
+                        let value = context.parsed.y;
+                        if (!isNaN(value)) {
+                          value = value + ' minutes';
+                        }
+                        return label + value;
+                      }
+                    }
                 }
             },
             scales: {
@@ -278,15 +354,41 @@ function studentAttendanceLineChart(data, studentName) {
             ]
         },
         options: {
+            interaction: {
+                mode: 'index',      // <-- Show all data for that index
+                intersect: false    // <-- Even if the cursor isn't exactly on a bar
+            },
             plugins: {
                 title: {
                   display: true,
                   text: 'Attendance Percentage of Lectures/Events Attended'
+                },
+                tooltip: {
+                    callbacks: {
+                      label: function(context) {
+                        let label = context.dataset.label || '';
+                        if (label) {
+                          label += ': ';
+                        }
+                        let value = context.parsed.y;
+                        if (!isNaN(value)) {
+                          value = value + '%';
+                        }
+                        return label + value;
+                      }
+                    }
                 }
             },
+
             scales: {
                 y: {
-                    beginAtZero: true
+                    beginAtZero: true,
+                    ticks: {
+                      // Append '%' to each tick label
+                      callback: function (value) {
+                        return value + '%';
+                      }
+                    }
                 }
             }
         }
@@ -332,15 +434,40 @@ function studentAttendanceBarChart(data, studentName) {
             ]
         },
         options: {
+            interaction: {
+                mode: 'index',      // <-- Show all data for that index
+                intersect: false    // <-- Even if the cursor isn't exactly on a bar
+            },
             plugins: {
                 title: {
                   display: true,
                   text: 'Attendance Percentage of Lectures/Events Attended'
+                },
+                tooltip: {
+                    callbacks: {
+                      label: function(context) {
+                        let label = context.dataset.label || '';
+                        if (label) {
+                          label += ': ';
+                        }
+                        let value = context.parsed.y;
+                        if (!isNaN(value)) {
+                          value = value + '%';
+                        }
+                        return label + value;
+                      }
+                    }
                 }
             },
             scales: {
                 y: {
-                    beginAtZero: true
+                    beginAtZero: true,
+                    ticks: {
+                      // Append '%' to each tick label
+                      callback: function (value) {
+                        return value + '%';
+                      }
+                    }
                 }
             }
         }
@@ -435,10 +562,29 @@ function eLibDurationLineChart(data, studentName) {
             ]
         },
         options: {
+            interaction: {
+                mode: 'index',      // <-- Show all data for that index
+                intersect: false    // <-- Even if the cursor isn't exactly on a bar
+            },
             plugins: {
                 title: {
                   display: true,
                   text: 'Electronic Library Engagement - Duration (Minutes)'
+                },
+                tooltip: {
+                    callbacks: {
+                      label: function(context) {
+                        let label = context.dataset.label || '';
+                        if (label) {
+                          label += ': ';
+                        }
+                        let value = context.parsed.y;
+                        if (!isNaN(value)) {
+                          value = value + ' minutes';
+                        }
+                        return label + value;
+                      }
+                    }
                 }
             },
             scales: {
@@ -490,9 +636,28 @@ function eLibPageVisitsLineChart(data, studentName) {
         },
         options: {
             plugins: {
+                interaction: {
+                    mode: 'index',      // <-- Show all data for that index
+                    intersect: false    // <-- Even if the cursor isn't exactly on a bar
+                },
                 title: {
                     display: true,
                     text: 'Electronic Library Engagement - Page Views (Sessions)'
+                },
+                tooltip: {
+                    callbacks: {
+                      label: function(context) {
+                        let label = context.dataset.label || '';
+                        if (label) {
+                          label += ': ';
+                        }
+                        let value = context.parsed.y;
+                        if (!isNaN(value)) {
+                          value = value + ' visits';
+                        }
+                        return label + value;
+                      }
+                    }
                 }
             },
             scales: {
@@ -543,10 +708,29 @@ function eLibDownloadSizeLineChart(data, studentName) {
             ]
         },
         options: {
+            interaction: {
+                mode: 'index',      // <-- Show all data for that index
+                intersect: false    // <-- Even if the cursor isn't exactly on a bar
+            },
             plugins: {
                 title: {
                     display: true,
                     text: 'Electronic Library Engagement - Download Size (MB)'
+                },
+                tooltip: {
+                    callbacks: {
+                      label: function(context) {
+                        let label = context.dataset.label || '';
+                        if (label) {
+                          label += ': ';
+                        }
+                        let value = context.parsed.y;
+                        if (!isNaN(value)) {
+                          value = value + ' mb downloaded';
+                        }
+                        return label + value;
+                      }
+                    }
                 }
             },
             scales: {

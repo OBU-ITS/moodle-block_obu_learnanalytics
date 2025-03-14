@@ -91,12 +91,28 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
      */
     public function staff_dashboard_summary()
     {
+
+        
         $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=1.12.6');
         $outScripts = html_writer::script(null, $scriptUrl);
         $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/staff_dashboard.js?version=1.12.6');
         $outScripts .= html_writer::script(null, $scriptUrl);
         $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/check_connection.js?version=1.12.6');
         $outScripts .= html_writer::script(null, $scriptUrl);
+        // Include Chart.js script
+        $chartJsUrl = new moodle_url('https://cdn.jsdelivr.net/npm/chart.js');
+        $outScripts .= html_writer::script(null, $chartJsUrl);
+
+        // Include Chart.js datalabels plugin
+        $datalabelsUrl = new moodle_url('https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels');
+        $outScripts .= html_writer::script(null, $datalabelsUrl);
+        // Include our ChartJS chart functions
+        $chartjsObjects = new moodle_url('/blocks/obu_learnanalytics/scripts/chartjs_objects.js?version=1.12.5');
+        $outScripts .= html_writer::script(null, $chartjsObjects);
+
+        // Include student_dashboard.js script
+        $dashboardScriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/student_dashboard_v2.js?version=1.12.5');
+        $outScripts .= html_writer::script(null, $dashboardScriptUrl);
         // End of scripts
         $out = $outScripts;
         $out .= self::modal_any_popup();           // For Help explanation
@@ -381,6 +397,8 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
      */
     public function tutor_dashboard(string $defaultProgramme, bool $subDashboard, string $studentNumber = null, string $type)
     {
+
+        
         $out = '';
         $out .= html_writer::start_tag("div");
         $out .= self::tutor_grid($defaultProgramme, $subDashboard, $studentNumber);
@@ -416,10 +434,12 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
             $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=1.12.6');
             $outScripts .= html_writer::script(null, $scriptUrl);
         }
+
         // Now the main one that we always want to load
         $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/tutor_grid.js?version=1.12.6');
         $outScripts .= html_writer::script(null, $scriptUrl);
-        // End of scripts
+
+
 
         // So now output some selection and sorting criteria
         // in a table
@@ -699,9 +719,197 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
 
         $jsonParams = $util_odds->store_parameters($programme, "*", $sid, $sname);
         $out .= html_writer::tag('input', '', array('type' => 'hidden', 'id' => 'obula_parameters', 'value' => "$jsonParams"));
-        $out .= self::student_chart_placeholders(!$fromtutordb, $hide);
+        $out .= self::student_chart_placeholders_v2(!$fromtutordb, $hide);
 
         return $out;
+    }
+
+
+
+    public function student_chart_placeholders_v2(bool $outputCohortPlaceHolder, bool $hide)
+    {
+
+        $out = "";
+        $atts = array('id' => 'obula_studentGraphs_div');
+        if ($hide) {
+            $atts['style'] = 'display: none';
+        }
+        $out .= html_writer::start_tag('div', $atts);
+            // ──────────────────────────────────────────────────
+            // (1) Engagement + Radios in one horizontal row
+            // ──────────────────────────────────────────────────
+            $out .= html_writer::start_tag('div', [
+                'id' => 'vleEngagement',
+                'style' => 'display: flex; justify-content: center; align-items: center; margin-top: 20px;'
+            ]);
+
+                // A) Engagement Chart Container (left side)
+                $out .= html_writer::start_tag('div', [
+                    'id' => 'studentChartVLEEngagementContainer',
+                    'style' => 'max-width: 60%; width: 100%; margin-top: 20px; display: flex; justify-content: center; align-items: center;'
+                ]);
+                    $out .= html_writer::tag('canvas', '', [
+                        'id' => 'studentChartVLEEngagement',
+                        'style' => 'display:block;' 
+                    ]);
+                $out .= html_writer::end_tag('div');
+                // B) Radios (right side)
+                $out .= html_writer::start_tag('div', [
+                    'id' => 'radiosForVLEEngagement',
+                    // Use flex-direction: column to stack the radio buttons vertically
+                    'style' => 'margin-left: 20px; display: flex; flex-direction: column;'
+                ]);
+                    // Duration
+                    $out .= html_writer::start_tag('label');
+                    $out .= html_writer::empty_tag('input', [
+                        'type' => 'radio',
+                        'name' => 'vleEngagementRadio',
+                        'value' => 'vleduration',
+                        'checked' => 'checked',
+                        'onclick' => 'radioSwitch(this.value)'
+                    ]);
+                    $out .= 'Duration';
+                    $out .= html_writer::end_tag('label');
+
+                    // Visits
+                    $out .= html_writer::start_tag('label');
+                    $out .= html_writer::empty_tag('input', [
+                        'type' => 'radio',
+                        'name' => 'vleEngagementRadio',
+                        'value' => 'vlesessions',
+                        'onclick' => 'radioSwitch(this.value)'
+                    ]);
+                    $out .= 'Visits';
+                    $out .= html_writer::end_tag('label');
+                    // Page Views
+                    $out .= html_writer::start_tag('label');
+                    $out .= html_writer::empty_tag('input', [
+                        'type' => 'radio',
+                        'name' => 'vleEngagementRadio',
+                        'value' => 'vleviews',
+                        'onclick' => 'radioSwitch(this.value)'
+                    ]);
+                    $out .= 'Page Views';
+                    $out .= html_writer::end_tag('label');
+                $out .= html_writer::end_tag('div'); // end radiosForVLEEngagement
+            $out .= html_writer::end_tag('div'); // end vleEngagementAndRadiosRow
+        
+            // ──────────────────────────────────────────
+            // (2) Attendance chart
+            // ──────────────────────────────────────────
+
+            $out .= html_writer::start_tag('div', [
+                'id' => 'attendancerow',
+                'style' => 'display: flex; justify-content: center; align-items: center; margin-top: 20px;'
+            ]);
+                $out .= html_writer::start_tag('div', [
+                    'id' => 'studentChartAttendanceContainer',
+                    'style' => 'max-width: 60%; width: 100%; margin-top: 20px; display: flex; justify-content: center;'
+                ]);
+                    $out .= html_writer::tag('canvas', '', [
+                        'id' => 'studentChartAttendance',
+                        'width' => '200',
+                        'height' => '100',
+                        'style' => 'display:block;'
+                    ]);
+                    
+                $out .= html_writer::end_tag('div');
+                $out .= html_writer::start_tag('div', [
+                    'id' => 'radiosForEngagement',
+                    // Use flex-direction: column to stack the radio buttons vertically
+                    'style' => 'margin-left: 20px; display: flex; flex-direction: column;'
+                ]);
+                    // Line Chart
+                    $out .= html_writer::start_tag('label');
+                    $out .= html_writer::empty_tag('input', [
+                        'type' => 'radio',
+                        'name' => 'attendanceRadio',
+                        'value' => 'attperc_linechart',
+                        'checked' => 'checked',
+                        'onclick' => 'radioSwitch(this.value)'
+                    ]);
+                    $out .= 'Line Chart';
+                    $out .= html_writer::end_tag('label');
+
+                     // Bar Chart
+                     $out .= html_writer::start_tag('label');
+                     $out .= html_writer::empty_tag('input', [
+                         'type' => 'radio',
+                         'name' => 'attendanceRadio',
+                         'value' => 'attperc_barchart',
+                        'onclick' => 'radioSwitch(this.value)'
+                     ]);
+                     $out .= 'Bar Chart';
+                     $out .= html_writer::end_tag('label');
+                $out .= html_writer::end_tag('div');    // End radios
+            $out .= html_writer::end_tag('div'); // end attendancerow
+
+            // ──────────────────────────────────────────
+            // (3) eLibrary (EzProxy) chart
+            // ──────────────────────────────────────────
+            $out .= html_writer::start_tag('div', [
+                'id' => 'eLibEngagement',
+                'style' => 'display: flex; justify-content: center; align-items: center; margin-top: 20px;'
+            ]);
+
+                // A) Engagement Chart Container (left side)
+                $out .= html_writer::start_tag('div', [
+                    'id' => 'studentChartELibEngagementContainer',
+                    'style' => 'max-width: 60%; width: 100%; margin-top: 20px; display: flex; justify-content: center; align-items: center;'
+                ]);
+                    $out .= html_writer::tag('canvas', '', [
+                        'id' => 'studentChartELibEngagement',
+                        'style' => 'display:block;' 
+                    ]);
+                $out .= html_writer::end_tag('div');
+                // B) Radios (right side)
+                $out .= html_writer::start_tag('div', [
+                    'id' => 'radiosELibEngagement',
+                    // Use flex-direction: column to stack the radio buttons vertically
+                    'style' => 'margin-left: 20px; display: flex; flex-direction: column;'
+                ]);
+                    // Duration
+                    $out .= html_writer::start_tag('label');
+                    $out .= html_writer::empty_tag('input', [
+                        'type' => 'radio',
+                        'name' => 'eLibEngagementRadio',
+                        'value' => 'ezduration',
+                        'checked' => 'checked',
+                        'onclick' => 'radioSwitch(this.value)'
+                    ]);
+                    $out .= 'Duration';
+                    $out .= html_writer::end_tag('label');
+
+                    // Visits
+                    $out .= html_writer::start_tag('label');
+                    $out .= html_writer::empty_tag('input', [
+                        'type' => 'radio',
+                        'name' => 'eLibEngagementRadio',
+                        'value' => 'ezsessions',
+                        'onclick' => 'radioSwitch(this.value)'
+                    ]);
+                    $out .= 'Visits';
+                    $out .= html_writer::end_tag('label');
+                    // Page Views
+                    $out .= html_writer::start_tag('label');
+                    $out .= html_writer::empty_tag('input', [
+                        'type' => 'radio',
+                        'name' => 'eLibEngagementRadio',
+                        'value' => 'ezsize',
+                        'onclick' => 'radioSwitch(this.value)'
+                    ]);
+                    $out .= 'Downloaded (MB)';
+                    $out .= html_writer::end_tag('label');
+                $out .= html_writer::end_tag('div'); // end radiosForEngagement
+            $out .= html_writer::end_tag('div'); // end engagementAndRadiosRow
+        
+
+
+        $out .= html_writer::end_tag('div'); // End of obula_studentGraphs_div
+        // Return the output
+        return $out;
+
+
     }
 
     /**

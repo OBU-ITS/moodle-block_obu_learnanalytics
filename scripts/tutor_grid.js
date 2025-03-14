@@ -3,6 +3,7 @@
 
 var gridLoading = studentLoading = chartLoading = marksLoading = false;
 var studentLoadingCount = 0;
+let globalStudentName = null;
 
 $(document).ready(function () {
     //debugger;
@@ -56,7 +57,6 @@ function set_chartLoading(state) {
     chartLoading = state;
     set_somethingLoading(state);
 }
-
 function set_marksLoading(state) {
     marksLoading = state;
     set_somethingLoading(state);
@@ -189,7 +189,43 @@ function highlightStudentRow(studentNumber) {
     }
 }
 
-function clickStudent(programme, studyStage, studentNumber, studentName, scrollIntoView = true, newDate = null) {
+function radioSwitch(value) {
+    // If we wanted to do anything while they switch
+    console.log(value)
+    renderChart(value, globalStudentName);
+}
+
+
+async function clickStudent(programme, studyStage, studentNumber, studentName, scrollIntoView = true, newDate = null) {
+    //debugger;
+    //$(this).blur();
+    globalStudentName = studentName;
+
+    highlightStudentRow(studentNumber);
+    store_parameters(programme, studyStage, studentNumber, studentName);     
+    set_studentLoading(true);
+
+    const checkedAttendanceRadio = document.querySelector('input[name="attendanceRadio"]:checked');
+    const checkedELibEngagementRadio = document.querySelector('input[name="eLibEngagementRadio"]:checked');
+    const checkedvleEngagementRadio = document.querySelector('input[name="vleEngagementRadio"]:checked');
+    renderChart(checkedELibEngagementRadio.value, studentName)
+    renderChart(checkedAttendanceRadio.value, studentName)
+    renderChart(checkedvleEngagementRadio.value, studentName)
+
+    $("#obula_studentGraphs_div").show();
+    // Hide Module graph
+    $("#obula_studentModule_img").hide();
+    $('#obula_studentModule_row').hide();
+ 
+
+    if (scrollIntoView) {
+        var imgElement = document.getElementById("obula_studentGraphs_div");
+        imgElement.scrollIntoView(false);           // true is going too far
+    }
+
+}
+
+function clickStudent_old(programme, studyStage, studentNumber, studentName, scrollIntoView = true, newDate = null) {
     //debugger;
     //$(this).blur();
     highlightStudentRow(studentNumber);

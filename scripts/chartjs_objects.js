@@ -51,7 +51,10 @@ function studentVleMinutesLineChart(data, studentName) {
             plugins: {
                 title: {
                   display: true,
-                  text: 'Moodle Engagement - Duration (Minutes)'
+                  text: 'Moodle Engagement - Duration (Minutes)',
+                  font: {
+                    size: 18 
+                  }
                 },
                 tooltip: {
                     callbacks: {
@@ -120,7 +123,10 @@ function studentVleVisitsLineChart(data, studentName) {
             plugins: {
                 title: {
                   display: true,
-                  text: 'Moodle Engagement - Visits (Sessions)'
+                  text: 'Moodle Engagement - Visits (Sessions)',
+                  font: {
+                    size: 18 
+                  }
                 },
                 tooltip: {
                     callbacks: {
@@ -189,7 +195,10 @@ function studentVlePageViewsLineChart(data, studentName) {
             plugins: {
                 title: {
                   display: true,
-                  text: 'Moodle Engagement - Page Views'
+                  text: 'Moodle Engagement - Page Views',
+                  font: {
+                    size: 18 
+                  }
                 },
                 tooltip: {
                     callbacks: {
@@ -277,7 +286,10 @@ function studentVLEDurationByModule(data) {
             plugins: {
                 title: {
                     display: true,
-                    text: 'Student Duration by Module (Minutes)'
+                    text: 'Student Duration by Module (Minutes)',
+                    font: {
+                      size: 18 
+                    }
                 },
                 tooltip: {
                     callbacks: {
@@ -361,7 +373,10 @@ function studentAttendanceLineChart(data, studentName) {
             plugins: {
                 title: {
                   display: true,
-                  text: 'Attendance Percentage of Lectures/Events Attended'
+                  text: 'Attendance Percentage of Lectures/Events Attended',
+                  font: {
+                    size: 18 
+                  }
                 },
                 tooltip: {
                     callbacks: {
@@ -441,7 +456,10 @@ function studentAttendanceBarChart(data, studentName) {
             plugins: {
                 title: {
                   display: true,
-                  text: 'Attendance Percentage of Lectures/Events Attended'
+                  text: 'Attendance Percentage of Lectures/Events Attended',
+                  font: {
+                    size: 18 
+                  }
                 },
                 tooltip: {
                     callbacks: {
@@ -507,7 +525,10 @@ function studentAttendanceAreaChart(data, studentName) {
             plugins: {
                 title: {
                   display: true,
-                  text: 'Attendance Percentage of Lectures/Events Attended'
+                  text: 'Attendance Percentage of Lectures/Events Attended',
+                  font: {
+                    size: 18 
+                  }
                 }
             },
             scales: {
@@ -569,7 +590,10 @@ function eLibDurationLineChart(data, studentName) {
             plugins: {
                 title: {
                   display: true,
-                  text: 'Electronic Library Engagement - Duration (Minutes)'
+                  text: 'Electronic Library Engagement - Duration (Minutes)',
+                  font: {
+                    size: 18 
+                  }
                 },
                 tooltip: {
                     callbacks: {
@@ -642,7 +666,10 @@ function eLibPageVisitsLineChart(data, studentName) {
                 },
                 title: {
                     display: true,
-                    text: 'Electronic Library Engagement - Page Views (Sessions)'
+                    text: 'Electronic Library Engagement - Page Visits (Sessions)',
+                    font: {
+                      size: 18 
+                    }
                 },
                 tooltip: {
                     callbacks: {
@@ -715,7 +742,10 @@ function eLibDownloadSizeLineChart(data, studentName) {
             plugins: {
                 title: {
                     display: true,
-                    text: 'Electronic Library Engagement - Download Size (MB)'
+                    text: 'Electronic Library Engagement - Download Size (MB)',
+                    font: {
+                      size: 18 
+                    }
                 },
                 tooltip: {
                     callbacks: {

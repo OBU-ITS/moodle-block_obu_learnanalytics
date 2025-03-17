@@ -109,7 +109,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         // Include our ChartJS chart functions
         $chartjsObjects = new moodle_url('/blocks/obu_learnanalytics/scripts/chartjs_objects.js?version=1.12.5');
         $outScripts .= html_writer::script(null, $chartjsObjects);
-        
+
         // End of scripts
         $out = $outScripts;
         $out .= self::modal_any_popup();           // For Help explanation
@@ -732,6 +732,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
             $atts['style'] = 'display: none';
         }
         $out .= html_writer::start_tag('div', $atts);
+
             // ──────────────────────────────────────────────────
             // (1) Engagement + Radios in one horizontal row
             // ──────────────────────────────────────────────────
@@ -743,7 +744,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
                 // A) Engagement Chart Container (left side)
                 $out .= html_writer::start_tag('div', [
                     'id' => 'studentChartVLEEngagementContainer',
-                    'style' => 'max-width: 60%; width: 100%; margin-top: 20px; display: flex; justify-content: center; align-items: center;'
+                    'style' => 'min-width:60%; margin-top: 20px; display: flex; justify-content: center; align-items: center;'
                 ]);
                     $out .= html_writer::tag('canvas', '', [
                         'id' => 'studentChartVLEEngagement',
@@ -817,7 +818,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
                 // A) Engagement Chart Container (left side)
                 $out .= html_writer::start_tag('div', [
                     'id' => 'studentChartEngagementByModuleContainer',
-                    'style' => 'max-width: 60%; width: 100%; margin-top: 20px; display: flex; justify-content: center;'
+                    'style' => 'min-width:60%; margin-top: 20px; display: flex; justify-content: center;'
                 ]);
                     $out .= html_writer::tag('canvas', '', [
                         'id' => 'studentChartEngagementByModule',
@@ -837,7 +838,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
             ]);
                 $out .= html_writer::start_tag('div', [
                     'id' => 'studentChartAttendanceContainer',
-                    'style' => 'max-width: 60%; width: 100%; margin-top: 20px; display: flex; justify-content: center;'
+                    'style' => 'min-width:60%; margin-top: 20px; display: flex; justify-content: center;'
                 ]);
                     $out .= html_writer::tag('canvas', '', [
                         'id' => 'studentChartAttendance',
@@ -888,7 +889,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
                 // A) Engagement Chart Container (left side)
                 $out .= html_writer::start_tag('div', [
                     'id' => 'studentChartELibEngagementContainer',
-                    'style' => 'max-width: 60%; width: 100%; margin-top: 20px; display: flex; justify-content: center;'
+                    'style' => 'min-width:60%; margin-top: 20px; display: flex; justify-content: center;'
                 ]);
                     $out .= html_writer::tag('canvas', '', [
                         'id' => 'studentChartELibEngagement',

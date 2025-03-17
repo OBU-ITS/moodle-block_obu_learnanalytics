@@ -190,47 +190,39 @@ function highlightStudentRow(studentNumber) {
 }
 
 function renderChart(chart_type, studentName) {
-    // Because the Tutor grid also loads some student charts
-    // This event will fire for both, but we can check the presence of the cohort placeholder
-    //debugger;
-    var currentWeek = $("#obula_currentweek").val();       // Don't parse the JSON
-    if (currentWeek == null || currentWeek == undefined) {
-        currentWeek = "";
-    }
-    var chart_style = null;
-    // Check if there is a specifi chart_style for that chart_type
-    if (chart_type.includes('_')) {
-        // Split on underscore
+    return new Promise((resolve, reject) => {
+      var currentWeek = $("#obula_currentweek").val() || "";
+  
+      var chart_style = null;
+      if (chart_type.includes('_')) {
         chart_style = chart_type.split('_')[1];
         chart_type = chart_type.split('_')[0];
       }
-      
-    
-    var data = {
+  
+      var data = {
         programme: getProgrammeParameter(),
-        studentNumber: getStudentNumberParameter(),       
-        sStage: getModLevelParameter(),     
-        currentWeek: currentWeek,                   
+        studentNumber: getStudentNumberParameter(),
+        sStage: getModLevelParameter(),
+        currentWeek: currentWeek,
         chartType: chart_type
-    };
-    $.ajax({
+      };
+  
+      $.ajax({
         type: 'POST',
         url: "../blocks/obu_learnanalytics/students_graph_v2.php",
         data: data,
         dataType: 'json',
         success: function (res) {
-            if (Array.isArray(res) && res.length) {
-                chartHandler(res[0], chart_type, studentName, chart_style);
-                } else {
-                chartHandler(res, chart_type, studentName, chart_style);
-                }
+          chartHandler(res, chart_type, studentName, chart_style);
+          resolve();  // <-- Resolve the Promise when done
         },
         error: function (jqXHR, textStatus, errorThrown) {
-            alert(`student ready Event post failed:${errorThrown}`);
+          reject(errorThrown); // <-- Reject on error
         }
+      });
     });
-    set_studentLoading(false);    
-}
+  }
+  
 
 function radioSwitch(value) {
     // If we wanted to do anything while they switch
@@ -246,23 +238,35 @@ function clickStudent(programme, studyStage, studentNumber, studentName, scrollI
     highlightStudentRow(studentNumber);
     store_parameters(programme, studyStage, studentNumber, studentName);     
     set_studentLoading(true);
+
+    // Reset "By Module" button
+    $('#byModuleButton').prop('disabled', false).css('opacity', '1');
+
     const checkedvleEngagementRadio = document.querySelector('input[name="vleEngagementRadio"]:checked');
     const checkedAttendanceRadio = document.querySelector('input[name="attendanceRadio"]:checked');
     const checkedELibEngagementRadio = document.querySelector('input[name="eLibEngagementRadio"]:checked');
 
-    renderChart(checkedvleEngagementRadio.value, studentName)
-    renderChart(checkedAttendanceRadio.value, studentName)
-    renderChart(checkedELibEngagementRadio.value, studentName)
+    const engagementChart = renderChart(checkedvleEngagementRadio.value, studentName)
+    const attendanceChart = renderChart(checkedAttendanceRadio.value, studentName)
+    const elibChart = renderChart(checkedELibEngagementRadio.value, studentName)
 
-    // Show the student graphs
-    $("#obula_studentGraphs_div").show();
-    // Hide Module graph
-    $('#vleEngagementByModule').hide();
 
-    if (scrollIntoView) {
-        var imgElement = document.getElementById("obula_studentGraphs_div");
-        imgElement.scrollIntoView(false);           // true is going too far
-    }
+    // Once ALL three charts have finished (Ajax success), show and scroll
+    Promise.all([engagementChart, attendanceChart, elibChart]).then(() => {
+        $('#vleEngagementByModule').hide();
+        if (scrollIntoView) {
+            document.getElementById("obula_studentGraphs_div").style.display = "block";
+            const el = document.getElementById("obula_studentGraphs_div");
+            el.scrollIntoView(false);
+            
+        }
+        set_studentLoading(false);
+
+    }).catch(err => {
+        console.error("One of the charts failed", err);
+    });
+
+
 }
 
 function clickStudent_old(programme, studyStage, studentNumber, studentName, scrollIntoView = true, newDate = null) {
@@ -372,7 +376,9 @@ function showModuleEng_v2() {
     var studentName = getStudentNameParameter();
     var chartType = "moduleEngagement";
     var chart_style = null;
-
+    $('#byModuleButton')
+    .prop('disabled', true)
+    .css('opacity', '0.5');
 
     var data = {
         "currentWeek": currentWeek, "studentNumber": studentNumber, "studentName": studentName, "chartType": chartType
@@ -395,6 +401,9 @@ function showModuleEng_v2() {
                 chartHandler(res, chartType, studentName, chart_style);
 
                 $('#vleEngagementByModule').css('display', 'flex');
+                $('#byModuleButton')
+                    .prop('disabled', false)
+                    .css('opacity', '1');
 
             }
         },

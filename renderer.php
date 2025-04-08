@@ -216,7 +216,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         $out .= "<table><tr>";
         $out .= "<td>" . $show_button_html . "</td>";
         $out .= "<td>";  //For Programme code etc
-        $out .= html_writer::tag("input disabled", null, array("type" => "text", "value" => $last_pgm_code, "id" => "obula_show_pgm_code", "class" => "summ-show-id"));
+        $out .= html_writer::tag("input disabled", null, array("type" => "text", "value" => $last_pgm_code, "id" => "obula_show_pgm_code", "class" => "summ-show-id", "style" => "max-width: 75%;box-sizing:border-box;display:block"));
         $out .= "</td>";
         $out .= "</tr>";
         // Now show student and programme
@@ -225,7 +225,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         $out .= "<td>";
         // TODO PROTECT AGAINST SQL INJECTION
         // onclick" => "showBecomeView('T', 'obula_show_stud_no')"
-        $out .= html_writer::empty_tag("input disabled", array("type" => "text", "id" => "obula_show_stud_no", "class" => "summ-show-id"));
+        $out .= html_writer::empty_tag("input disabled", array("type" => "text", "id" => "obula_show_stud_no", "class" => "summ-show-id", "style" => "max-width: 75%;box-sizing:border-box;display:block"));
         $out .= "</td>";
         $out .= "</tr>";
 

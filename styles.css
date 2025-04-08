@@ -362,7 +362,8 @@ a.material-icons.nextprev:hover {
     /* float: right; */
     margin-left: 5px;
     margin-right: 5px;
-    min-width: 110px;       /* temp fix*/
+    max-width: 2px;
+    /* min-width: 110px;       temp fix */
 }
 
 .block_obu_learnanalytics .summ-show-id {

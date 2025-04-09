@@ -31,7 +31,25 @@ header('Content-type: application/json');
 global $DB;
 global $PAGE;
 $summaryMessage = "<span class='tutor-title' id='obula_title'>Learning Analytics</span>";
-$summaryMessage .= "<a href='javascript:collapseTutor()' class = 'link-right'>Close</a></h5>";
+
+$summaryMessage .= "
+                    <button 
+                        onclick='collapseTutor()'
+                        style='
+                            display: inline-block;
+                            font-size: 16px; 
+                            padding: 6px 12px 6px 12px; 
+                            border: 1px solid #ccc; 
+                            background: #d10373; 
+                            border-radius: 4px;  
+                            text-decoration: none;
+                            cursor: pointer;
+                        ' 
+                        class='link-right'
+                    >
+                        <i class='fa-solid fa fa-close' style='color:#fff;'> <b>Close</b></i>
+                    </button>";
+
 
 // TODO find way to pick up programme for Tutor or last viewed
 $userPrefs = get_user_preferences();

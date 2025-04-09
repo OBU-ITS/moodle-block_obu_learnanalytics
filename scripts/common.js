@@ -700,66 +700,86 @@ function showHelp(helpType) {
         ;           // End of .ajax 'line'
 }
 
+var gridLoading = true;
+function staffToggleHandler(type, controlId) {
+    showBecomeView(type, controlId);
+
+    var studentNumber = document.getElementById(controlId).value;
+    let elapsedSeconds = 0;
+    const maxSeconds = 30;
+    // Check every second.
+    const intervalId = setInterval(() => {
+        elapsedSeconds++;
+        // If gridLoading is false OR we've waited 15 seconds, stop checking.
+        if (!gridLoading || elapsedSeconds >= maxSeconds) {
+            clearInterval(intervalId);
+
+            // If we timed out (still true after 15 seconds), you might handle that differently.
+            // For now, we'll call highlightStudentRow in either case.
+            highlightStudentRow(studentNumber);
+            return;
+        }
+    }, 1000); // 1000ms = 1 second
+
+}
+
+
+
 /**
  * Handles click event to show SSC a Students or Tutors eye view
  * used to use classname as identifier
  * Types = S-Student, T-Tutor, A-Tutor from AA dash
  */
 function showBecomeView(type, controlId) {
-    // As there were 2 inputs with the same id we used the class
-    var studentNumber = document.getElementById(controlId).value;
-    // Now some crude SQL injection protection
-    if (studentNumber.match(/^[0-9]{8}$/) == null) {
+      var studentNumber = document.getElementById(controlId).value;
+  
+      // Basic validation: Student number must be 8 digits
+      if (!/^[0-9]{8}$/.test(studentNumber)) {
         $('#obula_error_cell').html("Invalid Format for Student Number - must be 8 digits");
         $("#obula_error_row").show();
         $('#obula_footer').hide();
-        return;
-    }
-    var data = {
-        "studentNumber": studentNumber
-        , "type": type
-    };
-    $("#obula_ssc_student").val(studentNumber);
-    var tnode = event.target;
-    var urlpage = (type == "S") ? "become_student" : "become_students_tutor";
-    // Ajax call re-written to use later .done/.fail functionality in case we need promises later
-    $.ajax({
+        return reject("Invalid Student Number Format");
+      }
+  
+      var data = {
+        studentNumber: studentNumber,
+        type: type
+      };
+      $("#obula_ssc_student").val(studentNumber);
+  
+      var tnode = (typeof event !== 'undefined') ? event.target : null;
+      var urlpage = (type === "S") ? "become_student" : "become_students_tutor";
+  
+      $.ajax({
         type: 'POST',
         url: "../blocks/obu_learnanalytics/" + urlpage + ".php",
         data: data,
         beforeSend: function () {
-            $("#obula_error_row").hide();
+          $("#obula_error_row").hide();
         }
-    })
-        .done(function (resp) {
-            // So we can get errors and successes back
-            if (resp.success) {
-                takeOverPage(tnode);
-                $("#obula_staff_heading").hide();
-                $('#obula_summary_cell').html(resp.summaryhtml);
-                $("#obula_summary_row").show();
-                $('#obula_dash_div').html(resp.dashboardhtml);
-                $("#obula_dash_row").show();
-                // Now the data currency
-                showDataCurrency();
-            } else {
-                $('#obula_error_cell').html(resp.message);
-                $("#obula_error_row").show();
-                $('#obula_footer').hide();
-            }
-        })
-        .fail(function (jqXHR, textStatus, errorThrown) {
-            // only way to trigger a fail is with a non 200 response, 404, 500 etc
-            // but that seems extreme for a simple validation
-            // So reserving this for exceptions
-            alert('common showBecomeView exception\\n' + errorThrown);
-        })
-        // .always(function(resp) {
-        //         // Code will always get executed after done or fail, like a try/catch finally
-        //     })
-        ;           // End of .ajax 'line'
-        
-}
+      })
+      .done(function (resp) {
+        if (resp.success) {
+          // Perform your DOM updates
+          takeOverPage(tnode);
+          $("#obula_staff_heading").hide();
+          $('#obula_summary_cell').html(resp.summaryhtml);
+          $("#obula_summary_row").show();
+          $('#obula_dash_div').html(resp.dashboardhtml);
+          $("#obula_dash_row").show();
+          showDataCurrency();
+
+        } else {
+          $('#obula_error_cell').html(resp.message);
+          $("#obula_error_row").show();
+          $('#obula_footer').hide();
+        }
+      })
+      .fail(function (jqXHR, textStatus, errorThrown) {
+      });
+  }
+  
+
 
 /**
  * Written to get back from Showing students tutor view to Advisor dash

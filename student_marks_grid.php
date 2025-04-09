@@ -67,8 +67,6 @@ foreach ($studentMarks as $module) {
     if ($module['grade_code'] == 'S' || $module['weighting'] == '0') {
         $pc = $wt = '';
     }
-    echo '<script>console.log(' . json_encode($pc) . ');</script>';
-
 
     // Rather than a post back for the click event, we'll output them all
     // and just swap the class in the click event

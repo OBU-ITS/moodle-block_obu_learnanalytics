@@ -61,7 +61,23 @@ switch ($studentNumber) {
             $summaryMessage .= "   <a href='javascript:backToAdvisorGrid()' class='link-right'>Back</a>";
         } else {
             // not sure we need clear - see if anyone complains $summaryMessage .= "   <a href='javascript:clearSSC()' class='link-right'>Clear</a>";
-            $summaryMessage .= "   <a href='javascript:collapseDetail()' class='link-right'>Close</a>";
+            $summaryMessage .= "
+                    <button 
+                        onclick='collapseTutor()'
+                        style='
+                            display: inline-block;
+                            font-size: 16px; 
+                            padding: 6px 12px 6px 12px; 
+                            border: 1px solid #ccc; 
+                            background: #d10373; 
+                            border-radius: 4px;  
+                            text-decoration: none;
+                            cursor: pointer;
+                        ' 
+                        class='link-right'
+                    >
+                        <i class='fa-solid fa fa-close' style='color:#fff;'> <b>Close</b></i>
+                    </button>";
         }
 
         // Now work out the programme (code nearly the same code in block_obu_learnanalytics.php and elsewhere)

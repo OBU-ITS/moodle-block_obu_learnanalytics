@@ -462,7 +462,8 @@ function takeOverPage(tnode) {
         // Tried with jquery because I hate mixing it, but failed as the jquery append despite the documentation isn't the same
         var newParent = document.getElementById("page");
         var myBlock = document.getElementById(laBlockId);
-        newParent.appendChild(myBlock);
+        newParent.prepend(myBlock);     // We changed to prepend so that the page-footer sits below our objects
+
     }
 }
 
@@ -497,6 +498,10 @@ function giveBackPage(type) {
     $("#topofscroll").show();
     $("#topofscroll").attr("aria-hidden", "false");
     $("#obula_page_taken").val('N');
+
+    // Now the Footer
+    // $('#page-footer').show();
+    // document.getElementById("page-footer").css('display', 'block');
 
     // Now the Nav
     var rightDrawerDA = $("#obula_navbar_rightDrawerDA").val();

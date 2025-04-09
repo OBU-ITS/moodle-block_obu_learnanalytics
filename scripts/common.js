@@ -464,6 +464,64 @@ function takeOverPage(tnode) {
         var myBlock = document.getElementById(laBlockId);
         newParent.prepend(myBlock);     // We changed to prepend so that the page-footer sits below our objects
 
+
+        if (!document.getElementById("obu_learnanalytics_scrollup")) {
+
+            // Create the button
+            const scrollUp = document.createElement("button");
+            scrollUp.id = "obu_learnanalytics_scrollup";
+            scrollUp.innerHTML = '<i class="fa-solid fa fa-arrow-up" style="color:#d10373"></i>'; 
+            
+            // Set the inline style as one block
+            scrollUp.setAttribute("style", `
+                position: absolute;
+                top: 10%;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                background: rgba(200, 200, 200, 0.7);
+                border: none;
+                display: none;         /* Start hidden */
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+                color: #333;
+                cursor: pointer;
+                z-index: 999;
+                font-size: 20px;
+            `);
+
+            // Append to the document body so it’s fixed relative to the viewport
+            document.body.appendChild(scrollUp);
+            // 4. On click, smoothly scroll to the top of newParent
+            scrollUp.addEventListener("click", () => {
+                document.querySelector('[data-block="obu_learnanalytics"]').scrollIntoView({ behavior: 'smooth' });
+            });
+
+
+            function handleContainerScroll() {
+                const scrollY = newParent.scrollTop;
+                const scrollableHeight = newParent.scrollHeight - newParent.clientHeight;
+                const scrolledPercent = (scrollY / scrollableHeight) * 100;
+                
+                if (scrolledPercent > 5) {
+                scrollUp.style.display = "flex";
+                } else {
+                scrollUp.style.display = "none";
+                }
+            }
+
+            // Listen to the window's scroll event
+            newParent.addEventListener("scroll", handleContainerScroll);
+
+            // Also run it once on load, to handle the case
+            // where the user might refresh mid-page
+            handleContainerScroll();
+        }
+          
+          
     }
 }
 
@@ -725,7 +783,7 @@ function staffToggleHandler(type, controlId) {
             return;
         }
     }, 1000); // 1000ms = 1 second
-
+    gridLoading = true;
 }
 
 

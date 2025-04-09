@@ -179,25 +179,20 @@ function tutor_grid_done(fromReadyEvent, res, programme, modLevel, studentNumber
 }
 
 function highlightStudentRow(studentNumber) {
-    console.log('HIGHLIGHTING');
     var table = $("#obula_tutor_grid_table");
     if (table.length > 0) {        // Safety code - should not be zero
-        console.log('Table is not empty')
         //TODO$("#obula_tutor_grid_table").find('tr').removeClass('selected');
         // $("tr.students").removeAttr('selected');
         // So now find row (would like to do it within table TODO)
         var rowsid = '#sid_' + studentNumber;
-        console.log(rowsid)
         $("tr.students").removeAttr('selected');
 
         if ($(rowsid).length) {
-            console.log("Element " + rowsid + " exists.");
             $(rowsid).attr('selected', 'selected');
             var studentRow = document.getElementById('sid_' + studentNumber);
             studentRow.scrollIntoView(false);           // true is going too far
-
           } else {
-            console.log("Element " + rowsid + " does not exist.");
+            console.error("Element " + rowsid + " does not exist.");
           }
           
 

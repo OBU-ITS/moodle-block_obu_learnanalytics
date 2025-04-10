@@ -15,9 +15,10 @@ $laRole = $util_odds->get_la_role();    // Protects against attacks, wrong roles
 require_once './jpgraph/src/jpgraph.php';
 require_once './jpgraph/src/jpgraph_line.php';
 require_once './jpgraph/src/jpgraph_bar.php';
+require_once(__DIR__ . '/vendor/autoload.php');
 
 $util_dates = new \block_obu_learnanalytics\util\date_functions();
-$curl_common = new \block_obu_learnanalytics\curl\common();
+$curl_common = new \block_obu_learnanalytics\guzzle\common();
 $data_afuncs = new \block_obu_learnanalytics\data\array_functions();
 
 // TODO check it's been called from page

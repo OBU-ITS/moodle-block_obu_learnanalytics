@@ -3,6 +3,8 @@
  * Creates the HTML for Learning Analytics
  * NOTE - Unlike report plugins, blocks does not use Index.php, instead needs this main block
  */
+require_once(__DIR__ . '/vendor/autoload.php');
+
 class block_obu_learnanalytics extends block_base
 {
 
@@ -94,7 +96,7 @@ class block_obu_learnanalytics extends block_base
             case ("STUDENT"):
                 // This code is duplicated (nearly) in become_student.php
                 $params = "student/programmes/$USER->username/";
-                $curl_common = new \block_obu_learnanalytics\curl\common();
+                $curl_common = new \block_obu_learnanalytics\guzzle\common();
                 $pgms = $curl_common->send_request($params);
                 $pgm = $pgms[0]["programme_code"]; // TODO cope with zero and > 1
                 $sname = $USER->firstname . ' ' . $USER->lastname;

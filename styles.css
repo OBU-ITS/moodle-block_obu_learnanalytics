@@ -137,7 +137,7 @@
 }
 
 .block_obu_learnanalytics tr.students[selected] {
-    background-color: #f1f1f1;      /* Very light grey */
+    background-color: #c5cd69;      /* Very light grey */
 }
 
 .block_obu_learnanalytics td.students-name {
@@ -193,7 +193,7 @@
 }
 
 .block_obu_learnanalytics tr.students-hideable[selected] {
-    background-color: #f1f1f1;      /* Very light grey */
+    background-color: #c5cd69;      /* Very light grey */
 }
 
 /* And now them hidden */
@@ -362,8 +362,7 @@ a.material-icons.nextprev:hover {
     /* float: right; */
     margin-left: 5px;
     margin-right: 5px;
-    max-width: 2px;
-    /* min-width: 110px;       temp fix */
+    min-width: 25%;      
 }
 
 .block_obu_learnanalytics .summ-show-id {

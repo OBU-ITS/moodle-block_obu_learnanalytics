@@ -1,6 +1,8 @@
 <?php ob_start();?><?php
 try {
     require_once __DIR__ . '/../../config.php';
+    require_once(__DIR__ . '/vendor/autoload.php');
+
     $util_odds = new \block_obu_learnanalytics\util\odds();
     $laRole = $util_odds->get_la_role();    // Protects against attacks, wrong roles and everything
 
@@ -29,7 +31,7 @@ try {
 
     $simpleCurrent = $util_dates->createSimpleCurrentParam($current);
     $params = "student/modgraphdata/$sid/$simpleCurrent/";
-    $curl_common = new \block_obu_learnanalytics\curl\common();
+    $curl_common = new \block_obu_learnanalytics\guzzle\common();
 
     try { 
         $studentModuleData = $curl_common->send_request($params);

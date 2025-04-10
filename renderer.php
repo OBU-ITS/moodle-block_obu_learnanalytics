@@ -19,7 +19,7 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
-
+require_once(__DIR__ . '/vendor/autoload.php');
 /**
  * Learning analytics renderer
  * This is the main driving class for the dashboards, it has functions to emit the HTML for both
@@ -144,7 +144,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
                 $message = "Last accessed " . $lastAccess->format('d-M-Y');
             }
         } else {
-            $message = "You have not checked this out";
+            $maessage = "You have not checked this out";
             $checkforAA = true;
         }
         $advisees = "0";
@@ -152,7 +152,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
             try {
                 // A semester of 000000 will get the current default one
                 $params = "tutor/adviseescount/000000/$USER->username/";
-                $curl_common = new \block_obu_learnanalytics\curl\common();
+                $curl_common = new \block_obu_learnanalytics\guzzle\common();
                 $results = $curl_common->send_request($params);
                 $advisees = $results[0]["advisees"];
             } catch (Exception $e) {
@@ -334,7 +334,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
     public function advisees_grid()
     {
         $util_dates = new \block_obu_learnanalytics\util\date_functions();
-        $curl_common = new \block_obu_learnanalytics\curl\common();
+        $curl_common = new \block_obu_learnanalytics\guzzle\common();
         $outScripts = "";
 		$scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=1.12.6');
 		$outScripts .= html_writer::script(null, $scriptUrl);
@@ -428,7 +428,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
     public function tutor_grid($defaultProgramme, $subDashboard, $studentNumber)
     {
         $util_dates = new \block_obu_learnanalytics\util\date_functions();
-        $curl_common = new \block_obu_learnanalytics\curl\common();
+        $curl_common = new \block_obu_learnanalytics\guzzle\common();
         $outScripts = "";
         if (!$subDashboard) {
             // Only loaded if it's not a subDashboard as parent should have loaded these
@@ -677,7 +677,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
 
         // If we are a student then there is some more to output before the charts
         if (!$fromtutordb) {
-            $curl_common = new \block_obu_learnanalytics\curl\common();
+            $curl_common = new \block_obu_learnanalytics\guzzle\common();
             $advisorDetails = $curl_common->get_academic_advisor($USER->username, '202409');      //TODO needs to pass semester properly
             if ($advisorDetails == null) {
                 $out .= html_writer::tag('h3', 'You do not have an Academic Adviser assigned');
@@ -1052,7 +1052,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
             // NOTE - try doesn't catch html_writer problems, which is why I tried it, but might as well leave it
             $util_dates = new \block_obu_learnanalytics\util\date_functions();
             $util_odds = new \block_obu_learnanalytics\util\odds();
-            $curl_common = new \block_obu_learnanalytics\curl\common();
+            $curl_common = new \block_obu_learnanalytics\guzzle\common();
 
             global $USER;
             global $SESSION;
@@ -1139,7 +1139,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
                 // Next will not work until we change the WS to take the semester
                 // But I don't think we want to show this anymore
                 $params = "student/cohorteng/$programme/*/*/$weeks/$simpleCurrent/";
-                $curl_common = new \block_obu_learnanalytics\curl\common();
+                $curl_common = new \block_obu_learnanalytics\guzzle\common();
                 $studentsData = $curl_common->send_request($params);
                 // For now remove zeros, but once active flag complete this may come out and/or go into get_active_cohort_colleagues
                 // $studentsData = $db_cohort->remove_zeros($studentsData);

@@ -7,8 +7,10 @@
 require_once __DIR__ . '/../../config.php';
 ?>      
 <?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
 defined('MOODLE_INTERNAL') || die();
-$curl_common = new \block_obu_learnanalytics\curl\common();
+$curl_common = new \block_obu_learnanalytics\guzzle\common();
 // Click event posts the request so we can pick up parameters from the data
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Pick up any data if passed
@@ -28,15 +30,15 @@ try {
     $status["Status"] = "WS";
     $status["code"] = "WSEXCEPTION";
     $status["message"] = $ex->getMessage();
-    $status["consolehtml"] = $curl_common->echo_error_console_log($ex, false);
+    // $status["consolehtml"] = $curl_common->echo_error_console_log($ex, false);
     exit;
 }
 //TODO handle 404 etc
 //xdebug.break();
 if ($status["Status"] != "OK") {
-    if (is_null($status)) {
-        $status = $curl_common->get_status_details();
-    }
+    // if (is_null($status)) {
+    //     $status = $curl_common->get_status_details();
+    // }
     $problemType = substr($status["code"], 0, 3);
     switch ($problemType) {
         case "WST":

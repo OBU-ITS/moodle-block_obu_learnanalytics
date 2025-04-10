@@ -23,7 +23,9 @@ namespace block_obu_learnanalytics\util;
 use DateInterval;
 use DateTime;
 
+
 class date_functions
+
 {
     /**
      * Gets the academic year and week for today
@@ -32,6 +34,7 @@ class date_functions
      */
     public function get_current_week()
     {
+        
         date_default_timezone_set('UTC');
         //Unix $today = strtotime('midnight');     // Today's date without timestamp
         $today = new DateTime();
@@ -41,9 +44,10 @@ class date_functions
 
     public function get_semesters()
     {
+
         try {
             $params = 'utils/getsemesters/';
-            $curl_common = new \block_obu_learnanalytics\curl\common();
+            $curl_common = new \block_obu_learnanalytics\guzzle\common();
             $semesterList = $curl_common->send_request($params);
         } catch (Exception $ex) {
             $curl_common->echo_error_console_log($ex);
@@ -109,6 +113,7 @@ class date_functions
      */
     public function get_week_for_date($dateIn, $incompleteWeek = false, $semester = '??????')
     {
+        
         // Data is fixed so calculate it from current date
         // Dates in most languages are horrible - PHP included
         // So there is a Unix style long int which is seconds since 1/1/1970

@@ -7,6 +7,7 @@
 ob_start();
 //echo __DIR__;
 require_once __DIR__ . '/../../config.php';
+require_once(__DIR__ . '/vendor/autoload.php');
 $util_odds = new \block_obu_learnanalytics\util\odds();
 $laRole = $util_odds->get_la_role();    // Protects against attacks, wrong roles and everything
 ?>
@@ -82,7 +83,7 @@ switch ($studentNumber) {
 
         // Now work out the programme (code nearly the same code in block_obu_learnanalytics.php and elsewhere)
         $params = "student/programmes/$studentNumber/";
-        $curl_common = new \block_obu_learnanalytics\curl\common();
+        $curl_common = new \block_obu_learnanalytics\guzzle\common();
         $pgms = $curl_common->send_request($params);
         if ($pgms == null || count($pgms) == 0) {
             header('Content-type: application/json');

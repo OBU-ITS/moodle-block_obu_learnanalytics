@@ -4,6 +4,8 @@ try {
     //define('AJAX_SCRIPT', true);      // This breaks things
     // Now load up a general purpose class
     require_once __DIR__ . '/../../config.php';
+    require_once(__DIR__ . '/vendor/autoload.php');
+
     $util_odds = new \block_obu_learnanalytics\util\odds();
     $laRole = $util_odds->get_la_role();    // Protects against attacks, wrong roles and everything
     // config.php sets an error handler, so override here
@@ -73,7 +75,7 @@ try {
                 break;
         }
         // Note exception isn't caught if next line fails
-        $curl_common = new \block_obu_learnanalytics\curl\common();
+        $curl_common = new \block_obu_learnanalytics\guzzle\common();
         $enc_pgm = htmlspecialchars(urlencode(str_replace('/','~',$programme)));
         $params = "student/pgmgraphdata/$sid/{$enc_pgm}/{$sStage}/$simpleCurrent/median/{$column}/";
         

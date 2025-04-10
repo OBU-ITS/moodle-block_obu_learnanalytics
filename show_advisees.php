@@ -8,6 +8,8 @@
 ob_start();
 //echo __DIR__;
 require_once __DIR__ . '/../../config.php';
+require_once(__DIR__ . '/vendor/autoload.php');
+
 $util_odds = new \block_obu_learnanalytics\util\odds();
 $laRole = $util_odds->get_la_role("TUTOR");    // Protects against attacks, wrong roles and everything //TODO do we want a new role
 ?>

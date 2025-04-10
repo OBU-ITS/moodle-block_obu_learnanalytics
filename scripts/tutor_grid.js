@@ -1011,5 +1011,5 @@ function reloadTutorGrid(option = null, p2 = null, currentWeek = null) {
             //debugger;
             alert('reloadTutorGrid 2 post failed:' + errorThrown);
         })
-        ;           // End of .ajax 'line'
+        ;// End of .ajax 'line'
 };

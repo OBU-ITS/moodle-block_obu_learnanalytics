@@ -376,6 +376,8 @@ function showDateControls(option = 'getcurrent', dashboardFor = "Tutor", semeste
                 // only way to trigger a fail is with a non 200 response, 404, 500 etc
                 // but that seems extreme for a simple validation
                 // So reserving this for exceptions
+                console.log(textStatus)
+                console.log(errorThrown)
                 alert('showDateControls post failed:' + errorThrown);
             })
             // .always(function(resp) {
@@ -467,7 +469,7 @@ function takeOverPage(tnode) {
 
         if (!document.getElementById("obu_learnanalytics_scrollup")) {
 
-            // Create the button
+            // Create the scroll up button
             const scrollUp = document.createElement("button");
             scrollUp.id = "obu_learnanalytics_scrollup";
             scrollUp.innerHTML = '<i class="fa-solid fa fa-arrow-up" style="color:#d10373"></i>'; 
@@ -478,8 +480,8 @@ function takeOverPage(tnode) {
                 top: 10%;
                 left: 50%;
                 transform: translateX(-50%);
-                width: 50px;
-                height: 50px;
+                width: 40px;
+                height: 40px;
                 border-radius: 50%;
                 background: rgba(200, 200, 200, 0.7);
                 border: none;
@@ -495,7 +497,7 @@ function takeOverPage(tnode) {
 
             // Append to the document body so it’s fixed relative to the viewport
             document.body.appendChild(scrollUp);
-            // 4. On click, smoothly scroll to the top of newParent
+            // 4. On click, smoothly scroll to the top of our block
             scrollUp.addEventListener("click", () => {
                 document.querySelector('[data-block="obu_learnanalytics"]').scrollIntoView({ behavior: 'smooth' });
             });

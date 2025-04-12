@@ -127,7 +127,7 @@ function renderAttendanceMatrix() {
     
     // Create and append the close button for the popover
     var closeButton = document.createElement('button');
-    closeButton.innerHTML = '&times;';
+    closeButton.innerHTML = '<i class="fa-solid fa fa-close" style="font-size:20px; "></i>';
     closeButton.addEventListener('click', function() {
         document.body.removeChild(overlay);
     });
@@ -157,155 +157,57 @@ function renderAttendanceMatrix() {
  */
 function buildAttendanceHeatmap() {
 
-    // TEMP
+    // TEMP sample data.
     const studentData = {
-    "0089128": {
-        "Alice Walker": {
-            "Week 1": { "attendance_percent": "75",  "modules_missed": { "CRIM5009 (202409:1)": "1/4" } },
-            "Week 2": { "attendance_percent": "25",  "modules_missed": { "PSYC6002 (202409:1)": "3/4" } },
-            "Week 3": { "attendance_percent": "90",  "modules_missed": {} },
-            "Week 4": { "attendance_percent": "40",  "modules_missed": { "CRIM5009 (202409:1)": "2/4" } },
-            "Week 5": { "attendance_percent": "60",  "modules_missed": { "PSYC6002 (202409:1)": "2/4" } },
-            "Week 6": { "attendance_percent": "100", "modules_missed": {} },
-            "Week 7": { "attendance_percent": "85",  "modules_missed": { "PSYC6002 (202409:1)": "1/4" } },
-            "Week 8": { "attendance_percent": "55",  "modules_missed": { "CRIM5009 (202409:1)": "2/4" } },
-            "Week 9": { "attendance_percent": "0",   "modules_missed": { "PSYC6002 (202409:1)": "4/4" } },
-            "Week 10": { "attendance_percent": "100", "modules_missed": {} },
-            "Week 11": { "attendance_percent": "65",  "modules_missed": { "CRIM5009 (202409:1)": "1/4" } },
-            "Week 12": { "attendance_percent": "75",  "modules_missed": {} }
+        "0089128": {
+            "Alice Walker": {
+                "Week 1": { "attendance_percent": "75",  "modules_missed": { "CRIM5009 (202409:1)": "1/4" } },
+                "Week 2": { "attendance_percent": "25",  "modules_missed": { "PSYC6002 (202409:1)": "3/4" } },
+                "Week 3": { "attendance_percent": "90",  "modules_missed": {} },
+                "Week 4": { "attendance_percent": "40",  "modules_missed": { "CRIM5009 (202409:1)": "2/4" } },
+                "Week 5": { "attendance_percent": "60",  "modules_missed": { "PSYC6002 (202409:1)": "2/4" } },
+                "Week 6": { "attendance_percent": "100", "modules_missed": {} },
+                "Week 7": { "attendance_percent": "85",  "modules_missed": { "PSYC6002 (202409:1)": "1/4" } },
+                "Week 8": { "attendance_percent": "55",  "modules_missed": { "CRIM5009 (202409:1)": "2/4" } },
+                "Week 9": { "attendance_percent": "0",   "modules_missed": { "PSYC6002 (202409:1)": "4/4" } },
+                "Week 10": { "attendance_percent": "100", "modules_missed": {} },
+                "Week 11": { "attendance_percent": "65",  "modules_missed": { "CRIM5009 (202409:1)": "1/4" } },
+                "Week 12": { "attendance_percent": "75",  "modules_missed": {} }
+            }
+        },
+        "0011223": {
+            "Bob Jones": {
+                "Week 1": { "attendance_percent": "100", "modules_missed": {} },
+                "Week 2": { "attendance_percent": "50",  "modules_missed": { "CRIM5009 (202409:1)": "2/4" } },
+                "Week 3": { "attendance_percent": "35",  "modules_missed": { "PSYC6002 (202409:1)": "3/4" } },
+                "Week 4": { "attendance_percent": "20",  "modules_missed": { "CRIM5009 (202409:1)": "3/4" } },
+                "Week 5": { "attendance_percent": "40",  "modules_missed": { "PSYC6002 (202409:1)": "2/4" } },
+                "Week 6": { "attendance_percent": "60",  "modules_missed": {} },
+                "Week 7": { "attendance_percent": "80",  "modules_missed": {} },
+                "Week 8": { "attendance_percent": "85",  "modules_missed": { "CRIM5009 (202409:1)": "1/4" } },
+                "Week 9": { "attendance_percent": "75",  "modules_missed": { "PSYC6002 (202409:1)": "1/4" } },
+                "Week 10": { "attendance_percent": "30",  "modules_missed": { "CRIM5009 (202409:1)": "3/4" } },
+                "Week 11": { "attendance_percent": "55",  "modules_missed": { "PSYC6002 (202409:1)": "2/4" } },
+                "Week 12": { "attendance_percent": "100", "modules_missed": {} }
+            }
+        },
+        "0077665": {
+            "Carol Smith": {
+                "Week 1": { "attendance_percent": "10",  "modules_missed": { "CRIM5009 (202409:1)": "3/4" } },
+                "Week 2": { "attendance_percent": "30",  "modules_missed": { "PSYC6002 (202409:1)": "2/4" } },
+                "Week 3": { "attendance_percent": "100", "modules_missed": {} },
+                "Week 4": { "attendance_percent": "90",  "modules_missed": {} },
+                "Week 5": { "attendance_percent": "0",   "modules_missed": { "CRIM5009 (202409:1)": "4/4" } },
+                "Week 6": { "attendance_percent": "75",  "modules_missed": {} },
+                "Week 7": { "attendance_percent": "20",  "modules_missed": { "PSYC6002 (202409:1)": "3/4" } },
+                "Week 8": { "attendance_percent": "40",  "modules_missed": { "CRIM5009 (202409:1)": "2/4" } },
+                "Week 9": { "attendance_percent": "55",  "modules_missed": {} },
+                "Week 10": { "attendance_percent": "60",  "modules_missed": { "CRIM5009 (202409:1)": "1/4" } },
+                "Week 11": { "attendance_percent": "40",  "modules_missed": { "PSYC6002 (202409:1)": "2/4" } },
+                "Week 12": { "attendance_percent": "70",  "modules_missed": {} }
+            }
         }
-    },
-    "0011223": {
-        "Bob Jones": {
-            "Week 1": { "attendance_percent": "100", "modules_missed": {} },
-            "Week 2": { "attendance_percent": "50",  "modules_missed": { "CRIM5009 (202409:1)": "2/4" } },
-            "Week 3": { "attendance_percent": "35",  "modules_missed": { "PSYC6002 (202409:1)": "3/4" } },
-            "Week 4": { "attendance_percent": "20",  "modules_missed": { "CRIM5009 (202409:1)": "3/4" } },
-            "Week 5": { "attendance_percent": "40",  "modules_missed": { "PSYC6002 (202409:1)": "2/4" } },
-            "Week 6": { "attendance_percent": "60",  "modules_missed": {} },
-            "Week 7": { "attendance_percent": "80",  "modules_missed": {} },
-            "Week 8": { "attendance_percent": "85",  "modules_missed": { "CRIM5009 (202409:1)": "1/4" } },
-            "Week 9": { "attendance_percent": "75",  "modules_missed": { "PSYC6002 (202409:1)": "1/4" } },
-            "Week 10": { "attendance_percent": "30",  "modules_missed": { "CRIM5009 (202409:1)": "3/4" } },
-            "Week 11": { "attendance_percent": "55",  "modules_missed": { "PSYC6002 (202409:1)": "2/4" } },
-            "Week 12": { "attendance_percent": "100", "modules_missed": {} }
-        }
-    },
-    "0077665": {
-        "Carol Smith": {
-            "Week 1": { "attendance_percent": "10",  "modules_missed": { "CRIM5009 (202409:1)": "3/4" } },
-            "Week 2": { "attendance_percent": "30",  "modules_missed": { "PSYC6002 (202409:1)": "2/4" } },
-            "Week 3": { "attendance_percent": "100", "modules_missed": {} },
-            "Week 4": { "attendance_percent": "90",  "modules_missed": {} },
-            "Week 5": { "attendance_percent": "0",   "modules_missed": { "CRIM5009 (202409:1)": "4/4" } },
-            "Week 6": { "attendance_percent": "75",  "modules_missed": {} },
-            "Week 7": { "attendance_percent": "20",  "modules_missed": { "PSYC6002 (202409:1)": "3/4" } },
-            "Week 8": { "attendance_percent": "40",  "modules_missed": { "CRIM5009 (202409:1)": "2/4" } },
-            "Week 9": { "attendance_percent": "55",  "modules_missed": {} },
-            "Week 10": { "attendance_percent": "60",  "modules_missed": { "CRIM5009 (202409:1)": "1/4" } },
-            "Week 11": { "attendance_percent": "40",  "modules_missed": { "PSYC6002 (202409:1)": "2/4" } },
-            "Week 12": { "attendance_percent": "70",  "modules_missed": {} }
-        }
-    }
-};
-
-
-    // Optionally inject scoped CSS (you could alternatively move this to your styles.css).
-    var style = document.createElement("style");
-    style.textContent = `
-        /* Scoped styles for heatmap container */
-        #myUniqueHeatmapContainer {
-            font-family: sans-serif; 
-            background: #fafafa; 
-            padding: 10px;       
-            border-radius: 8px;  
-            margin-bottom: 20px; 
-        }
-        #myUniqueHeatmapContainer #myUniqueHeatmapTable {
-            border-collapse: separate;
-            border-spacing: 8px;
-            width: 90%;
-            margin: auto;
-        }
-        /* Header cells */
-        #myUniqueHeatmapContainer #myUniqueHeatmapTable thead th {
-            background: #f2f2f2;
-            text-align: center;
-            padding: 8px;
-            border-radius: 6px;
-            vertical-align: middle;
-        }
-        #myUniqueHeatmapContainer #myUniqueHeatmapTable td {
-            border: none;
-            padding: 0;
-            vertical-align: middle;
-        }
-        .myUniqueHeatmapCellContent {
-            position: relative;
-            border-radius: 8px;
-            padding: 16px;
-            text-align: center;
-            background-color: var(--tile-color, #f8f8f8);
-            border: 1px solid transparent;
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
-        }
-        .myUniqueHeatmapCellContent::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(145deg, rgba(255,255,255,0.3), rgba(0,0,0,0.1));
-            border-radius: inherit;
-            pointer-events: none;
-        }
-        .myUniqueHeatmapCellContent:hover {
-            transform: scale(1.15);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
-            filter: brightness(0.95);
-        }
-        .myUniqueHeatmapCellContent:hover::before {
-            opacity: 1;
-        }
-        .myUniqueHeatmapTooltip {
-            display: none;
-            position: absolute;
-            top: -5px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-100%);
-            background: rgba(0,0,0,0.8);
-            color: #fff;
-            padding: 6px 10px;
-            border-radius: 4px;
-            font-size: 12px;
-            z-index: 999;
-            white-space: nowrap;
-        }
-        .myUniqueHeatmapCellContent:hover > .myUniqueHeatmapTooltip {
-            display: block;
-        }
-        .myLegend {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 4px;
-        }
-        .legendItem {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.9em;
-        }
-        .legendSquare {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border-radius: 4px;
-        }
-    `;
-    document.head.appendChild(style);
+    };
     
     // Flatten data for table creation.
     var students = [];
@@ -363,47 +265,79 @@ function buildAttendanceHeatmap() {
     var tbody = document.createElement("tbody");
     
     students.forEach(function(stObj) {
-        var row = document.createElement("tr");
+        // Create the main row for student data.
+        var mainRow = document.createElement("tr");
+        mainRow.className = "obula_att_matrix_row_" + stObj.studentId;
         
-        // Left cell: Student Name and ID.
+        // Create left cell: Student Name and ID.
         var nameCell = document.createElement("td");
         var nameDiv = document.createElement("div");
         nameDiv.className = "myUniqueHeatmapCellContent_studentName";
-        nameCell.appendChild(nameDiv);
-        row.appendChild(nameCell);
+        // Attach an onclick event on the name cell.
+        nameDiv.onclick = function() {
+            // Render HTML for details container, change arrow and expand
+            if (detailsContainer.style.maxHeight === "0px" || detailsContainer.style.maxHeight === "") {
+                renderDetailsContent(stObj.studentId);
+                detailsContainer.style.maxHeight = "200px"; // Expand (adjust height as needed)
+                infoSpan.innerHTML = '<i class="fa-solid fa fa-angle-up"></i>';
+            } else {
+                // Empty the details container, switch the arrow and collapse
+                $(".obula_att_matrix_row_details_" + stObj.studentId + " .detailsContainer").empty();
+                detailsContainer.style.maxHeight = "0";
+                infoSpan.innerHTML = '<i class="fa-solid fa fa-angle-down"></i>';
 
-
-        // Create a container div (already exists as nameDiv).
+            }
+        };
+        
+        // Create student name and ID elements.
         var nameSpan = document.createElement("span");
         nameSpan.textContent = stObj.studentName;
         nameSpan.style.fontWeight = 'bold';
-
+        
         var idSpan = document.createElement("span");
         idSpan.textContent = "(" + stObj.studentId + ")";
-        idSpan.style.display = "block"; // forces it to be on a new line
-
+        idSpan.style.display = "block"; // Force on new line
+        
+        // (Optional) Include an info icon inline if desired.
         var infoSpan = document.createElement("span");
         infoSpan.innerHTML = '<i class="fa-solid fa fa-angle-down"></i>';
+        // You can style this further via CSS if needed.
         
-        // Append both spans to the container.
+        // Append the spans to the name container.
         nameDiv.appendChild(nameSpan);
         nameDiv.appendChild(idSpan);
         nameDiv.appendChild(infoSpan);
-
-
+        
+        nameCell.appendChild(nameDiv);
+        mainRow.appendChild(nameCell);
         
         // Create cells for each week.
         weekLabels.forEach(function(week) {
             var cell = document.createElement("td");
             var cellDiv = document.createElement("div");
             cellDiv.className = "myUniqueHeatmapCellContent";
-            
+            // Attach an onclick event on the name cell.
+            cellDiv.onclick = function() {
+                // Render HTML for details container, change arrow and expand
+                if (detailsContainer.style.maxHeight === "0px" || detailsContainer.style.maxHeight === "") {
+                    renderDetailsContent(stObj.studentId);
+                    detailsContainer.style.maxHeight = "200px"; // Expand (adjust height as needed)
+                    infoSpan.innerHTML = '<i class="fa-solid fa fa-angle-up"></i>';
+
+                } else {
+                    // Empty the details container, switch the arrow and collapse
+                    $(".obula_att_matrix_row_details_" + stObj.studentId + " .detailsContainer").empty();
+                    detailsContainer.style.maxHeight = "0";
+                    infoSpan.innerHTML = '<i class="fa-solid fa fa-angle-down"></i>';
+
+                }
+            };
+
             var entry = stObj.weeksObj[week];
             if (entry) {
                 var attendanceNum = parseInt(entry.attendance_percent, 10) || 0;
                 cellDiv.textContent = attendanceNum + "%";
-                
-                // Color the cell based on attendance.
+                // Set cell color.
                 cellDiv.style.setProperty("--tile-color", getAttendanceColor(attendanceNum));
                 
                 // Add tooltip with module details.
@@ -426,16 +360,27 @@ function buildAttendanceHeatmap() {
                 cellDiv.textContent = "--";
                 cellDiv.style.backgroundColor = "#eee";
             }
-            
             cell.appendChild(cellDiv);
-            row.appendChild(cell);
+            mainRow.appendChild(cell);
         });
         
-        tbody.appendChild(row);
+        tbody.appendChild(mainRow);
+        
+        // Create a details row below the main row.
+        var detailsRow = document.createElement("tr");
+        detailsRow.className = "obula_att_matrix_row_details_" + stObj.studentId;
+        var detailsCell = document.createElement("td");
+        detailsCell.colSpan = weekLabels.length + 1;
+        var detailsContainer = document.createElement("div");
+        detailsContainer.className = "detailsContainer";
+        detailsCell.appendChild(detailsContainer);
+        detailsRow.appendChild(detailsCell);
+        tbody.appendChild(detailsRow);
     });
+    
     table.appendChild(tbody);
     
-    // Helper function to choose a tile color for attendance percentage.
+    // Helper function: choose tile color based on attendance percentage.
     function getAttendanceColor(p) {
         p = Math.max(0, Math.min(100, p));
         if (p > 75) {
@@ -448,6 +393,10 @@ function buildAttendanceHeatmap() {
     }
 }
 
+function renderDetailsContent(student_id) {
+    $(".obula_att_matrix_row_details_" + student_id + " .detailsContainer")
+    .html("<p style='text-align:center;'>Hello " + student_id + "</p>");
+}
 
 
 

@@ -429,25 +429,22 @@ a.material-icons.nextprev:hover {
 
 /* Base styles for the attendance matrix element */
 #obula_launch_attendance_matrix {
-    cursor: pointer; /* Show pointer cursor on hover */
+    cursor: pointer;
     transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
 }
-  
-/* Hover state */
+
 #obula_launch_attendance_matrix:hover {
-    transform: translateY(-3px); /* Lift the element up by 3px */
+    transform: translateY(-3px);
 }
-  
-/* Active (pressed) state */
+
 #obula_launch_attendance_matrix:active {
     background-color: #e4e4e4;
-    transform: translateY(0); /* Optional: Reset transform when pressed */
+    transform: translateY(0);
 }
-  
-/* Optional focus state for accessibility (if tabindex is added) */
+
 #obula_launch_attendance_matrix:focus {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(100, 150, 250, 0.5);
+    box-shadow: 0 0 0 3px rgba(100,150,250,0.5);
 }
 
 /* Attendance Modal overlay styling */
@@ -457,7 +454,7 @@ a.material-icons.nextprev:hover {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* subtle modal background */
+    background-color: rgba(0, 0, 0, 0.5);
     z-index: 1000;
     display: flex;
     justify-content: center;
@@ -466,15 +463,15 @@ a.material-icons.nextprev:hover {
 
 /* Popover styling */
 #attendance-popover {
-    flex-direction: column; /* Stack the content vertically */
-    width: 95%;  /* Adjust as needed */
+    flex-direction: column;
+    width: 95%;
     height: 80%;
     background-color: #fff;
     border-radius: 5px;
     padding: 20px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     position: relative;
-    overflow: auto;  /* Handles overflow if content is too tall */
+    overflow: auto;
 }
 
 /* Close button styling within the popover */
@@ -488,25 +485,38 @@ a.material-icons.nextprev:hover {
     cursor: pointer;
 }
 
-
-
-/* New class for the student name container (no hover transform) */
-.myUniqueHeatmapCellContent_studentName {
-    text-align: center;
-    background-color: var(--tile-color, #f8f8f8);
+/* Scoped styles for the heatmap container & table */
+#myUniqueHeatmapContainer {
+    font-family: sans-serif;
+    background: #fafafa;
+    padding: 10px;
     border-radius: 8px;
-    padding: 16px;
-    border: 1px solid transparent;
-    cursor: pointer;
-
+    margin-bottom: 20px;
 }
 
-.myUniqueHeatmapCellContent_studentName:hover {
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
-    filter: brightness(0.95);
+#myUniqueHeatmapContainer #myUniqueHeatmapTable {
+    border-collapse: separate;
+    border-spacing: 8px;
+    width: 90%;
+    margin: auto;
 }
 
-/* Keep the existing cell style for attendance (unchanged) */
+/* Header cells inside the heatmap container */
+#myUniqueHeatmapContainer #myUniqueHeatmapTable thead th {
+    background: #f2f2f2;
+    text-align: center;
+    padding: 8px;
+    border-radius: 6px;
+    vertical-align: middle;
+}
+
+#myUniqueHeatmapContainer #myUniqueHeatmapTable td {
+    border: none;
+    padding: 0;
+    vertical-align: middle;
+}
+
+/* Attendance cell content with hover effect */
 .myUniqueHeatmapCellContent {
     position: relative;
     border-radius: 8px;
@@ -528,13 +538,44 @@ a.material-icons.nextprev:hover {
     border-radius: inherit;
     pointer-events: none;
 }
+.myUniqueHeatmapTooltip {
+    display: none;
+    position: absolute;
+    top: -5px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100%);
+    background: rgba(0,0,0,0.8);
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    z-index: 999;
+    white-space: nowrap;
+}
+.myUniqueHeatmapCellContent:hover .myUniqueHeatmapTooltip {
+    display: block;
+}
 .myUniqueHeatmapCellContent:hover {
     transform: scale(1.15);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
     filter: brightness(0.95);
 }
 .myUniqueHeatmapCellContent:hover::before {
     opacity: 1;
+}
+
+/* Styling for the student name cell */
+.myUniqueHeatmapCellContent_studentName {
+    text-align: center;
+    background-color: var(--tile-color, #f8f8f8);
+    border-radius: 8px;
+    padding: 16px;
+    border: 1px solid transparent;
+    cursor: pointer;
+}
+.myUniqueHeatmapCellContent_studentName:hover {
+    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+    filter: brightness(0.95);
 }
 
 /* Info button styling */
@@ -544,7 +585,6 @@ a.material-icons.nextprev:hover {
     cursor: pointer;
     font-size: 18px;
     padding: 2px 4px;
-    /* Remove any absolute positioning if it exists */
     position: static;
 }
 
@@ -554,6 +594,16 @@ a.material-icons.nextprev:hover {
     max-height: 0;
     transition: max-height 0.5s ease;
 }
+.legendSquare {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+}
 
-
-
+.myLegend {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}

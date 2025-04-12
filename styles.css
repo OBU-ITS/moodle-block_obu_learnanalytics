@@ -486,7 +486,7 @@ a.material-icons.nextprev:hover {
 }
 
 /* Scoped styles for the heatmap container & table */
-#myUniqueHeatmapContainer {
+#attendanceMatrixContainer {
     font-family: sans-serif;
     background: #fafafa;
     padding: 10px;
@@ -494,7 +494,7 @@ a.material-icons.nextprev:hover {
     margin-bottom: 20px;
 }
 
-#myUniqueHeatmapContainer #myUniqueHeatmapTable {
+#attendanceMatrixContainer #attendanceMatrixTable {
     border-collapse: separate;
     border-spacing: 8px;
     width: 90%;
@@ -502,7 +502,7 @@ a.material-icons.nextprev:hover {
 }
 
 /* Header cells inside the heatmap container */
-#myUniqueHeatmapContainer #myUniqueHeatmapTable thead th {
+#attendanceMatrixContainer #attendanceMatrixTable thead th {
     background: #f2f2f2;
     text-align: center;
     padding: 8px;
@@ -510,14 +510,14 @@ a.material-icons.nextprev:hover {
     vertical-align: middle;
 }
 
-#myUniqueHeatmapContainer #myUniqueHeatmapTable td {
+#attendanceMatrixContainer #attendanceMatrixTable td {
     border: none;
     padding: 0;
     vertical-align: middle;
 }
 
 /* Attendance cell content with hover effect */
-.myUniqueHeatmapCellContent {
+.attendanceMatrixCellContent {
     position: relative;
     border-radius: 8px;
     padding: 16px;
@@ -527,7 +527,7 @@ a.material-icons.nextprev:hover {
     cursor: pointer;
     transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
-.myUniqueHeatmapCellContent::before {
+.attendanceMatrixCellContent::before {
     content: "";
     position: absolute;
     top: 0;
@@ -538,7 +538,7 @@ a.material-icons.nextprev:hover {
     border-radius: inherit;
     pointer-events: none;
 }
-.myUniqueHeatmapTooltip {
+.attendanceMatrixTooltip {
     display: none;
     position: absolute;
     top: -5px;
@@ -552,20 +552,20 @@ a.material-icons.nextprev:hover {
     z-index: 999;
     white-space: nowrap;
 }
-.myUniqueHeatmapCellContent:hover .myUniqueHeatmapTooltip {
+.attendanceMatrixCellContent:hover .attendanceMatrixTooltip {
     display: block;
 }
-.myUniqueHeatmapCellContent:hover {
+.attendanceMatrixCellContent:hover {
     transform: scale(1.15);
     box-shadow: 0 6px 15px rgba(0,0,0,0.15);
     filter: brightness(0.95);
 }
-.myUniqueHeatmapCellContent:hover::before {
+.attendanceMatrixCellContent:hover::before {
     opacity: 1;
 }
 
 /* Styling for the student name cell */
-.myUniqueHeatmapCellContent_studentName {
+.attendanceMatrixCellContent_studentName {
     text-align: center;
     background-color: var(--tile-color, #f8f8f8);
     border-radius: 8px;
@@ -573,7 +573,7 @@ a.material-icons.nextprev:hover {
     border: 1px solid transparent;
     cursor: pointer;
 }
-.myUniqueHeatmapCellContent_studentName:hover {
+.attendanceMatrixCellContent_studentName:hover {
     box-shadow: 0 6px 15px rgba(0,0,0,0.15);
     filter: brightness(0.95);
 }

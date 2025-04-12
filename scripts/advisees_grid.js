@@ -110,7 +110,7 @@ function clickStudentAdvisee(studentNumber) {
 
 /**
  * This function creates a modal overlay with a popover, and inside the popover
- * it creates a container for the attendance heatmap. It then calls buildAttendanceHeatmap()
+ * it creates a container for the attendance matrix. It then calls buildAttendanceMatrix()
  * passing the provided data.
  *
  */
@@ -133,29 +133,29 @@ function renderAttendanceMatrix() {
     });
     popover.appendChild(closeButton);
     
-    // Create the container for the heatmap (content container)
-    var heatmapContainer = document.createElement('div');
-    heatmapContainer.id = 'myUniqueHeatmapContainer';
-    heatmapContainer.style.marginTop = "20px"; // optional inline style for spacing
-    // Add a heading and an empty table that will be populated by our heatmap builder.
-    heatmapContainer.innerHTML = "<h3>Attendance Matrix</h3><table id='myUniqueHeatmapTable'></table>";
-    popover.appendChild(heatmapContainer);
+    // Create the container for the matrix (content container)
+    var matrixContainer = document.createElement('div');
+    matrixContainer.id = 'attendanceMatrixContainer';
+    matrixContainer.style.marginTop = "20px"; // optional inline style for spacing
+    // Add a heading and an empty table that will be populated by our matrix builder.
+    matrixContainer.innerHTML = "<h3>Attendance Matrix</h3><table id='attendanceMatrixTable'></table>";
+    popover.appendChild(matrixContainer);
     
     // Append the popover to the overlay and the overlay to the document body.
     overlay.appendChild(popover);
     document.body.appendChild(overlay);
     
-    // Build the heatmap inside our container using the provided data.
-    buildAttendanceHeatmap();
+    // Build the matrix inside our container using the provided data.
+    buildAttendanceMatrix();
 }
 
 
 /**
- * This function builds an attendance heatmap table in the container with
- * id "myUniqueHeatmapTable", using the provided studentData.
+ * This function builds an attendance matrix table in the container with
+ * id "attendanceMatrixTable", using the provided studentData.
  *
  */
-function buildAttendanceHeatmap() {
+function buildAttendanceMatrix() {
 
     // TEMP sample data.
     const studentData = {
@@ -260,7 +260,7 @@ for (var studentId in studentData) {
     });
     
     // Build table header with a legend in the top-left cell.
-    var table = document.getElementById("myUniqueHeatmapTable");
+    var table = document.getElementById("attendanceMatrixTable");
     var thead = document.createElement("thead");
     var headerRow = document.createElement("tr");
     
@@ -299,7 +299,7 @@ for (var studentId in studentData) {
         // Create left cell: Student Name and ID.
         var nameCell = document.createElement("td");
         var nameDiv = document.createElement("div");
-        nameDiv.className = "myUniqueHeatmapCellContent_studentName";
+        nameDiv.className = "attendanceMatrixCellContent_studentName";
         // Attach an onclick event on the name cell.
         nameDiv.onclick = function() {
             // Render HTML for details container, change arrow and expand
@@ -342,7 +342,7 @@ for (var studentId in studentData) {
         weekLabels.forEach(function(week) {
             var cell = document.createElement("td");
             var cellDiv = document.createElement("div");
-            cellDiv.className = "myUniqueHeatmapCellContent";
+            cellDiv.className = "attendanceMatrixCellContent";
             // Attach an onclick event on the name cell.
             cellDiv.onclick = function() {
                 // Render HTML for details container, change arrow and expand
@@ -369,7 +369,7 @@ for (var studentId in studentData) {
                 
                 // Add tooltip with module details.
                 var tooltip = document.createElement("div");
-                tooltip.className = "myUniqueHeatmapTooltip";
+                tooltip.className = "attendanceMatrixTooltip";
                 var missed = entry.modules_missed || {};
                 if (Object.keys(missed).length === 0) {
                     tooltip.textContent = "No modules missed";

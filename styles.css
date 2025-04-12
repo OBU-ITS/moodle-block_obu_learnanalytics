@@ -591,16 +591,17 @@ a.material-icons.nextprev:hover {
 /* Details container for the extra row */
 .detailsContainer {
     overflow: hidden;
+    background-color: #f8f8f8;
     max-height: 0;
     transition: max-height 0.5s ease;
 }
+/* Legend CSS properties */
 .legendSquare {
     display: inline-block;
     width: 16px;
     height: 16px;
     border-radius: 4px;
 }
-
 .myLegend {
     display: flex;
     flex-direction: column;

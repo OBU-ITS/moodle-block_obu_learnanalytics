@@ -138,7 +138,7 @@ function renderAttendanceMatrix() {
     heatmapContainer.id = 'myUniqueHeatmapContainer';
     heatmapContainer.style.marginTop = "20px"; // optional inline style for spacing
     // Add a heading and an empty table that will be populated by our heatmap builder.
-    heatmapContainer.innerHTML = "<h3>Attendance Heatmap</h3><table id='myUniqueHeatmapTable'></table>";
+    heatmapContainer.innerHTML = "<h3>Attendance Matrix</h3><table id='myUniqueHeatmapTable'></table>";
     popover.appendChild(heatmapContainer);
     
     // Append the popover to the overlay and the overlay to the document body.
@@ -161,69 +161,96 @@ function buildAttendanceHeatmap() {
     const studentData = {
         "0089128": {
             "Alice Walker": {
-                "Week 1": { "attendance_percent": "75",  "modules_missed": { "CRIM5009 (202409:1)": "1/4" } },
-                "Week 2": { "attendance_percent": "25",  "modules_missed": { "PSYC6002 (202409:1)": "3/4" } },
-                "Week 3": { "attendance_percent": "90",  "modules_missed": {} },
-                "Week 4": { "attendance_percent": "40",  "modules_missed": { "CRIM5009 (202409:1)": "2/4" } },
-                "Week 5": { "attendance_percent": "60",  "modules_missed": { "PSYC6002 (202409:1)": "2/4" } },
-                "Week 6": { "attendance_percent": "100", "modules_missed": {} },
-                "Week 7": { "attendance_percent": "85",  "modules_missed": { "PSYC6002 (202409:1)": "1/4" } },
-                "Week 8": { "attendance_percent": "55",  "modules_missed": { "CRIM5009 (202409:1)": "2/4" } },
-                "Week 9": { "attendance_percent": "0",   "modules_missed": { "PSYC6002 (202409:1)": "4/4" } },
-                "Week 10": { "attendance_percent": "100", "modules_missed": {} },
-                "Week 11": { "attendance_percent": "65",  "modules_missed": { "CRIM5009 (202409:1)": "1/4" } },
-                "Week 12": { "attendance_percent": "75",  "modules_missed": {} }
+                "BSc Hons Psychology": {
+                    "Week 1": { "attendance_percent": "75",  "modules_missed": { "CRIM5009 (202409:1)": "1/4" } },
+                    "Week 2": { "attendance_percent": "25",  "modules_missed": { "PSYC6002 (202409:1)": "3/4" } },
+                    "Week 3": { "attendance_percent": "90",  "modules_missed": {} },
+                    "Week 4": { "attendance_percent": "40",  "modules_missed": { "CRIM5009 (202409:1)": "2/4" } },
+                    "Week 5": { "attendance_percent": "60",  "modules_missed": { "PSYC6002 (202409:1)": "2/4" } },
+                    "Week 6": { "attendance_percent": "100", "modules_missed": {} },
+                    "Week 7": { "attendance_percent": "85",  "modules_missed": { "PSYC6002 (202409:1)": "1/4" } },
+                    "Week 8": { "attendance_percent": "55",  "modules_missed": { "CRIM5009 (202409:1)": "2/4" } },
+                    "Week 9": { "attendance_percent": "0",   "modules_missed": { "PSYC6002 (202409:1)": "4/4" } },
+                    "Week 10": { "attendance_percent": "100", "modules_missed": {} },
+                    "Week 11": { "attendance_percent": "65",  "modules_missed": { "CRIM5009 (202409:1)": "1/4" } },
+                    "Week 12": { "attendance_percent": "75",  "modules_missed": {} }
+                }
             }
         },
         "0011223": {
             "Bob Jones": {
-                "Week 1": { "attendance_percent": "100", "modules_missed": {} },
-                "Week 2": { "attendance_percent": "50",  "modules_missed": { "CRIM5009 (202409:1)": "2/4" } },
-                "Week 3": { "attendance_percent": "35",  "modules_missed": { "PSYC6002 (202409:1)": "3/4" } },
-                "Week 4": { "attendance_percent": "20",  "modules_missed": { "CRIM5009 (202409:1)": "3/4" } },
-                "Week 5": { "attendance_percent": "40",  "modules_missed": { "PSYC6002 (202409:1)": "2/4" } },
-                "Week 6": { "attendance_percent": "60",  "modules_missed": {} },
-                "Week 7": { "attendance_percent": "80",  "modules_missed": {} },
-                "Week 8": { "attendance_percent": "85",  "modules_missed": { "CRIM5009 (202409:1)": "1/4" } },
-                "Week 9": { "attendance_percent": "75",  "modules_missed": { "PSYC6002 (202409:1)": "1/4" } },
-                "Week 10": { "attendance_percent": "30",  "modules_missed": { "CRIM5009 (202409:1)": "3/4" } },
-                "Week 11": { "attendance_percent": "55",  "modules_missed": { "PSYC6002 (202409:1)": "2/4" } },
-                "Week 12": { "attendance_percent": "100", "modules_missed": {} }
+                "BSc Hons Psychology": {
+                    "Week 1": { "attendance_percent": "100", "modules_missed": {} },
+                    "Week 2": { "attendance_percent": "50",  "modules_missed": { "CRIM5009 (202409:1)": "2/4" } },
+                    "Week 3": { "attendance_percent": "35",  "modules_missed": { "PSYC6002 (202409:1)": "3/4" } },
+                    "Week 4": { "attendance_percent": "20",  "modules_missed": { "CRIM5009 (202409:1)": "3/4" } },
+                    "Week 5": { "attendance_percent": "40",  "modules_missed": { "PSYC6002 (202409:1)": "2/4" } },
+                    "Week 6": { "attendance_percent": "60",  "modules_missed": {} },
+                    "Week 7": { "attendance_percent": "80",  "modules_missed": {} },
+                    "Week 8": { "attendance_percent": "85",  "modules_missed": { "CRIM5009 (202409:1)": "1/4" } },
+                    "Week 9": { "attendance_percent": "75",  "modules_missed": { "PSYC6002 (202409:1)": "1/4" } },
+                    "Week 10": { "attendance_percent": "30",  "modules_missed": { "CRIM5009 (202409:1)": "3/4" } },
+                    "Week 11": { "attendance_percent": "55",  "modules_missed": { "PSYC6002 (202409:1)": "2/4" } },
+                    "Week 12": { "attendance_percent": "100", "modules_missed": {} }
+                }
             }
         },
         "0077665": {
             "Carol Smith": {
-                "Week 1": { "attendance_percent": "10",  "modules_missed": { "CRIM5009 (202409:1)": "3/4" } },
-                "Week 2": { "attendance_percent": "30",  "modules_missed": { "PSYC6002 (202409:1)": "2/4" } },
-                "Week 3": { "attendance_percent": "100", "modules_missed": {} },
-                "Week 4": { "attendance_percent": "90",  "modules_missed": {} },
-                "Week 5": { "attendance_percent": "0",   "modules_missed": { "CRIM5009 (202409:1)": "4/4" } },
-                "Week 6": { "attendance_percent": "75",  "modules_missed": {} },
-                "Week 7": { "attendance_percent": "20",  "modules_missed": { "PSYC6002 (202409:1)": "3/4" } },
-                "Week 8": { "attendance_percent": "40",  "modules_missed": { "CRIM5009 (202409:1)": "2/4" } },
-                "Week 9": { "attendance_percent": "55",  "modules_missed": {} },
-                "Week 10": { "attendance_percent": "60",  "modules_missed": { "CRIM5009 (202409:1)": "1/4" } },
-                "Week 11": { "attendance_percent": "40",  "modules_missed": { "PSYC6002 (202409:1)": "2/4" } },
-                "Week 12": { "attendance_percent": "70",  "modules_missed": {} }
+                "BSc Hons Psychology": {
+                    "Week 1": { "attendance_percent": "10",  "modules_missed": { "CRIM5009 (202409:1)": "3/4" } },
+                    "Week 2": { "attendance_percent": "30",  "modules_missed": { "PSYC6002 (202409:1)": "2/4" } },
+                    "Week 3": { "attendance_percent": "100", "modules_missed": {} },
+                    "Week 4": { "attendance_percent": "90",  "modules_missed": {} },
+                    "Week 5": { "attendance_percent": "0",   "modules_missed": { "CRIM5009 (202409:1)": "4/4" } },
+                    "Week 6": { "attendance_percent": "75",  "modules_missed": {} },
+                    "Week 7": { "attendance_percent": "20",  "modules_missed": { "PSYC6002 (202409:1)": "3/4" } },
+                    "Week 8": { "attendance_percent": "40",  "modules_missed": { "CRIM5009 (202409:1)": "2/4" } },
+                    "Week 9": { "attendance_percent": "55",  "modules_missed": {} },
+                    "Week 10": { "attendance_percent": "60",  "modules_missed": { "CRIM5009 (202409:1)": "1/4" } },
+                    "Week 11": { "attendance_percent": "40",  "modules_missed": { "PSYC6002 (202409:1)": "2/4" } },
+                    "Week 12": { "attendance_percent": "70",  "modules_missed": {} }
+                }
             }
         }
     };
     
-    // Flatten data for table creation.
-    var students = [];
-    var allWeeks = new Set();
-    for (var studentId in studentData) {
-        if (!studentData.hasOwnProperty(studentId)) continue;
-        var nameObj = studentData[studentId];
-        var studentName = Object.keys(nameObj)[0];
-        var weeksObj = nameObj[studentName];
-        students.push({ studentId: studentId, studentName: studentName, weeksObj: weeksObj });
-        for (var w in weeksObj) {
-            if (weeksObj.hasOwnProperty(w)) {
-                allWeeks.add(w);
-            }
+// Flatten data for table creation.
+var students = [];
+var allWeeks = new Set();
+
+for (var studentId in studentData) {
+    if (!studentData.hasOwnProperty(studentId)) continue;
+
+    // Get the student name. In our structure, studentData[studentId] 
+    // has only one key for the student name.
+    var nameObj = studentData[studentId];
+    var studentName = Object.keys(nameObj)[0];
+
+    // Get the programme object.
+    // This object should have a single key—the student programme.
+    var programmeObj = nameObj[studentName];
+    var studentProgramme = Object.keys(programmeObj)[0];
+
+    // Now, the weeks object is inside the programme object.
+    var weeksObj = programmeObj[studentProgramme];
+
+    // Push the flattened student data, including studentProgramme.
+    students.push({ 
+        studentId: studentId, 
+        studentName: studentName, 
+        studentProgramme: studentProgramme,
+        weeksObj: weeksObj 
+    });
+
+    // Add all week labels.
+    for (var w in weeksObj) {
+        if (weeksObj.hasOwnProperty(w)) {
+            allWeeks.add(w);
         }
     }
+}
+
     
     // Sort week labels numerically (assuming names like "Week 1", "Week 2", etc.)
     var weekLabels = Array.from(allWeeks).sort(function(a, b) {
@@ -295,7 +322,7 @@ function buildAttendanceHeatmap() {
         nameSpan.style.fontWeight = 'bold';
         
         var idSpan = document.createElement("span");
-        idSpan.textContent = "(" + stObj.studentId + ")";
+        idSpan.textContent = "(" + stObj.studentProgramme + ")";
         idSpan.style.display = "block"; // Force on new line
         
         // (Optional) Include an info icon inline if desired.

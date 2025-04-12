@@ -63,22 +63,26 @@ switch ($studentNumber) {
         } else {
             // not sure we need clear - see if anyone complains $summaryMessage .= "   <a href='javascript:clearSSC()' class='link-right'>Clear</a>";
             $summaryMessage .= "
-                    <button 
-                        onclick='collapseTutor()'
-                        style='
-                            display: inline-block;
-                            font-size: 16px; 
-                            padding: 6px 12px 6px 12px; 
-                            border: 1px solid #ccc; 
-                            background: #d10373; 
-                            border-radius: 4px;  
-                            text-decoration: none;
-                            cursor: pointer;
-                        ' 
-                        class='link-right'
-                    >
-                        <i class='fa-solid fa fa-close' style='color:#fff;'> <b>Close</b></i>
-                    </button>";
+            <button 
+                onclick='collapseTutor()'
+                onmouseover=\"this.style.background='#e03b85';\" 
+                onmouseout=\"this.style.background='#d10373';\"
+                style='
+                    display: inline-block;
+                    font-size: 16px; 
+                    padding: 6px 12px; 
+                    border: 1px solid #ccc; 
+                    background: #d10373; 
+                    border-radius: 4px;  
+                    text-decoration: none;
+                    cursor: pointer;
+                    transition: background 0.3s ease-in-out;
+                ' 
+                class='link-right'
+            >
+                <i class='fa-solid fa fa-close' style='color:#fff;'> <b>Close</b></i>
+            </button>";
+        
         }
 
         // Now work out the programme (code nearly the same code in block_obu_learnanalytics.php and elsewhere)

@@ -170,6 +170,35 @@ class common
         }
     }
 
-    // (Optional) Copy get_last_http_status(), get_status_details(), etc.
-    // from the old class if you need them exactly the same in Guzzle.
+
+        /**
+     * get_academic_advisor
+     * Wrapper for calling Web service and adding extra data
+     * only one needed so far, if we need more then we'll create a data class
+     *
+     * @param  string $userName
+     * @return array  PNumber/Name/userid
+     */
+    public function get_academic_advisor(string $userName, string $semester)
+    {
+        $params = "student/advisor/$userName/$semester/";
+        $rows = $this->send_request($params);
+        if ($rows == null) {
+            return null;
+        }
+        $row = $rows[0];
+        $pnumber = $row['PNumber'];
+        $pname = $row['PNumber'];
+        $userid = -1;
+        global $DB;
+        if ($DB == null) {
+            $pname = "null DB Object";
+        }
+        $userObj = $DB->get_record("user", array('username' => $pnumber));
+        if ($userObj != null && $userObj != false) {
+            //$pname = $userObj->firstname . ' ' . $userObj->lastname;
+            $userid = $userObj->id;
+        } // If we don't find it then the pnumber will go back as the name
+        return array('PNumber' => $pnumber, 'Name' => $pname, 'userid' => $userid);
+    }
 }

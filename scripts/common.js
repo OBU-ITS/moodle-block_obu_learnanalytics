@@ -376,8 +376,6 @@ function showDateControls(option = 'getcurrent', dashboardFor = "Tutor", semeste
                 // only way to trigger a fail is with a non 200 response, 404, 500 etc
                 // but that seems extreme for a simple validation
                 // So reserving this for exceptions
-                console.log(textStatus)
-                console.log(errorThrown)
                 alert('showDateControls post failed:' + errorThrown);
             })
             // .always(function(resp) {
@@ -473,27 +471,6 @@ function takeOverPage(tnode) {
             const scrollUp = document.createElement("button");
             scrollUp.id = "obu_learnanalytics_scrollup";
             scrollUp.innerHTML = '<i class="fa-solid fa fa-arrow-up" style="color:#d10373"></i>'; 
-            
-            // Set the inline style as one block
-            scrollUp.setAttribute("style", `
-                position: absolute;
-                top: 10%;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 40px;
-                height: 40px;
-                border-radius: 50%;
-                background: rgba(200, 200, 200, 0.7);
-                border: none;
-                display: none;         /* Start hidden */
-                align-items: center;
-                justify-content: center;
-                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-                color: #333;
-                cursor: pointer;
-                z-index: 999;
-                font-size: 20px;
-            `);
 
             // Append to the document body so it’s fixed relative to the viewport
             document.body.appendChild(scrollUp);
@@ -532,6 +509,7 @@ function giveBackPage(type) {
     $("#obula_summary_row").hide();
     $("#obula_dash_row").hide();
     $('#obula_footer').hide();
+    $('#obu_learnanalytics_scrollup').remove();     // Remove the scrollup function so it doesn't appear outside our plugin
 
     // Get the info we stored earlier for this
     var host = $("#obula_host").val();

@@ -108,11 +108,353 @@ function clickStudentAdvisee(studentNumber) {
 //     }
 // }
 
+/**
+ * This function creates a modal overlay with a popover, and inside the popover
+ * it creates a container for the attendance heatmap. It then calls buildAttendanceHeatmap()
+ * passing the provided data.
+ *
+ */
+function renderAttendanceMatrix() {
+    // Create the overlay element (modal background)
+    var overlay = document.createElement('div');
+    overlay.id = 'attendance-overlay';
+    // (Styling moved to styles.css)
+    
+    // Create the popover element
+    var popover = document.createElement('div');
+    popover.id = 'attendance-popover';
+    // (Styling moved to styles.css)
+    
+    // Create and append the close button for the popover
+    var closeButton = document.createElement('button');
+    closeButton.innerHTML = '&times;';
+    closeButton.addEventListener('click', function() {
+        document.body.removeChild(overlay);
+    });
+    popover.appendChild(closeButton);
+    
+    // Create the container for the heatmap (content container)
+    var heatmapContainer = document.createElement('div');
+    heatmapContainer.id = 'myUniqueHeatmapContainer';
+    heatmapContainer.style.marginTop = "20px"; // optional inline style for spacing
+    // Add a heading and an empty table that will be populated by our heatmap builder.
+    heatmapContainer.innerHTML = "<h3>Attendance Heatmap</h3><table id='myUniqueHeatmapTable'></table>";
+    popover.appendChild(heatmapContainer);
+    
+    // Append the popover to the overlay and the overlay to the document body.
+    overlay.appendChild(popover);
+    document.body.appendChild(overlay);
+    
+    // Build the heatmap inside our container using the provided data.
+    buildAttendanceHeatmap();
+}
+
+
+/**
+ * This function builds an attendance heatmap table in the container with
+ * id "myUniqueHeatmapTable", using the provided studentData.
+ *
+ */
+function buildAttendanceHeatmap() {
+
+    // TEMP
+    const studentData = {
+    "0089128": {
+        "Alice Walker": {
+            "Week 1": { "attendance_percent": "75",  "modules_missed": { "CRIM5009 (202409:1)": "1/4" } },
+            "Week 2": { "attendance_percent": "25",  "modules_missed": { "PSYC6002 (202409:1)": "3/4" } },
+            "Week 3": { "attendance_percent": "90",  "modules_missed": {} },
+            "Week 4": { "attendance_percent": "40",  "modules_missed": { "CRIM5009 (202409:1)": "2/4" } },
+            "Week 5": { "attendance_percent": "60",  "modules_missed": { "PSYC6002 (202409:1)": "2/4" } },
+            "Week 6": { "attendance_percent": "100", "modules_missed": {} },
+            "Week 7": { "attendance_percent": "85",  "modules_missed": { "PSYC6002 (202409:1)": "1/4" } },
+            "Week 8": { "attendance_percent": "55",  "modules_missed": { "CRIM5009 (202409:1)": "2/4" } },
+            "Week 9": { "attendance_percent": "0",   "modules_missed": { "PSYC6002 (202409:1)": "4/4" } },
+            "Week 10": { "attendance_percent": "100", "modules_missed": {} },
+            "Week 11": { "attendance_percent": "65",  "modules_missed": { "CRIM5009 (202409:1)": "1/4" } },
+            "Week 12": { "attendance_percent": "75",  "modules_missed": {} }
+        }
+    },
+    "0011223": {
+        "Bob Jones": {
+            "Week 1": { "attendance_percent": "100", "modules_missed": {} },
+            "Week 2": { "attendance_percent": "50",  "modules_missed": { "CRIM5009 (202409:1)": "2/4" } },
+            "Week 3": { "attendance_percent": "35",  "modules_missed": { "PSYC6002 (202409:1)": "3/4" } },
+            "Week 4": { "attendance_percent": "20",  "modules_missed": { "CRIM5009 (202409:1)": "3/4" } },
+            "Week 5": { "attendance_percent": "40",  "modules_missed": { "PSYC6002 (202409:1)": "2/4" } },
+            "Week 6": { "attendance_percent": "60",  "modules_missed": {} },
+            "Week 7": { "attendance_percent": "80",  "modules_missed": {} },
+            "Week 8": { "attendance_percent": "85",  "modules_missed": { "CRIM5009 (202409:1)": "1/4" } },
+            "Week 9": { "attendance_percent": "75",  "modules_missed": { "PSYC6002 (202409:1)": "1/4" } },
+            "Week 10": { "attendance_percent": "30",  "modules_missed": { "CRIM5009 (202409:1)": "3/4" } },
+            "Week 11": { "attendance_percent": "55",  "modules_missed": { "PSYC6002 (202409:1)": "2/4" } },
+            "Week 12": { "attendance_percent": "100", "modules_missed": {} }
+        }
+    },
+    "0077665": {
+        "Carol Smith": {
+            "Week 1": { "attendance_percent": "10",  "modules_missed": { "CRIM5009 (202409:1)": "3/4" } },
+            "Week 2": { "attendance_percent": "30",  "modules_missed": { "PSYC6002 (202409:1)": "2/4" } },
+            "Week 3": { "attendance_percent": "100", "modules_missed": {} },
+            "Week 4": { "attendance_percent": "90",  "modules_missed": {} },
+            "Week 5": { "attendance_percent": "0",   "modules_missed": { "CRIM5009 (202409:1)": "4/4" } },
+            "Week 6": { "attendance_percent": "75",  "modules_missed": {} },
+            "Week 7": { "attendance_percent": "20",  "modules_missed": { "PSYC6002 (202409:1)": "3/4" } },
+            "Week 8": { "attendance_percent": "40",  "modules_missed": { "CRIM5009 (202409:1)": "2/4" } },
+            "Week 9": { "attendance_percent": "55",  "modules_missed": {} },
+            "Week 10": { "attendance_percent": "60",  "modules_missed": { "CRIM5009 (202409:1)": "1/4" } },
+            "Week 11": { "attendance_percent": "40",  "modules_missed": { "PSYC6002 (202409:1)": "2/4" } },
+            "Week 12": { "attendance_percent": "70",  "modules_missed": {} }
+        }
+    }
+};
+
+
+    // Optionally inject scoped CSS (you could alternatively move this to your styles.css).
+    var style = document.createElement("style");
+    style.textContent = `
+        /* Scoped styles for heatmap container */
+        #myUniqueHeatmapContainer {
+            font-family: sans-serif; 
+            background: #fafafa; 
+            padding: 10px;       
+            border-radius: 8px;  
+            margin-bottom: 20px; 
+        }
+        #myUniqueHeatmapContainer #myUniqueHeatmapTable {
+            border-collapse: separate;
+            border-spacing: 8px;
+            width: 90%;
+            margin: auto;
+        }
+        /* Header cells */
+        #myUniqueHeatmapContainer #myUniqueHeatmapTable thead th {
+            background: #f2f2f2;
+            text-align: center;
+            padding: 8px;
+            border-radius: 6px;
+            vertical-align: middle;
+        }
+        #myUniqueHeatmapContainer #myUniqueHeatmapTable td {
+            border: none;
+            padding: 0;
+            vertical-align: middle;
+        }
+        .myUniqueHeatmapCellContent {
+            position: relative;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            background-color: var(--tile-color, #f8f8f8);
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+        }
+        .myUniqueHeatmapCellContent::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(145deg, rgba(255,255,255,0.3), rgba(0,0,0,0.1));
+            border-radius: inherit;
+            pointer-events: none;
+        }
+        .myUniqueHeatmapCellContent:hover {
+            transform: scale(1.15);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+            filter: brightness(0.95);
+        }
+        .myUniqueHeatmapCellContent:hover::before {
+            opacity: 1;
+        }
+        .myUniqueHeatmapTooltip {
+            display: none;
+            position: absolute;
+            top: -5px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100%);
+            background: rgba(0,0,0,0.8);
+            color: #fff;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 999;
+            white-space: nowrap;
+        }
+        .myUniqueHeatmapCellContent:hover > .myUniqueHeatmapTooltip {
+            display: block;
+        }
+        .myLegend {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+        }
+        .legendItem {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9em;
+        }
+        .legendSquare {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Flatten data for table creation.
+    var students = [];
+    var allWeeks = new Set();
+    for (var studentId in studentData) {
+        if (!studentData.hasOwnProperty(studentId)) continue;
+        var nameObj = studentData[studentId];
+        var studentName = Object.keys(nameObj)[0];
+        var weeksObj = nameObj[studentName];
+        students.push({ studentId: studentId, studentName: studentName, weeksObj: weeksObj });
+        for (var w in weeksObj) {
+            if (weeksObj.hasOwnProperty(w)) {
+                allWeeks.add(w);
+            }
+        }
+    }
+    
+    // Sort week labels numerically (assuming names like "Week 1", "Week 2", etc.)
+    var weekLabels = Array.from(allWeeks).sort(function(a, b) {
+        var numA = parseInt(a.replace(/\D+/g, ""), 10);
+        var numB = parseInt(b.replace(/\D+/g, ""), 10);
+        return numA - numB;
+    });
+    
+    // Build table header with a legend in the top-left cell.
+    var table = document.getElementById("myUniqueHeatmapTable");
+    var thead = document.createElement("thead");
+    var headerRow = document.createElement("tr");
+    
+    var cornerTh = document.createElement("th");
+    cornerTh.innerHTML = `
+        <div class="myLegend">
+            <div class="legendItem">
+                <span class="legendSquare" style="background-color:#9eab05;"></span> > 75%
+            </div>
+            <div class="legendItem">
+                <span class="legendSquare" style="background-color:#db7c12;"></span> 25–75%
+            </div>
+            <div class="legendItem">
+                <span class="legendSquare" style="background-color:#c70540;"></span> < 25%
+            </div>
+        </div>
+    `;
+    headerRow.appendChild(cornerTh);
+    
+    weekLabels.forEach(function(week) {
+        var th = document.createElement("th");
+        th.textContent = week;
+        headerRow.appendChild(th);
+    });
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+    
+    // Build table body.
+    var tbody = document.createElement("tbody");
+    
+    students.forEach(function(stObj) {
+        var row = document.createElement("tr");
+        
+        // Left cell: Student Name and ID.
+        var nameCell = document.createElement("td");
+        var nameDiv = document.createElement("div");
+        nameDiv.className = "myUniqueHeatmapCellContent_studentName";
+        nameCell.appendChild(nameDiv);
+        row.appendChild(nameCell);
+
+
+        // Create a container div (already exists as nameDiv).
+        var nameSpan = document.createElement("span");
+        nameSpan.textContent = stObj.studentName;
+        nameSpan.style.fontWeight = 'bold';
+
+        var idSpan = document.createElement("span");
+        idSpan.textContent = "(" + stObj.studentId + ")";
+        idSpan.style.display = "block"; // forces it to be on a new line
+
+        var infoSpan = document.createElement("span");
+        infoSpan.innerHTML = '<i class="fa-solid fa fa-angle-down"></i>';
+        
+        // Append both spans to the container.
+        nameDiv.appendChild(nameSpan);
+        nameDiv.appendChild(idSpan);
+        nameDiv.appendChild(infoSpan);
+
+
+        
+        // Create cells for each week.
+        weekLabels.forEach(function(week) {
+            var cell = document.createElement("td");
+            var cellDiv = document.createElement("div");
+            cellDiv.className = "myUniqueHeatmapCellContent";
+            
+            var entry = stObj.weeksObj[week];
+            if (entry) {
+                var attendanceNum = parseInt(entry.attendance_percent, 10) || 0;
+                cellDiv.textContent = attendanceNum + "%";
+                
+                // Color the cell based on attendance.
+                cellDiv.style.setProperty("--tile-color", getAttendanceColor(attendanceNum));
+                
+                // Add tooltip with module details.
+                var tooltip = document.createElement("div");
+                tooltip.className = "myUniqueHeatmapTooltip";
+                var missed = entry.modules_missed || {};
+                if (Object.keys(missed).length === 0) {
+                    tooltip.textContent = "No modules missed";
+                } else {
+                    var lines = ["Modules missed:\n"];
+                    for (var mod in missed) {
+                        if (missed.hasOwnProperty(mod)) {
+                            lines.push(mod + " → " + missed[mod]);
+                        }
+                    }
+                    tooltip.textContent = lines.join("\n");
+                }
+                cellDiv.appendChild(tooltip);
+            } else {
+                cellDiv.textContent = "--";
+                cellDiv.style.backgroundColor = "#eee";
+            }
+            
+            cell.appendChild(cellDiv);
+            row.appendChild(cell);
+        });
+        
+        tbody.appendChild(row);
+    });
+    table.appendChild(tbody);
+    
+    // Helper function to choose a tile color for attendance percentage.
+    function getAttendanceColor(p) {
+        p = Math.max(0, Math.min(100, p));
+        if (p > 75) {
+            return "#9eab05";   // > 75%
+        } else if (p < 25) {
+            return "#c70540";   // < 25%
+        } else {
+            return "#db7c12";   // 25–75%
+        }
+    }
+}
+
+
+
+
 function reloadAdvisorGrid(currentWeek = null) {
     if (gridLoading) { return };
     //debugger;
     set_gridLoading(true);
-
     //debugger;
     if (currentWeek == null) {
         var currentWeek = $("#obula_currentweek").val();       // Don't parse the JSON

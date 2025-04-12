@@ -106,7 +106,6 @@ class block_obu_learnanalytics extends block_base
                     $this->content->text = $renderer->students_dashboard(false, $USER->username, $USER->firstname, $sname, $pgm);
                 } catch (\Exception $ex) {
                     $this->content->text = $renderer->error_page('Error Creating Student Dashboard get_content', $ex);
-                    return;      // $this->content;
                 }
                 break;
             default:

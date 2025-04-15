@@ -93,7 +93,8 @@ function clickStudentAdvisee(studentNumber) {
         //         // Code will always get executed after done or fail, like a try/catch finally
         //     })
         ;           // End of .ajax 'line'
-        
+        highlightStudentRow(studentNumber, '#obula_advisee_parent_grid');
+        whileLoading(studentNumber);
 }
 
 

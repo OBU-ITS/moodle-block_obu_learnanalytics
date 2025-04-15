@@ -153,7 +153,7 @@ function tutor_grid_done(fromReadyEvent, res, programme, modLevel, studentNumber
     if (res.success) {
         if (fromReadyEvent) {
             if (studentNumber != '') {
-                highlightStudentRow(studentNumber);
+                highlightStudentRow(studentNumber, '#obula_tutor_grid_table');
             }
         } else {
             checkRefreshStudentBits();
@@ -178,26 +178,6 @@ function tutor_grid_done(fromReadyEvent, res, programme, modLevel, studentNumber
     set_gridLoading(false);
 }
 
-function highlightStudentRow(studentNumber) {
-    var table = $("#obula_tutor_grid_table");
-    if (table.length > 0) {        // Safety code - should not be zero
-        //TODO$("#obula_tutor_grid_table").find('tr').removeClass('selected');
-        // $("tr.students").removeAttr('selected');
-        // So now find row (would like to do it within table TODO)
-        var rowsid = '#sid_' + studentNumber;
-        $("tr.students").removeAttr('selected');
-
-        if ($(rowsid).length) {
-            $(rowsid).attr('selected', 'selected');
-            var studentRow = document.getElementById('sid_' + studentNumber);
-            studentRow.scrollIntoView(false);           // true is going too far
-          } else {
-            console.error("Element " + rowsid + " does not exist.");
-          }
-          
-
-    }
-}
 
 function renderChart(chart_type, studentName) {
     return new Promise((resolve, reject) => {
@@ -245,7 +225,7 @@ function clickStudent(programme, studyStage, studentNumber, studentName, scrollI
     //$(this).blur();
     globalStudentName = studentName;
 
-    highlightStudentRow(studentNumber);
+    highlightStudentRow(studentNumber, '#obula_tutor_grid_table');
     store_parameters(programme, studyStage, studentNumber, studentName);     
     set_studentLoading(true);
 
@@ -282,7 +262,7 @@ function clickStudent(programme, studyStage, studentNumber, studentName, scrollI
 function clickStudent_old(programme, studyStage, studentNumber, studentName, scrollIntoView = true, newDate = null) {
     //debugger;
     //$(this).blur();
-    highlightStudentRow(studentNumber);
+    highlightStudentRow(studentNumber, '#obula_tutor_grid_table');
     store_parameters(programme, studyStage, studentNumber, studentName);
     // Now the graphs
     for (var i = 1; i <= 3; i++) {
@@ -498,7 +478,7 @@ function clickStudentsMark(studentNumber, studentName, studyStage, programme) {
     if (studentGraphsDisplay != "none") {
         clickStudent(getProgrammeParameter(), studyStage, studentNumber, studentName, false);
     } else {
-        highlightStudentRow(studentNumber);
+        highlightStudentRow(studentNumber, '#obula_tutor_grid_table');
     }
 };
 

@@ -33,25 +33,9 @@ global $PAGE;
 $summaryMessage = "<span class='tutor-title' id='obula_title'>Learning Analytics</span>";
 
 $summaryMessage .= "
-    <button 
-        onclick='collapseTutor()'
-        onmouseover=\"this.style.background='#e03b85';\" 
-        onmouseout=\"this.style.background='#d10373';\"
-        style='
-            display: inline-block;
-            font-size: 16px; 
-            padding: 6px 12px; 
-            border: 1px solid #ccc; 
-            background: #d10373; 
-            border-radius: 4px;  
-            text-decoration: none;
-            cursor: pointer;
-            transition: background 0.3s ease-in-out;
-        ' 
-        class='link-right'
-    >
-        <i class='fa-solid fa fa-close' style='color:#fff;'> <b>Close</b></i>
-    </button>";
+<button onclick='collapseTutor()' class='link-right dashboardCloseButton'>
+    <i class='fa-solid fa fa-close'><b>Close</b></i>
+</button>";
 
 
 

@@ -742,14 +742,8 @@ function showHelp(helpType) {
         //     })
         ;           // End of .ajax 'line'
 }
-
 var gridLoading = true;
-function staffToggleHandler(type, controlId) {
-    showBecomeView(type, controlId);
-
-    var studentNumber = document.getElementById(controlId).value;
-    let elapsedSeconds = 0;
-    const maxSeconds = 30;
+function whileLoading(studentNumber, maxSeconds=15, elapsedSeconds=0) {
     // Check every second.
     const intervalId = setInterval(() => {
         elapsedSeconds++;
@@ -759,13 +753,12 @@ function staffToggleHandler(type, controlId) {
 
             // If we timed out (still true after 15 seconds), you might handle that differently.
             // For now, we'll call highlightStudentRow in either case.
-            highlightStudentRow(studentNumber);
+            highlightStudentRow(studentNumber, '#obula_tutor_grid_table');
             return;
         }
     }, 1000); // 1000ms = 1 second
     gridLoading = true;
 }
-
 
 
 /**
@@ -820,6 +813,8 @@ function showBecomeView(type, controlId) {
       })
       .fail(function (jqXHR, textStatus, errorThrown) {
       });
+
+      whileLoading(studentNumber);
   }
   
 
@@ -861,4 +856,23 @@ $.ajax({
 ;           // End of .ajax 'line'
 }
 
+function highlightStudentRow(studentNumber, tableId) {
+    var table = $(tableId);
+    if (table.length > 0) {        // Safety code - should not be zero
+        //TODO$("#obula_tutor_grid_table").find('tr').removeClass('selected');
+        // $("tr.students").removeAttr('selected');
+        // So now find row (would like to do it within table TODO)
+        var rowsid = '#sid_' + studentNumber;
+        $("tr.students").removeAttr('selected');
 
+        if ($(rowsid).length) {
+            $(rowsid).attr('selected', 'selected');
+            var studentRow = document.getElementById('sid_' + studentNumber);
+            studentRow.scrollIntoView(false);           // true is going too far
+          } else {
+            console.error("Element " + rowsid + " does not exist.");
+          }
+          
+
+    }
+}

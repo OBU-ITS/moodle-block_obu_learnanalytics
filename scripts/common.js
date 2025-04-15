@@ -122,38 +122,57 @@ function showAdvisees(mode) {
 function showTutorFull() {
     //debugger;
     var tnode = event.target;
-    // Ajax call re-written to use later .done/.fail functionality in case we need promises later
-    $.ajax({
-        type: 'POST',
-        url: "../blocks/obu_learnanalytics/become_tutor.php",
-        // data: data,
-        beforeSend: function () {
-            $("#obula_error_row").hide();
-        }
-    })
-        .done(function (resp) {
-            // So we can get errors and successes back
-            if (resp.success) {
-                takeOverPage(tnode);
-                $("#obula_staff_heading").hide();
-                $('#obula_summary_cell').html(resp.summaryhtml);
-                $("#obula_summary_row").show();
-                $('#obula_dash_div').html(resp.dashboardhtml);
-                $("#obula_dash_row").show();
-                // Now the data currency
-                showDataCurrency();
-            } else {
-                $('#obula_error_cell').html(resp.message);
-                $("#obula_error_row").show();
-                $('#obula_footer').hide();
-            }
-        })
-        .fail(function (jqXHR, textStatus, errorThrown) {
-            // only way to trigger a fail is with a non 200 response, 404, 500 etc
-            // but that seems extreme for a simple validation
-            // So reserving this for exceptions
-            alert('common showTutorFull exception\\n' + errorThrown);
-        })
+   // First, perform the connection check
+   check_connection()
+   .done(function(resp) {
+       // Check the connection response and handle errors
+       if (!resp || resp.ccStatus.Status !== "OK") {
+           // Display the error and exit early
+           $('#obula_cc_errordiv').html(resp.ccStatus.problemMessageSml + resp.ccStatus.popup);
+           $('#obula_cc_errordiv').show();
+           $('#obula_show_pgm').prop("disabled", true);
+           $('#obula_show_stud_pgm').prop("disabled", true);
+           return; // Exit here; do not proceed with become_tutor
+       }
+       
+       // Ajax call re-written to use later .done/.fail functionality in case we need promises later
+       $.ajax({
+           type: 'POST',
+           url: "../blocks/obu_learnanalytics/become_tutor.php",
+           // data: data,
+           beforeSend: function () {
+               $("#obula_error_row").hide();
+           }
+       })
+           .done(function (resp) {
+               // So we can get errors and successes back
+               if (resp.success) {
+                   takeOverPage(tnode);
+                   $("#obula_staff_heading").hide();
+                   $('#obula_summary_cell').html(resp.summaryhtml);
+                   $("#obula_summary_row").show();
+                   $('#obula_dash_div').html(resp.dashboardhtml);
+                   $("#obula_dash_row").show();
+                   // Now the data currency
+                   showDataCurrency();
+               } else {
+                   $('#obula_error_cell').html(resp.message);
+                   $("#obula_error_row").show();
+                   $('#obula_footer').hide();
+                   return;
+               }
+           })
+           .fail(function (jqXHR, textStatus, errorThrown) {
+               // only way to trigger a fail is with a non 200 response, 404, 500 etc
+               // but that seems extreme for a simple validation
+               // So reserving this for exceptions
+               alert('common showTutorFull exception\\n' + errorThrown);
+           })        
+           // .always(function(resp) {
+           //         // Code will always get executed after done or fail, like a try/catch finally
+           //     })
+           ;           // End of .ajax 'line'
+   })
         // .always(function(resp) {
         //         // Code will always get executed after done or fail, like a try/catch finally
         //     })

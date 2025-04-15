@@ -181,12 +181,12 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         // Programme
         $temp = get_string("tutor-show-pgm", 'block_obu_learnanalytics');
         $temp_hint = get_string("tutor-show-pgm-hint", 'block_obu_learnanalytics');
-        $atts = array("type" => "button", "disabled" => "true", "value" => $temp, "title" => $temp_hint, "class" => "summ-show-button", "onclick" => "showTutorFull()", "id" => "obula_show_pgm");
+        $atts = array("type" => "button", "value" => $temp, "title" => $temp_hint, "class" => "summ-show-button", "onclick" => "showTutorFull()", "id" => "obula_show_pgm");
         $show_button_html = html_writer::empty_tag($tag_name, $atts);
         // Students programme
         $temp = get_string("tutor-show-stud", 'block_obu_learnanalytics');
         $temp_hint = get_string("tutor-show-stud-hint", 'block_obu_learnanalytics');
-        $atts = array("type" => "button", "disabled" => "true", "value" => $temp, "title" => $temp_hint, "class" => "summ-show-button", "onclick" => "showBecomeView('T', 'obula_show_stud_no')", "id" => "obula_show_stud_pgm");
+        $atts = array("type" => "button", "value" => $temp, "title" => $temp_hint, "class" => "summ-show-button", "onclick" => "showBecomeView('T', 'obula_show_stud_no')", "id" => "obula_show_stud_pgm");
         $become_button_html = html_writer::empty_tag($tag_name, $atts);
         // Advisees
         if ($advisees != "0") {

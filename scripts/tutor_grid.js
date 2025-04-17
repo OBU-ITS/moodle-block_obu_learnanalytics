@@ -257,6 +257,14 @@ function clickStudent(programme, studyStage, studentNumber, studentName, scrollI
     });
 
 
+    // If marks are visible then reload
+    var studentMarksDisplay = document.getElementById("obula_studentmarks_div").style.display;
+    if (studentMarksDisplay != "none") {
+        showStudentsMarks(programme, studentNumber, false);
+    }
+
+
+
 }
 
 function clickStudent_old(programme, studyStage, studentNumber, studentName, scrollIntoView = true, newDate = null) {

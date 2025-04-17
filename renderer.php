@@ -355,23 +355,26 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
 
         $outParams .= html_writer::end_tag('table');
 
+
+        // ******* Placeholder for a later release ******* //
+
         // Build the URL for the image using Moodle's base URL.
-        $imgurl = $CFG->wwwroot . '/blocks/obu_learnanalytics/pix/attendance_matrix.png';
-        $img = html_writer::empty_tag('img', array(
-            'src'    => $imgurl,
-            'alt'    => 'Attendance Matrix Icon',
-            'title'  => 'View Attendance Matrix',  // Tooltip text.
-            'width'  => 50,
-            'height' => 50,
-        ));
+        // $imgurl = $CFG->wwwroot . '/blocks/obu_learnanalytics/pix/attendance_matrix.png';
+        // $img = html_writer::empty_tag('img', array(
+        //     'src'    => $imgurl,
+        //     'alt'    => 'Attendance Matrix Icon',
+        //     'title'  => 'View Attendance Matrix',  // Tooltip text.
+        //     'width'  => 50,
+        //     'height' => 50,
+        // ));
 
         // Wrap the image element in a div container
-        $outParams .= html_writer::tag('div', $img, array(
-            'id'    => 'obula_launch_attendance_matrix',
-            'class' => 'parameters',
-            'onclick' => 'renderAttendanceMatrix();'
+        // $outParams .= html_writer::tag('div', $img, array(
+        //     'id'    => 'obula_launch_attendance_matrix',
+        //     'class' => 'parameters',
+        //     'onclick' => 'renderAttendanceMatrix();'
 
-        ));
+        // ));
 
         $outParams .= html_writer::end_tag('div');
 

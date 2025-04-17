@@ -229,7 +229,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         $out .= "<td>";
         // TODO PROTECT AGAINST SQL INJECTION
         // onclick" => "showBecomeView('T', 'obula_show_stud_no')"
-        $out .= html_writer::empty_tag("input disabled", array("type" => "text", "id" => "obula_show_stud_no", "class" => "summ-show-id", "style" => "max-width: 75%;box-sizing:border-box;display:block"));
+        $out .= html_writer::empty_tag("input", array("type" => "text", "id" => "obula_show_stud_no", "class" => "summ-show-id", "style" => "max-width: 75%;box-sizing:border-box;display:block"));
         $out .= "</td>";
         $out .= "</tr>";
 

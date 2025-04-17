@@ -74,46 +74,56 @@ function showAdvisees(mode) {
     if (mode != 'Back') {
         var tnode = event.target;
     }
-    // Ajax call re-written to use later .done/.fail functionality in case we need promises later
-    $.ajax({
-        type: 'POST',
-        url: "../blocks/obu_learnanalytics/show_advisees.php",
-        // data: data,
-        beforeSend: function () {
-            $("#obula_error_row").hide();
+
+
+
+    check_connection()
+    .done(function(resp) {
+        // Check the connection response and handle errors
+        if (!resp || resp.ccStatus.Status !== "OK") {
+            return; // Exit here; do not proceed with show_advisees
         }
-    })
-        .done(function (resp) {
-            // So we can get errors and successes back
-            //debugger;
-            if (resp.success) {
-                if (mode != 'Back') {
-                    takeOverPage(tnode);
-                    $("#obula_staff_heading").hide();
-                }
-                $('#obula_summary_cell').html(resp.summaryhtml);
-                $("#obula_summary_row").show();
-                $('#obula_dash_div').html(resp.dashboardhtml);
-                $("#obula_dash_row").show();
-                // Now the data currency
-                showDataCurrency();
-            } else {
-                $('#obula_error_cell').html(resp.message);
-                $("#obula_error_row").show();
-                $('#obula_footer').hide();
+
+        // Ajax call re-written to use later .done/.fail functionality in case we need promises later
+        $.ajax({
+            type: 'POST',
+            url: "../blocks/obu_learnanalytics/show_advisees.php",
+            // data: data,
+            beforeSend: function () {
+                $("#obula_error_row").hide();
             }
         })
-        .fail(function (jqXHR, textStatus, errorThrown) {
-            // only way to trigger a fail is with a non 200 response, 404, 500 etc
-            // but that seems extreme for a simple validation
-            // So reserving this for exceptions
-            alert('showAdvisees exception\\n' + errorThrown);
-        })
-        // .always(function(resp) {
-        //         // Code will always get executed after done or fail, like a try/catch finally
-        //     })
-        ;           // End of .ajax 'line'
-
+            .done(function (resp) {
+                // So we can get errors and successes back
+                //debugger;
+                if (resp.success) {
+                    if (mode != 'Back') {
+                        takeOverPage(tnode);
+                        $("#obula_staff_heading").hide();
+                    }
+                    $('#obula_summary_cell').html(resp.summaryhtml);
+                    $("#obula_summary_row").show();
+                    $('#obula_dash_div').html(resp.dashboardhtml);
+                    $("#obula_dash_row").show();
+                    // Now the data currency
+                    showDataCurrency();
+                } else {
+                    $('#obula_error_cell').html(resp.message);
+                    $("#obula_error_row").show();
+                    $('#obula_footer').hide();
+                }
+            })
+            .fail(function (jqXHR, textStatus, errorThrown) {
+                // only way to trigger a fail is with a non 200 response, 404, 500 etc
+                // but that seems extreme for a simple validation
+                // So reserving this for exceptions
+                alert('showAdvisees exception\\n' + errorThrown);
+            })
+            // .always(function(resp) {
+            //         // Code will always get executed after done or fail, like a try/catch finally
+            //     })
+            ;           // End of .ajax 'line'
+    });
 }
 
 /**
@@ -127,11 +137,6 @@ function showTutorFull() {
    .done(function(resp) {
        // Check the connection response and handle errors
        if (!resp || resp.ccStatus.Status !== "OK") {
-           // Display the error and exit early
-           $('#obula_cc_errordiv').html(resp.ccStatus.problemMessageSml + resp.ccStatus.popup);
-           $('#obula_cc_errordiv').show();
-           $('#obula_show_pgm').prop("disabled", true);
-           $('#obula_show_stud_pgm').prop("disabled", true);
            return; // Exit here; do not proceed with become_tutor
        }
        
@@ -793,7 +798,8 @@ function showBecomeView(type, controlId) {
         $('#obula_error_cell').html("Invalid Format for Student Number - must be 8 digits");
         $("#obula_error_row").show();
         $('#obula_footer').hide();
-        return reject("Invalid Student Number Format");
+        //return error("Invalid Student Number Format");
+        return;
       }
   
       var data = {
@@ -805,6 +811,12 @@ function showBecomeView(type, controlId) {
       var tnode = (typeof event !== 'undefined') ? event.target : null;
       var urlpage = (type === "S") ? "become_student" : "become_students_tutor";
   
+    check_connection()
+    .done(function(resp) {
+        if (!resp || resp.ccStatus.Status !== "OK") {
+            return; // Exit here; do not proceed with become_tutor
+        }
+
       $.ajax({
         type: 'POST',
         url: "../blocks/obu_learnanalytics/" + urlpage + ".php",
@@ -823,17 +835,18 @@ function showBecomeView(type, controlId) {
           $('#obula_dash_div').html(resp.dashboardhtml);
           $("#obula_dash_row").show();
           showDataCurrency();
-
         } else {
           $('#obula_error_cell').html(resp.message);
           $("#obula_error_row").show();
           $('#obula_footer').hide();
+          return;
         }
       })
       .fail(function (jqXHR, textStatus, errorThrown) {
       });
 
       whileLoading(studentNumber);
+    });
   }
   
 

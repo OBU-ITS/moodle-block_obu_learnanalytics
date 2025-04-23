@@ -2,6 +2,8 @@
 ob_start();
 //echo __DIR__;
 require_once __DIR__ . '/../../config.php';
+require_once(__DIR__ . '/vendor/autoload.php');
+
 $util_odds = new \block_obu_learnanalytics\util\odds();
 $laRole = $util_odds->get_la_role();    // Protects against attacks, wrong roles and everything
 if ($laRole == "STUDENT") {
@@ -14,7 +16,6 @@ if ($laRole == "STUDENT") {
 $util_dates = new \block_obu_learnanalytics\util\date_functions();
 $data_tutor = new \block_obu_learnanalytics\data\tutor_functions();
 //xdebug_break();
-
 // Drop down event posts the request so we can pick up parameters from the data
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // The request is using the POST method
@@ -80,23 +81,25 @@ set_user_preference('obula_last_tutor_grid_pgm_desc', $programmeText);
 
 $success = true;        // Hopefully
 try {
+
     $simpleCurrent = $util_dates->createSimpleCurrentParam($current);
     // We don't want to filter by academic advisor, because cohort/modLevel averages etc should include all students
     // Had to encode programme as it can have / for example BA/BSH-PKPO, but that wasn't enough because decode happened before htaccess
     // so swap / to ~ (and back in web service)
     $enc_pgm = htmlspecialchars(urlencode(str_replace('/','~',$programme)));
     $params = "tutor/studentsgridv3/$enc_pgm/$bandingCalcOptions/$simpleCurrent/$modLevel/$studyType/*/$semester/$campusCode/";
-    $curl_common = new \block_obu_learnanalytics\curl\common();
+    $curl_common = new \block_obu_learnanalytics\guzzle\common(); // or call it $guzzle_common, up to you
     $result = $curl_common->send_request($params);
     $studentsComparitives = $result["data"];
-    $headings = $result["header"];
+    $headings = $result["header"];  
 } catch (Exception $e) {
     // Just output it in big bold red, shouldn't happen so no CSS for this
     $html = "<br><b><font size='6'><style='color:red'>Exception from students_comparitive_grid: {$e}</style></font></b>";
     // Now let it send all that back
     $success = false;
 }
-if ($success && !isset($studentsComparitives) || count($studentsComparitives) == 0) {
+if ($success && (!isset($studentsComparitives) || count($studentsComparitives) == 0)) {
+
     $html = "<br><b><font size='+2'><style='color:blue'>No Active Students for this Selection Criteria</style></font></b>";
     // Now let it send all that back
     $success = false;

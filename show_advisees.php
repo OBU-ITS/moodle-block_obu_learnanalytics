@@ -8,6 +8,8 @@
 ob_start();
 //echo __DIR__;
 require_once __DIR__ . '/../../config.php';
+require_once(__DIR__ . '/vendor/autoload.php');
+
 $util_odds = new \block_obu_learnanalytics\util\odds();
 $laRole = $util_odds->get_la_role("TUTOR");    // Protects against attacks, wrong roles and everything //TODO do we want a new role
 ?>
@@ -31,7 +33,11 @@ header('Content-type: application/json');
 global $DB;
 global $PAGE;
 $summaryMessage = "<span class='tutor-title' id='obula_title'>Learning Analytics</span>";
-$summaryMessage .= "<a href='javascript:collapseTutor()' class = 'link-right'>Close</a></h5>";
+$summaryMessage .= "
+<button onclick='collapseTutor()' class='link-right dashboardCloseButton'>
+    <i class='fa-solid fa fa-close'><b>Close</b></i>
+</button>";
+
 
 // Now let's get the renderer class so I can call functions from it
 $renderer = $PAGE->get_renderer('block_obu_learnanalytics');

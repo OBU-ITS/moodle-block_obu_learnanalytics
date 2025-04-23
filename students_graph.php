@@ -8,6 +8,8 @@ try {
     require_once './jpgraph/src/jpgraph.php';
     require_once './jpgraph/src/jpgraph_line.php';
     require_once './jpgraph/src/jpgraph_bar.php';
+    require_once(__DIR__ . '/vendor/autoload.php');
+
     $jpgraph_error_handler = set_error_handler("errorHandlerOBU"); // jpgraph sets it's own
 
     //define('AJAX_SCRIPT', true);      // This breaks things
@@ -90,7 +92,7 @@ try {
                 break;
         }
         // Note exception isn't caught if next line fails
-        $curl_common = new \block_obu_learnanalytics\curl\common();
+        $curl_common = new \block_obu_learnanalytics\guzzle\common();
         $enc_pgm = htmlspecialchars(urlencode(str_replace('/','~',$programme)));
         $params = "student/pgmgraphdata/$sid/{$enc_pgm}/{$sStage}/$simpleCurrent/median/{$column}/";
         try {

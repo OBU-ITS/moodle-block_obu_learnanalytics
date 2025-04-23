@@ -137,7 +137,7 @@
 }
 
 .block_obu_learnanalytics tr.students[selected] {
-    background-color: #f1f1f1;      /* Very light grey */
+    background-color: #f6cde3;      /* Very light pink */
 }
 
 .block_obu_learnanalytics td.students-name {
@@ -193,7 +193,7 @@
 }
 
 .block_obu_learnanalytics tr.students-hideable[selected] {
-    background-color: #f1f1f1;      /* Very light grey */
+    background-color: #f6cde3;      /* Very light pink */
 }
 
 /* And now them hidden */
@@ -358,24 +358,20 @@ a.material-icons.nextprev:hover {
     font-size: 1rem;
 }
 
-.block_obu_learnanalytics .ssc-button {
-    float: right;
+.block_obu_learnanalytics .summ-show-button {
+    /* float: right; */
+    margin-left: 5px;
+    margin-right: 5px;
+    min-width: 90%;      
+}
+
+.block_obu_learnanalytics .summ-show-id {
+    /* float: right; */
     margin-left: 5px;
     margin-right: 5px;
 }
 
-.block_obu_learnanalytics .ssc-sid-sml {
-    float: right;
-    margin-left: 5px;
-    margin-right: 5px;
-}
-
-.block_obu_learnanalytics .ssc-sid-med {
-    margin-left: 5px;
-    margin-right: 5px;
-}
-
-.block_obu_learnanalytics .ssc-title {
+.block_obu_learnanalytics .summ-title {
     font-weight: 600;
     font-size: 1.17rem;
     line-height: 1.2;
@@ -391,4 +387,250 @@ a.material-icons.nextprev:hover {
 .block_obu_learnanalytics #obula_footer {
     font-weight: bold;
     margin-top: 10px;
+}
+
+/* Styles for the scroll up button */
+#obu_learnanalytics_scrollup {
+    /* Positioning */
+    position: absolute;
+    top: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    
+    /* Dimensions */
+    width: 40px;
+    height: 40px;
+    
+    /* Appearance */
+    border-radius: 50%;
+    background: rgba(200, 200, 200, 0.7);
+    border: none;
+    color: #333;
+    font-size: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    
+    /* Flex for centering child content */
+    display: none;      /* Initially hidden; change via JavaScript as needed */
+    align-items: center;
+    justify-content: center;
+    
+    /* Other */
+    cursor: pointer;
+    z-index: 999;
+    
+    /* Smooth transition for hover effect */
+    transition: background 0.3s ease-in-out;
+}
+
+/* Hover effect */
+#obu_learnanalytics_scrollup:hover {
+    background: rgba(200, 200, 200, 1);
+}
+
+/* Base styles for the attendance matrix element */
+#obula_launch_attendance_matrix {
+    cursor: pointer;
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+#obula_launch_attendance_matrix:hover {
+    transform: translateY(-3px);
+}
+
+#obula_launch_attendance_matrix:active {
+    background-color: #e4e4e4;
+    transform: translateY(0);
+}
+
+#obula_launch_attendance_matrix:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(100,150,250,0.5);
+}
+
+/* Attendance Modal overlay styling */
+#attendance-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Popover styling */
+#attendance-popover {
+    flex-direction: column;
+    width: 95%;
+    height: 80%;
+    background-color: #fff;
+    border-radius: 5px;
+    padding: 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    position: relative;
+    overflow: auto;
+}
+
+/* Close button styling within the popover */
+#attendance-popover button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+/* Scoped styles for the heatmap container & table */
+#attendanceMatrixContainer {
+    font-family: sans-serif;
+    background: #fafafa;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+#attendanceMatrixContainer #attendanceMatrixTable {
+    border-collapse: separate;
+    border-spacing: 8px;
+    width: 90%;
+    margin: auto;
+}
+
+/* Header cells inside the heatmap container */
+#attendanceMatrixContainer #attendanceMatrixTable thead th {
+    background: #f2f2f2;
+    text-align: center;
+    padding: 8px;
+    border-radius: 6px;
+    vertical-align: middle;
+}
+
+#attendanceMatrixContainer #attendanceMatrixTable td {
+    border: none;
+    padding: 0;
+    vertical-align: middle;
+}
+
+/* Attendance cell content with hover effect */
+.attendanceMatrixCellContent {
+    position: relative;
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+    background-color: var(--tile-color, #f8f8f8);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+.attendanceMatrixCellContent::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(145deg, rgba(255,255,255,0.3), rgba(0,0,0,0.1));
+    border-radius: inherit;
+    pointer-events: none;
+}
+.attendanceMatrixTooltip {
+    display: none;
+    position: absolute;
+    top: -5px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100%);
+    background: rgba(0,0,0,0.8);
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    z-index: 999;
+    white-space: nowrap;
+}
+.attendanceMatrixCellContent:hover .attendanceMatrixTooltip {
+    display: block;
+}
+.attendanceMatrixCellContent:hover {
+    transform: scale(1.15);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+    filter: brightness(0.95);
+}
+.attendanceMatrixCellContent:hover::before {
+    opacity: 1;
+}
+
+/* Styling for the student name cell */
+.attendanceMatrixCellContent_studentName {
+    text-align: center;
+    background-color: var(--tile-color, #f8f8f8);
+    border-radius: 8px;
+    padding: 16px;
+    border: 1px solid transparent;
+    cursor: pointer;
+}
+.attendanceMatrixCellContent_studentName:hover {
+    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+    filter: brightness(0.95);
+}
+
+/* Info button styling */
+.infoButton {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 2px 4px;
+    position: static;
+}
+
+/* Details container for the extra row */
+.detailsContainer {
+    overflow: hidden;
+    background-color: #f8f8f8;
+    max-height: 0;
+    transition: max-height 0.5s ease;
+}
+/* Legend CSS properties */
+.legendSquare {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+}
+.myLegend {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+/* Custom close button for dashboards */
+.dashboardCloseButton {
+    display: inline-block;
+    font-size: 16px;
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    background: #d10373;
+    border-radius: 4px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+}
+
+/* Hover state */
+.dashboardCloseButton:hover {
+    background: #e03b85;
+}
+
+/* Styling the icon inside the button */
+.dashboardCloseButton i {
+    color: #fff;
+}
+.dashboardCloseButton i b {
+    font-weight: bold;
 }

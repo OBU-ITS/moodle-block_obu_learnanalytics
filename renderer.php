@@ -19,7 +19,7 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
-
+require_once(__DIR__ . '/vendor/autoload.php');
 /**
  * Learning analytics renderer
  * This is the main driving class for the dashboards, it has functions to emit the HTML for both
@@ -86,35 +86,57 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
     }
 
     /**
-     * Initial summary Dashboard for a Tutor
-     *
-     * @return html
+     * New dashboard for all staff, SSCs, Tutors, Module leads and ??
+     * NOT students
      */
-    public function tutor_dashboard_summary()
+    public function staff_dashboard_summary()
     {
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=1.12.5');
+
+        
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=1.12.6');
         $outScripts = html_writer::script(null, $scriptUrl);
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/tutor_dashboard.js?version=1.12.5');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/staff_dashboard.js?version=1.12.6');
         $outScripts .= html_writer::script(null, $scriptUrl);
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/check_connection.js?version=1.12.5');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/check_connection.js?version=1.12.6');
         $outScripts .= html_writer::script(null, $scriptUrl);
+
+
+        // Include Chart.js script
+        $chartJsUrl = new moodle_url('https://cdn.jsdelivr.net/npm/chart.js');
+        $outScripts .= html_writer::script(null, $chartJsUrl);
+
+        // Include Chart.js datalabels plugin
+        $datalabelsUrl = new moodle_url('https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels');
+        $outScripts .= html_writer::script(null, $datalabelsUrl);
+        // Include our ChartJS chart functions
+        $chartjsObjects = new moodle_url('/blocks/obu_learnanalytics/scripts/chartjs_objects.js?version=1.12.5');
+        $outScripts .= html_writer::script(null, $chartjsObjects);
+
+        
+
         // End of scripts
         $out = $outScripts;
         $out .= self::modal_any_popup();           // For Help explanation
 
-        //Want to use Google Material fonts
-        //<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-        // see this for icons https://material.io/resources/icons/?icon=flight_takeoff&style=baseline 
         $out .= html_writer::empty_tag("link", array("rel" => "stylesheet", "href" => "https://fonts.googleapis.com/icon?family=Material+Icons"));
         // for fun try         $out .= html_writer::tag("i", "face", array("class" => "material-icons"));
 
         global $USER;
 
         $userPrefs = get_user_preferences();        // Moodle function get's values from database
+        $checkforAA = false;
         if (array_key_exists("obula_last_tutor_grid_date", $userPrefs)) {
             $today = new DateTime();
-            $today->setTime(0, 0, 0);
             $lastAccess = unserialize($userPrefs["obula_last_tutor_grid_date"]);
+            // Before we unset time check how long it really was
+            // As EDW is only update once a day it's not worth checking every time
+            // And moodle doesn't want the traffic everytime
+            // store it in preferences once checked
+            $interval = $lastAccess->diff($today);
+            if ($interval->days > 0 || $interval->h > 12) {
+                $checkforAA = true;
+            }
+            $today->setTime(0, 0, 0);
             $lastAccess->setTime(0, 0, 0);
             if ($lastAccess == $today) {
                 $message = "Last accessed Today";
@@ -122,7 +144,23 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
                 $message = "Last accessed " . $lastAccess->format('d-M-Y');
             }
         } else {
-            $message = "You have not checked this out";
+            $maessage = "You have not checked this out";
+            $checkforAA = true;
+        }
+        $advisees = "0";
+        if (array_key_exists("obula_last_advisee_count", $userPrefs) == false || $checkforAA == true) {
+            try {
+                // A semester of 000000 will get the current default one
+                $params = "tutor/adviseescount/000000/$USER->username/";
+                $curl_common = new \block_obu_learnanalytics\guzzle\common();
+                $results = $curl_common->send_request($params);
+                $advisees = $results[0]["advisees"];
+            } catch (Exception $e) {
+                // Don't show it
+            }
+            set_user_preference('obula_last_advisee_count', $advisees);
+        } else {
+            $advisees = $userPrefs["obula_last_advisee_count"];
         }
 
         // Hidden fields to hold state of the nav panel
@@ -135,130 +173,84 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         $out .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_parentblockid', "value" => '?'));
 
         // Links for Help and Feedback
-        $links = html_writer::tag("a", "Help", array("href" => "javascript:showHelp('tutor')", "class" => "link-right link-help"));
+        $links = html_writer::tag("a", "Help", array("href" => "javascript:showHelp('staff')", "class" => "link-right link-help"));
         //$links .= html_writer::tag("a", "Feedback", array("href" => "javascript:gotoFeedback('tutor')", "class" => "link-right"));
 
-        // Button for either panel
-        $temp = get_string("tutor-show", 'block_obu_learnanalytics');
-        $atts = array("type" => "button", "disabled" => "true", "value" => $temp, "class" => "ssc-button", "onclick" => "showTutorFull()", "id" => "obula-show-tf-sml");
+        // Buttons (prepared up front because they were emitted twice for small and medium size)
         $tag_name = "input";
-        $button_html = html_writer::empty_tag($tag_name, $atts);
+        // Programme
+        $temp = get_string("tutor-show-pgm", 'block_obu_learnanalytics');
+        $temp_hint = get_string("tutor-show-pgm-hint", 'block_obu_learnanalytics');
+        $atts = array("type" => "button", "value" => $temp, "title" => $temp_hint, "class" => "summ-show-button", "onclick" => "showTutorFull()", "id" => "obula_show_pgm");
+        $show_button_html = html_writer::empty_tag($tag_name, $atts);
+        // Students programme
+        $temp = get_string("tutor-show-stud", 'block_obu_learnanalytics');
+        $temp_hint = get_string("tutor-show-stud-hint", 'block_obu_learnanalytics');
+        $atts = array("type" => "button", "value" => $temp, "title" => $temp_hint, "class" => "summ-show-button", "onclick" => "showBecomeView('T', 'obula_show_stud_no')", "id" => "obula_show_stud_pgm");
+        $become_button_html = html_writer::empty_tag($tag_name, $atts);
+        // Advisees
+        if ($advisees != "0") {
+            $temp = get_string("show-advisees", 'block_obu_learnanalytics');
+            $temp_hint = get_string("show-advisees-hint", 'block_obu_learnanalytics');
+            $atts = array("type" => "button", "value" => $temp, "title" => $temp_hint, "class" => "summ-show-button", "id" => "obula_show_advisees", "onclick" => "showAdvisees('Show')");
+            $advisee_button_html = html_writer::empty_tag($tag_name, $atts);
+        }
+        // Values for boxes
+        $last_pgm_code = "";
+        $last_pgm = "";
+        if (array_key_exists("obula_last_tutor_grid_pgm", $userPrefs)) {
+            $last_pgm_code = $userPrefs["obula_last_tutor_grid_pgm"];
+            $last_pgm = $last_pgm_code;
+        }
+        if (array_key_exists("obula_last_tutor_grid_pgm_desc", $userPrefs)) {
+            $last_pgm = $userPrefs["obula_last_tutor_grid_pgm_desc"];
+        }
 
         // Put a div around everything we want to move
-        // Actually start with nothing visible and javascript can enable the ones for the correct size
-        // Small right panel
-        $atts = array("id" => "obula_ts_heading_sml", "style" => "display: none");
+        // Actually start with nothing visible/enabled and javascript can enable the ones for the correct size
+        $atts = array("id" => "obula_staff_heading", "style" => "display: none");
         $out .= html_writer::start_tag("panel", $atts);
         $out .= html_writer::start_tag("div");
-        $temp2 = get_string("tutor-dash-title-sml", 'block_obu_learnanalytics');
+        $temp2 = get_string("staff-dash-title", 'block_obu_learnanalytics');
         $out .= html_writer::tag("h5", $temp2 . "   " . $links);
         // Output both OK and failed tags for js to update
         $out .= html_writer::tag("span", $message);
-        $out .= $button_html;
+
+        // Now the actual buttons etc, use a table with 2 columns for line up
+        $out .= "<table><tr>";
+        $out .= "<td>" . $show_button_html . "</td>";
+        $out .= "<td>";  //For Programme code etc
+        $out .= html_writer::tag("input disabled", null, array("type" => "text", "value" => $last_pgm_code, "id" => "obula_show_pgm_code", "class" => "summ-show-id", "style" => "max-width: 75%;box-sizing:border-box;display:block"));
+        $out .= "</td>";
+        $out .= "</tr>";
+        // Now show student and programme
+        $out .= "<tr>";
+        $out .= "<td>" . $become_button_html . "</td>";
+        $out .= "<td>";
+        // TODO PROTECT AGAINST SQL INJECTION
+        // onclick" => "showBecomeView('T', 'obula_show_stud_no')"
+        $out .= html_writer::empty_tag("input", array("type" => "text", "id" => "obula_show_stud_no", "class" => "summ-show-id", "style" => "max-width: 75%;box-sizing:border-box;display:block"));
+        $out .= "</td>";
+        $out .= "</tr>";
+
+        // Now show advisees button
+        $out .= "<tr>";
+        $out .= "<td colspan='2'>" . $advisee_button_html . "</td>";
+        $out .= "</tr>";
+        $out .= "</table>";
+
         // Now tags for possible error message
         // TODO mouseover or something for admins to get full error
         $out .= html_writer::end_tag("div");
         // error tags are in a div
         $out .= self::connection_error_placeHolder(true, $USER->username);
-        
-        // $out .= html_writer::start_tag("div", array("id" => "obula_ts_input_sml", "style" => "display: inline"));
-        // Button is next to message for small dashboard
-        // $out .= html_writer::end_tag("div");
         $out .= html_writer::end_tag("panel");
 
-        // Full or 2/3 width panel
-        $atts = array("id" => "obula_ts_heading_med", "style" => "display: none");
-        $out .= html_writer::start_tag("panel", $atts);
-        $out .= html_writer::tag("h5", "Learning Analytics - {$message}" . "   " . $links);
-        $out .= html_writer::start_tag("div", array("id" => "obula_ts_input_med", "style" => "display: inline"));
-        // TODO mouseover or something for admins to get full error
-        $out .= self::connection_error_placeHolder(false, $USER->username);
-        $out .= str_replace("obula-show-tf-sml", "obula-show-tf-med", $button_html);
-        $out .= html_writer::end_tag("div");
-        $out .= html_writer::end_tag("panel");
+        // Below here it did all again but with different ids etc
+        //
+        // But all gone for now
 
         // Now other placeholders
-        $consolehtml = "";
-        $out .= self::any_dashboard_host_placeholders($consolehtml);
-        return $out;
-    }
-
-    /**
-     * Dashboard for a student coordinator
-     *
-     * @return html
-     */
-    public function ssc_dashboard()
-    {
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=1.12.5');
-        $outScripts = html_writer::script(null, $scriptUrl);
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/ssc_dashboard.js?version=1.12.5');
-        $outScripts .= html_writer::script(null, $scriptUrl);
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/check_connection.js?version=1.12.5');
-        $outScripts .= html_writer::script(null, $scriptUrl);
-        // End of scripts
-        $out = $outScripts;
-        $out .= self::modal_any_popup();           // For Help explanation
-
-        //Want to use Google Material fonts
-        //<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-        // see this for icons https://material.io/resources/icons/?icon=flight_takeoff&style=baseline
-        $out .= html_writer::empty_tag("link", array("rel" => "stylesheet", "href" => "https://fonts.googleapis.com/icon?family=Material+Icons"));
-        // for fun try         $out .= html_writer::tag("i", "face", array("class" => "material-icons"));
-
-        global $USER;
-
-        // Hidden fields to hold state of the nav panel
-        $out .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_navbar_rightDrawerDA', "value" => '?'));
-        $out .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_page_taken', "value" => '?'));
-        $out .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_copy2clip', "value" => '?'));
-        $out .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_ssc_student', "value" => '?'));
-        $out .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_host', "value" => '?'));
-        $out .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_lablockid', "value" => '?'));
-        $out .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_nextblockid', "value" => '?'));
-        $out .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_parentblockid', "value" => '?'));
-
-        // Links for either format
-        $links = html_writer::tag("a", "Help", array("href" => "javascript:showHelp('ssc')", "class" => "link-right link-help"));       // TODO CSS right
-        $links .= html_writer::tag("a", "Feedback", array("href" => "javascript:gotoFeedback('ssc')", "class" => "link-right"));
-
-        // Actually start with nothing visible and javascript can enable the ones for the correct size
-        // First the Small panel
-        $atts = array("id" => "obula_ssc_heading_sml", "style" => "display: none");
-        $out .= html_writer::start_tag("panel", $atts);
-        $out .= html_writer::start_tag("div");
-        $temp2 = get_string("ssc-dash-title-sml", 'block_obu_learnanalytics');
-        $out .= html_writer::tag("h5", $temp2 . "   " . $links);
-        $out .= html_writer::tag("label", "Student Number", array("for" => "obula_ssc_sid_sml"));
-        //TODO Protect against SQL Inject attacks, just check it's an int
-        $out .= html_writer::empty_tag("input disabled", array("type" => "text", "id" => "obula_ssc_sid_sml", "class" => "ssc-sid-sml"));
-        $temp = get_string("ssc-students-view", 'block_obu_learnanalytics');
-        $atts = array("type" => "button", "value" => $temp, "class" => "ssc-button", "id" => "obula-show-sv-sml", "onclick" => "showBecomeView('S', 'ssc-sid-sml')");
-        $out .= html_writer::empty_tag("input disabled", $atts);
-        $temp = get_string("ssc-tutors-view", 'block_obu_learnanalytics');
-        $atts = array("type" => "button", "value" => $temp, "class" => "ssc-button", "id" => "obula-show-tv-sml", "onclick" => "showBecomeView('T', 'ssc-sid-sml')");
-        $out .= html_writer::empty_tag("input disabled", $atts);
-        $out .= html_writer::end_tag("div");
-        $out .= self::connection_error_placeHolder(true, $USER->username);
-        $out .= html_writer::end_tag("panel");
-
-        // Then Medium panel
-        $atts = array("id" => "obula_ssc_heading_med", "style" => "display: none");
-        $out .= html_writer::tag("h5", "Welcome to Learning Analytics " . $links, $atts);
-        $out .= html_writer::start_tag("div", array("id" => "obula_ssc_input_med", "style" => "display: none"));
-        $out .= html_writer::tag("label", "Student Number", array("for" => "obula_ssc_sid_med"));
-        //TODO Protect against SQL Inject attacks
-        $out .= html_writer::empty_tag("input disabled", array("type" => "text", "id" => "obula_ssc_sid_med", "class" => "ssc-sid-med"));
-        $temp = get_string("ssc-students-view", 'block_obu_learnanalytics');
-        $atts = array("type" => "button", "value" => $temp, "class" => "ssc-button", "id" => "obula-show-sv-med", "onclick" => "showBecomeView('S', 'ssc-sid-med')");
-        $out .= html_writer::empty_tag("input disabled", $atts);
-        $temp = get_string("ssc-tutors-view", 'block_obu_learnanalytics');
-        $atts = array("type" => "button", "value" => $temp, "class" => "ssc-button", "id" => "obula-show-tv-med", "onclick" => "showBecomeView('T', 'ssc-sid-med')");
-        $out .= html_writer::empty_tag("input disabled", $atts);
-        $out .= self::connection_error_placeHolder(false, $USER->username);
-        $out .= html_writer::end_tag("div");
-
-        // Now placeholders
         $consolehtml = "";
         $out .= self::any_dashboard_host_placeholders($consolehtml);
         return $out;
@@ -272,10 +264,10 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
      */
     public function connection_error_placeHolder(bool $smallPanel, string $username = null)
     {
-        $id_suffix = $smallPanel ? "_sml" : "_med";
+        //$id_suffix = $smallPanel ? "_sml" : "_med";
         $isAdmin = is_siteadmin() || $username == "p0090268";
         $class = ($isAdmin) ? "error error-tip" : "error";
-        $out = html_writer::start_tag("div", array("class" => $class, "id" => "obula_cc_errordiv" . $id_suffix, "style" => "display: none"));
+        $out = html_writer::start_tag("div", array("class" => $class, "id" => "obula_cc_errordiv", "style" => "display: none"));
         $out .= "???";
         $out .= html_writer::end_tag("div");
         return $out;
@@ -308,15 +300,134 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
     }
 
     /**
+     * Initial summary Dashboard for a Advisor, showing their advisees
+     *
+     * @return html
+     */
+    public function advisor_dashboard()
+    {
+        $out = '';
+        $out .= html_writer::start_tag("div");
+        $out .= self::advisees_grid();
+        $out .= html_writer::end_tag("div");
+
+        $out .= html_writer::empty_tag("br");
+        //$out .= html_writer::empty_tag("br");
+
+        //$out .= self::student_charts(true, true, null);
+
+        // For now just put it below the student charts
+        //$out .= self::student_marks_placeholder();
+
+        // ditto scatter chart
+        //TODO $out .= self::student_marks_v_engagement();
+
+        return $out;
+    }
+
+    /**
+     * Render the grid for list of advisees
+     *
+     * @see ?? for the expected structure
+     * @return string
+     */
+    public function advisees_grid()
+    {
+        $util_dates = new \block_obu_learnanalytics\util\date_functions();
+        $curl_common = new \block_obu_learnanalytics\guzzle\common();
+        $outScripts = "";
+		$scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=1.12.6');
+		$outScripts .= html_writer::script(null, $scriptUrl);
+
+        // Now the main one that we always want to load
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/advisees_grid.js?version=1.12.6');
+        $outScripts .= html_writer::script(null, $scriptUrl);
+        // End of scripts
+
+
+        $outParams = html_writer::start_tag('div');
+        $outParams = html_writer::start_tag('div', array("id" => "obula_control_params_parent", "class" => "parameters", style => "display: flex; align-items: center;"));
+
+        $outParams .= html_writer::start_tag('table id=obula-advisee-params-grid');
+        // Placeholder for date_controls.php
+        $outParams .= html_writer::empty_tag("td", array("id" => "obula_semester_control_cell", "class" => "parameters"));
+        $outParams .= html_writer::empty_tag("td", array("id" => "obula_week_control_cell", "class" => "parameters"));
+
+        $outParams .= html_writer::end_tag('table');
+
+
+        // ******* Placeholder for a later release ******* //
+
+        // Build the URL for the image using Moodle's base URL.
+        // $imgurl = $CFG->wwwroot . '/blocks/obu_learnanalytics/pix/attendance_matrix.png';
+        // $img = html_writer::empty_tag('img', array(
+        //     'src'    => $imgurl,
+        //     'alt'    => 'Attendance Matrix Icon',
+        //     'title'  => 'View Attendance Matrix',  // Tooltip text.
+        //     'width'  => 50,
+        //     'height' => 50,
+        // ));
+
+        // Wrap the image element in a div container
+        // $outParams .= html_writer::tag('div', $img, array(
+        //     'id'    => 'obula_launch_attendance_matrix',
+        //     'class' => 'parameters',
+        //     'onclick' => 'renderAttendanceMatrix();'
+
+        // ));
+
+        $outParams .= html_writer::end_tag('div');
+
+        $outParams .= html_writer::end_tag('div');
+
+        // Now we need table for Advisees Grid on the left
+        $outPlaceHolders = '';
+        $outPlaceHolders .= html_writer::start_tag('div');
+        $outPlaceHolders .= html_writer::start_tag('table', array('id' => 'obula_advisee_parent_grid'));
+
+        $outPlaceHolders .= html_writer::start_tag("tr");
+        $outPlaceHolders .= html_writer::start_tag("td", array("id" => "obula_advisee_grid_div", "style" => "vertical-align: top"));
+        $outPlaceHolders .= html_writer::end_tag("td");
+
+        // $outPlaceHolders .= html_writer::start_tag('table', array("id" => "obula_advisee_grid_table"));
+        // $outPlaceHolders .= html_writer::start_tag("tr");
+        // // Can't get align top to work at the moment so set the max height - but that didn't work either
+        // $outPlaceHolders .= html_writer::start_tag("td", array('style' => 'vertical-align: top; max-height: 18px'));
+        // $chartAtts = array("href" => "javascript:hideCharts(false)", "id" => "obula_chart_hide", "class" => "chart-links");
+        // $chartAtts['style'] = "display:none";
+        // $outPlaceHolders .= html_writer::tag('a', 'Hide Chart', $chartAtts);
+        // $outPlaceHolders .= "&nbsp";
+        // $outPlaceHolders .= html_writer::end_tag("td");
+
+        // $outPlaceHolders .= html_writer::end_tag("tr");
+
+        // $outPlaceHolders .= html_writer::start_tag("tr");
+        // $outPlaceHolders .= html_writer::start_tag("tr");
+        // $outPlaceHolders .= html_writer::end_tag("td");
+        // $outPlaceHolders .= html_writer::end_tag("tr");
+        // $outPlaceHolders .= html_writer::end_tag('table');
+        $outPlaceHolders .= html_writer::start_tag('table', array("id" => "obula_advisee_grid2_table"));
+        $outPlaceHolders .= html_writer::start_tag("tr");
+        $outPlaceHolders .= html_writer::start_tag("td", array("id" => "obula_advisee_grid2_div", "style" => "vertical-align: top"));
+        $outPlaceHolders .= html_writer::end_tag("tr");
+        $outPlaceHolders .= html_writer::end_tag('div');
+
+        $out = $outScripts . $outParams . $outPlaceHolders;
+        return $out;
+    }
+
+    /**
      * Renders the Tutors dashboard with comparison grid and placeholders for charts
-     * called from self::tutor_dashboard_summary and become_students_tutor.php
+     * called from self::staff_dashboard_summary and become_students_tutor.php
      *
      * @param  string  $defaultProgramme The default programme code for the tutor
      * @param  boolean $subDashboard     True if called from SSC fashboard
      * @return string                    HTML to render
      */
-    public function tutor_dashboard(string $defaultProgramme, bool $subDashboard, string $studentNumber = null)
+    public function tutor_dashboard(string $defaultProgramme, bool $subDashboard, string $studentNumber = null, string $type)
     {
+
+        
         $out = '';
         $out .= html_writer::start_tag("div");
         $out .= self::tutor_grid($defaultProgramme, $subDashboard, $studentNumber);
@@ -345,17 +456,19 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
     public function tutor_grid($defaultProgramme, $subDashboard, $studentNumber)
     {
         $util_dates = new \block_obu_learnanalytics\util\date_functions();
-        $curl_common = new \block_obu_learnanalytics\curl\common();
+        $curl_common = new \block_obu_learnanalytics\guzzle\common();
         $outScripts = "";
         if (!$subDashboard) {
             // Only loaded if it's not a subDashboard as parent should have loaded these
-            $scriptUrl = new moodle_url('common.js?version=1.12.5');
+            $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=1.12.6');
             $outScripts .= html_writer::script(null, $scriptUrl);
         }
+
         // Now the main one that we always want to load
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/tutor_grid.js?version=1.12.5');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/tutor_grid.js?version=1.12.6');
         $outScripts .= html_writer::script(null, $scriptUrl);
-        // End of scripts
+
+
 
         // So now output some selection and sorting criteria
         // in a table
@@ -584,7 +697,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         }
         $outScripts = "";
         // TODO check if student_charts still needed now common.js created
-        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/student_charts.js?version=1.12.5');
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/student_charts.js?version=1.12.6');
         $outScripts .= html_writer::script(null, $scriptUrl);
         // End of scripts
 
@@ -592,7 +705,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
 
         // If we are a student then there is some more to output before the charts
         if (!$fromtutordb) {
-            $curl_common = new \block_obu_learnanalytics\curl\common();
+            $curl_common = new \block_obu_learnanalytics\guzzle\common();
             $advisorDetails = $curl_common->get_academic_advisor($USER->username, '202409');      //TODO needs to pass semester properly
             if ($advisorDetails == null) {
                 $out .= html_writer::tag('h3', 'You do not have an Academic Adviser assigned');
@@ -635,9 +748,234 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
 
         $jsonParams = $util_odds->store_parameters($programme, "*", $sid, $sname);
         $out .= html_writer::tag('input', '', array('type' => 'hidden', 'id' => 'obula_parameters', 'value' => "$jsonParams"));
-        $out .= self::student_chart_placeholders(!$fromtutordb, $hide);
+        $out .= self::student_chart_placeholders_v2(!$fromtutordb, $hide);
 
         return $out;
+    }
+
+
+
+    public function student_chart_placeholders_v2(bool $outputCohortPlaceHolder, bool $hide)
+    {
+
+        $out = "";
+        $atts = array('id' => 'obula_studentGraphs_div');
+        if ($hide) {
+            $atts['style'] = 'display: none';
+        }
+        $out .= html_writer::start_tag('div', $atts);
+
+            // ──────────────────────────────────────────────────
+            // (1) Engagement + Radios in one horizontal row
+            // ──────────────────────────────────────────────────
+            $out .= html_writer::start_tag('div', [
+                'id' => 'vleEngagement',
+                'style' => 'display: flex; justify-content: center; align-items: center; margin-top: 20px;'
+            ]);
+
+                // A) Engagement Chart Container (left side)
+                $out .= html_writer::start_tag('div', [
+                    'id' => 'studentChartVLEEngagementContainer',
+                    'style' => 'min-width:60%; margin-top: 20px; display: flex; justify-content: center; align-items: center;'
+                ]);
+                    $out .= html_writer::tag('canvas', '', [
+                        'id' => 'studentChartVLEEngagement',
+                        'style' => 'display:block;' 
+                    ]);
+                $out .= html_writer::end_tag('div');
+                // B) Radios (right side)
+                $out .= html_writer::start_tag('div', [
+                    'id' => 'radiosForVLEEngagement',
+                    // Use flex-direction: column to stack the radio buttons vertically
+                    'style' => 'margin-left: 20px; display: flex; flex-direction: column;'
+                ]);
+                    // Duration
+                    $out .= html_writer::start_tag('label');
+                    $out .= html_writer::empty_tag('input', [
+                        'type' => 'radio',
+                        'name' => 'vleEngagementRadio',
+                        'value' => 'vleduration',
+                        'checked' => 'checked',
+                        'onclick' => 'radioSwitch(this.value)'
+                    ]);
+                    $out .= 'Duration';
+                    $out .= html_writer::end_tag('label');
+
+                    // Visits
+                    $out .= html_writer::start_tag('label');
+                    $out .= html_writer::empty_tag('input', [
+                        'type' => 'radio',
+                        'name' => 'vleEngagementRadio',
+                        'value' => 'vlesessions',
+                        'onclick' => 'radioSwitch(this.value)'
+                    ]);
+                    $out .= 'Visits';
+                    $out .= html_writer::end_tag('label');
+                    // Page Views
+                    $out .= html_writer::start_tag('label');
+                    $out .= html_writer::empty_tag('input', [
+                        'type' => 'radio',
+                        'name' => 'vleEngagementRadio',
+                        'value' => 'vleviews',
+                        'onclick' => 'radioSwitch(this.value)'
+                    ]);
+                    $out .= 'Page Views';
+                    $out .= html_writer::end_tag('label');
+                     // Then add a button underneath
+                $out .= html_writer::start_tag('div', [
+                    'style' => 'margin-top: 10px;' // some spacing from the radios
+                ]);
+
+                // This creates a <button> with label "By Module" and some inline CSS
+                $out .= html_writer::tag('button', 'By Module', [
+                    'id' => 'byModuleButton',
+                    'type' => 'button',
+                    'onclick' => 'showModuleEng_v2()',
+                    'style' => 'padding: 10px 16px; background-color: #d10373; color: #fff; border: none; border-radius: 4px; cursor: pointer;'
+                ]);
+
+                $out .= html_writer::end_tag('div');
+                $out .= html_writer::end_tag('div'); // end radiosForVLEEngagement
+               
+            $out .= html_writer::end_tag('div'); // end vleEngagementAndRadiosRow
+        
+            // ──────────────────────────────────────────────────
+            // (1.5) Engagement by Module
+            // ──────────────────────────────────────────────────
+            $out .= html_writer::start_tag('div', [
+                'id' => 'vleEngagementByModule',
+                'style' => 'display: none; justify-content: center; align-items: center; margin-top: 20px;'
+            ]);
+
+                // A) Engagement Chart Container (left side)
+                $out .= html_writer::start_tag('div', [
+                    'id' => 'studentChartEngagementByModuleContainer',
+                    'style' => 'min-width:60%; margin-top: 20px; display: flex; justify-content: center;'
+                ]);
+                    $out .= html_writer::tag('canvas', '', [
+                        'id' => 'studentChartEngagementByModule',
+                        'style' => 'display:block;' 
+                    ]);
+                $out .= html_writer::end_tag('div');
+            $out .= html_writer::end_tag('div'); // end EngagementbyModule row
+        
+
+            // ──────────────────────────────────────────
+            // (2) Attendance chart
+            // ──────────────────────────────────────────
+
+            $out .= html_writer::start_tag('div', [
+                'id' => 'attendancerow',
+                'style' => 'display: flex; justify-content: center; align-items: center; margin-top: 20px;'
+            ]);
+                $out .= html_writer::start_tag('div', [
+                    'id' => 'studentChartAttendanceContainer',
+                    'style' => 'min-width:60%; margin-top: 20px; display: flex; justify-content: center;'
+                ]);
+                    $out .= html_writer::tag('canvas', '', [
+                        'id' => 'studentChartAttendance',
+                        'width' => '200',
+                        'height' => '100',
+                        'style' => 'display:block;'
+                    ]);
+                    
+                $out .= html_writer::end_tag('div');
+                $out .= html_writer::start_tag('div', [
+                    'id' => 'radiosForEngagement',
+                    // Use flex-direction: column to stack the radio buttons vertically
+                    'style' => 'margin-left: 20px; display: flex; flex-direction: column;'
+                ]);
+                    // Line Chart
+                    $out .= html_writer::start_tag('label');
+                    $out .= html_writer::empty_tag('input', [
+                        'type' => 'radio',
+                        'name' => 'attendanceRadio',
+                        'value' => 'attperc_linechart',
+                        'checked' => 'checked',
+                        'onclick' => 'radioSwitch(this.value)'
+                    ]);
+                    $out .= 'Line Chart';
+                    $out .= html_writer::end_tag('label');
+
+                     // Bar Chart
+                     $out .= html_writer::start_tag('label');
+                     $out .= html_writer::empty_tag('input', [
+                         'type' => 'radio',
+                         'name' => 'attendanceRadio',
+                         'value' => 'attperc_barchart',
+                        'onclick' => 'radioSwitch(this.value)'
+                     ]);
+                     $out .= 'Bar Chart';
+                     $out .= html_writer::end_tag('label');
+                $out .= html_writer::end_tag('div');    // End radios
+            $out .= html_writer::end_tag('div'); // end attendancerow
+
+            // ──────────────────────────────────────────
+            // (3) eLibrary (EzProxy) chart
+            // ──────────────────────────────────────────
+            $out .= html_writer::start_tag('div', [
+                'id' => 'eLibEngagement',
+                'style' => 'display: flex; justify-content: center; align-items: center; margin-top: 20px;margin-bottom:20px;'
+            ]);
+
+                // A) Engagement Chart Container (left side)
+                $out .= html_writer::start_tag('div', [
+                    'id' => 'studentChartELibEngagementContainer',
+                    'style' => 'min-width:60%; margin-top: 20px; display: flex; justify-content: center;'
+                ]);
+                    $out .= html_writer::tag('canvas', '', [
+                        'id' => 'studentChartELibEngagement',
+                        'style' => 'display:block;' 
+                    ]);
+                $out .= html_writer::end_tag('div');
+                // B) Radios (right side)
+                $out .= html_writer::start_tag('div', [
+                    'id' => 'radiosELibEngagement',
+                    // Use flex-direction: column to stack the radio buttons vertically
+                    'style' => 'margin-left: 20px; display: flex; flex-direction: column;'
+                ]);
+                    // Duration
+                    $out .= html_writer::start_tag('label');
+                    $out .= html_writer::empty_tag('input', [
+                        'type' => 'radio',
+                        'name' => 'eLibEngagementRadio',
+                        'value' => 'ezduration',
+                        'checked' => 'checked',
+                        'onclick' => 'radioSwitch(this.value)'
+                    ]);
+                    $out .= 'Duration';
+                    $out .= html_writer::end_tag('label');
+
+                    // Visits
+                    $out .= html_writer::start_tag('label');
+                    $out .= html_writer::empty_tag('input', [
+                        'type' => 'radio',
+                        'name' => 'eLibEngagementRadio',
+                        'value' => 'ezsessions',
+                        'onclick' => 'radioSwitch(this.value)'
+                    ]);
+                    $out .= 'Visits';
+                    $out .= html_writer::end_tag('label');
+                    // Page Views
+                    $out .= html_writer::start_tag('label');
+                    $out .= html_writer::empty_tag('input', [
+                        'type' => 'radio',
+                        'name' => 'eLibEngagementRadio',
+                        'value' => 'ezsize',
+                        'onclick' => 'radioSwitch(this.value)'
+                    ]);
+                    $out .= 'Downloaded (MB)';
+                    $out .= html_writer::end_tag('label');
+                $out .= html_writer::end_tag('div'); // end radiosForEngagement
+            $out .= html_writer::end_tag('div'); // end engagementAndRadiosRow
+        
+
+
+        $out .= html_writer::end_tag('div'); // End of obula_studentGraphs_div
+        // Return the output
+        return $out;
+
+
     }
 
     /**
@@ -680,7 +1018,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         $types = array("vle", "att", "ez"); //, "loans", "att");
         $buttonsData = array();
         $buttonsData[] = array("vleduration", "Duration", "vlesessions", "Visits", "vleviews", "Page Views");
-        $buttonsData[] = array("attperc", "Percentage");
+        $buttonsData[] = array("attpercline", "Line Chart", "attpercbar", "Bar Chart");
         $buttonsData[] = array("ezduration", "Duration", "ezsessions", "Visits", "ezsize", "Downloaded (MB)");
         //$buttonsData[] = array("loansline", "Line Chart", "loansbar", "Bar Chart", "loanscomb", "Combined");
         //$buttonsData[] = array("attduration", "Duration", "attsessions", "Lectures");
@@ -742,16 +1080,16 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
             // NOTE - try doesn't catch html_writer problems, which is why I tried it, but might as well leave it
             $util_dates = new \block_obu_learnanalytics\util\date_functions();
             $util_odds = new \block_obu_learnanalytics\util\odds();
-            $curl_common = new \block_obu_learnanalytics\curl\common();
+            $curl_common = new \block_obu_learnanalytics\guzzle\common();
 
             global $USER;
             global $SESSION;
             $outScripts = "";
             if (!$subDashboard) {
-                $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=1.12.5');
+                $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=1.12.6');
                 $outScripts .= html_writer::script(null, $scriptUrl);
             }
-            $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/student_dashboard.js?version=1.12.5');
+            $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/student_dashboard.js?version=1.12.6');
             $outScripts .= html_writer::script(null, $scriptUrl);
             // End of scripts
 
@@ -829,7 +1167,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
                 // Next will not work until we change the WS to take the semester
                 // But I don't think we want to show this anymore
                 $params = "student/cohorteng/$programme/*/*/$weeks/$simpleCurrent/";
-                $curl_common = new \block_obu_learnanalytics\curl\common();
+                $curl_common = new \block_obu_learnanalytics\guzzle\common();
                 $studentsData = $curl_common->send_request($params);
                 // For now remove zeros, but once active flag complete this may come out and/or go into get_active_cohort_colleagues
                 // $studentsData = $db_cohort->remove_zeros($studentsData);
@@ -1090,10 +1428,10 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         } else {
             switch ($colour) {
                 case 'Red':
-                    $imageName = "RedArrowDown";
+                    $imageName = "ArrowDown";
                     break;
                 case 'Green':
-                    $imageName = "GreenArrowUp";
+                    $imageName = "ArrowUp";
                     break;
                 default:
                     $imageName = "BlueEquals";

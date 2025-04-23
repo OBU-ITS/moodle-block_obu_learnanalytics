@@ -8,6 +8,8 @@ try {
     require_once './jpgraph/src/jpgraph.php';
     require_once './jpgraph/src/jpgraph_line.php';
     require_once './jpgraph/src/jpgraph_bar.php';
+    require_once(__DIR__ . '/vendor/autoload.php');
+
     $jpgraph_error_handler = set_error_handler("errorHandlerOBU"); // jpgraph sets it's own
 
     //define('AJAX_SCRIPT', true);      // This breaks things
@@ -77,7 +79,8 @@ try {
             case "loanscomb":
                 $column = "library_resources_loaned";
                 break;
-            case "attperc":
+            case "attpercline":
+            case "attpercbar":
                 $column = "attendance_percentage";
                 //$column = "vle_page_hits";
                 break;
@@ -89,7 +92,7 @@ try {
                 break;
         }
         // Note exception isn't caught if next line fails
-        $curl_common = new \block_obu_learnanalytics\curl\common();
+        $curl_common = new \block_obu_learnanalytics\guzzle\common();
         $enc_pgm = htmlspecialchars(urlencode(str_replace('/','~',$programme)));
         $params = "student/pgmgraphdata/$sid/{$enc_pgm}/{$sStage}/$simpleCurrent/median/{$column}/";
         try {
@@ -156,7 +159,8 @@ try {
                         $plot2Counts[] = $row["avg_library_resources_loaned"] ?? 0;
                         //$plot3Counts[] = $row["mean_library_resources_loaned"] ?? 0;
                         break;
-                    case "attperc":
+                    case "attpercline":
+                    case "attpercbar":
                         $plot1Counts[] = $row["attendance_percentage"] ?? 0;
                         $plot2Counts[] = $row["avg_attendance_percentage"] ?? 0;
                         //$plot3Counts[] = $row["mean_attendance_percentage"] ?? 0;
@@ -215,9 +219,13 @@ try {
                 $graphTitle = "Campus Library Engagement - Loans";
                 $plotType = substr($chartType, 5);
                 break;
-            case "attperc":
+            case "attpercbar":
                 $graphTitle = "Attendance percentage of Lectures/Events attended";
-                //$plotType = "bar";          // Or line if that doesn't work
+                $plotType = "bar";
+                break;
+            case "attpercline":
+                $graphTitle = "Attendance percentage of Lectures/Events attended";
+                $plotType = "Line";          // Or line if that doesn't work
                 break;
             case "attsessions":
                 $graphTitle = "Attendance - Number of Lectures";

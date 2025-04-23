@@ -7,8 +7,10 @@
 require_once __DIR__ . '/../../config.php';
 ?>      
 <?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
 defined('MOODLE_INTERNAL') || die();
-$curl_common = new \block_obu_learnanalytics\curl\common();
+$curl_common = new \block_obu_learnanalytics\guzzle\common();
 // Click event posts the request so we can pick up parameters from the data
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Pick up any data if passed
@@ -23,20 +25,14 @@ try {
     $params = "utils/checkconnection/";
     $curl_common->setCheckConnection(true);
     $status = $curl_common->send_request($params);
+    header('Content-type: application/json');
+    echo json_encode(array('success' => true, 'ccStatus' => $status));
 } catch (Exception $ex) {
     $status = array();
     $status["Status"] = "WS";
     $status["code"] = "WSEXCEPTION";
     $status["message"] = $ex->getMessage();
-    $status["consolehtml"] = $curl_common->echo_error_console_log($ex, false);
-    exit;
-}
-//TODO handle 404 etc
-//xdebug.break();
-if ($status["Status"] != "OK") {
-    if (is_null($status)) {
-        $status = $curl_common->get_status_details();
-    }
+
     $problemType = substr($status["code"], 0, 3);
     switch ($problemType) {
         case "WST":
@@ -56,23 +52,21 @@ if ($status["Status"] != "OK") {
             $status["problemMessageMed"] = "Enterprise Data Warehouse unavailable, please try later";
             break;
         default:
-            $status["problemMessagSml"] = "Connection issue";
+            $status["problemMessageSml"] = "Connection issue";
             $status["problemMessageMed"] = "Unexpected connection issue, please try later";
             break;
     }
+
+    $popup = "";
+    $isAdmin = is_siteadmin() || $USER->username == "p0090268";
+    if ($isAdmin) {
+        $clipButton = '<a class="material-icons copyclip" onclick="copyErrorTextToClipboard()" data-toggle="ztooltip" title="Copy to Clipboard">content_copy</a>';
+        $tip = "Error" . $clipButton . "<div id='error-msg'><br>Code:" . $status["code"] . "<br>Message:" . $status["message"] . "</div>";
+        $popup .= html_writer::tag("span", $tip, array("class" => "error-text"));
+    }
+    $status["popup"] = $popup;
+
+    header('Content-type: application/json');
+    echo json_encode(array('success' => false, 'ccStatus' => $status));
+    exit;
 }
-
-$isAdmin = is_siteadmin() || $USER->username == "p0090268";
-$popup = "";
-if ($isAdmin) {
-    $clipButton = '<a class="material-icons copyclip" onclick="copyErrorTextToClipboard()" data-toggle="ztooltip" title="Copy to Clipboard">content_copy</a>';
-    $tip = "Error" . $clipButton . "<div id='error-msg'><br>Code:" . $status["code"] . "<br>Message:" . $status["message"] . "</div>";
-    $popup .= html_writer::tag("span", $tip, array("class" => "error-text"));
-}
-$status["popup"] = $popup;
-
-// Now send it back
-header('Content-type: application/json');
-echo json_encode(array('success' => true, 'ccStatus' => $status));
-
-exit;

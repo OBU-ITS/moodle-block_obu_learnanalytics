@@ -6,6 +6,8 @@
 ob_start();
 //echo __DIR__;
 require_once __DIR__ . '/../../config.php';
+require_once(__DIR__ . '/vendor/autoload.php');
+
 $util_odds = new \block_obu_learnanalytics\util\odds();
 $laRole = $util_odds->get_la_role("SSC");    // Protects against attacks, wrong roles and everything
 ?>
@@ -59,15 +61,19 @@ switch ($studentNumber) {
             $sname = $studentNumber;
             $fname = $studentNumber;
         }
-        $summaryMessage = "<span class='ssc-title' id='obula_title'>You are viewing the Learning Analytics Dashboard for {$sname}</span>";
-        $summaryMessage .= "   <a href='javascript:clearSSC() class='link-right''>Clear</a>";
-        $summaryMessage .= "   <a href='javascript:collapseSSC() class='link-right''>Close</a>";
+        $summaryMessage = "<span class='summ-title' id='obula_title'>You are viewing the Learning Analytics Dashboard for {$sname}</span>";
+        //$summaryMessage .= "   <a href='javascript:clearSSC() class='link-right''>Clear</a>";
+        $summaryMessage .= "
+                <button onclick='collapseTutor()' class='link-right dashboardCloseButton'>
+                    <i class='fa-solid fa fa-close'><b>Close</b></i>
+                </button>";
+    
 
         // Now let's get the renderer class so I can call functions from it
         $renderer = $PAGE->get_renderer('block_obu_learnanalytics');
         // Now work out the programme (code nearly the same code in block_obu_learnanalytics.php)
         $params = "student/programmes/$studentNumber/";
-        $curl_common = new \block_obu_learnanalytics\curl\common();
+        $curl_common = new \block_obu_learnanalytics\guzzle\common();
         $pgms = $curl_common->send_request($params);
     
         if ($pgms == null || count($pgms) == 0) {

@@ -2,6 +2,8 @@
 ob_start();
 //echo __DIR__;
 require_once __DIR__ . '/../../config.php';
+require_once(__DIR__ . '/vendor/autoload.php');
+
 $util_odds = new \block_obu_learnanalytics\util\odds();
 $laRole = $util_odds->get_la_role();    // Protects against attacks, wrong roles and everything
 if ($laRole == "STUDENT") {
@@ -14,11 +16,11 @@ if ($laRole == "STUDENT") {
 $util_dates = new \block_obu_learnanalytics\util\date_functions();
 $data_tutor = new \block_obu_learnanalytics\data\tutor_functions();
 //xdebug_break();
-
 // Drop down event posts the request so we can pick up parameters from the data
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // The request is using the POST method
     $programme = $_POST["programme"];
+    $programmeText = $_POST["programmeText"];
     $modLevel = $_POST["modLevel"];
     $studyType = ($_POST["studyType"]);
     $cohortSort = $_POST["cohortSort"];
@@ -75,26 +77,29 @@ $context = $PAGE->context;
 $today = new DateTime();
 set_user_preference('obula_last_tutor_grid_date', serialize($today));
 set_user_preference('obula_last_tutor_grid_pgm', $programme);
+set_user_preference('obula_last_tutor_grid_pgm_desc', $programmeText);
 
 $success = true;        // Hopefully
 try {
+
     $simpleCurrent = $util_dates->createSimpleCurrentParam($current);
     // We don't want to filter by academic advisor, because cohort/modLevel averages etc should include all students
     // Had to encode programme as it can have / for example BA/BSH-PKPO, but that wasn't enough because decode happened before htaccess
     // so swap / to ~ (and back in web service)
     $enc_pgm = htmlspecialchars(urlencode(str_replace('/','~',$programme)));
     $params = "tutor/studentsgridv3/$enc_pgm/$bandingCalcOptions/$simpleCurrent/$modLevel/$studyType/*/$semester/$campusCode/";
-    $curl_common = new \block_obu_learnanalytics\curl\common();
+    $curl_common = new \block_obu_learnanalytics\guzzle\common(); // or call it $guzzle_common, up to you
     $result = $curl_common->send_request($params);
     $studentsComparitives = $result["data"];
-    $headings = $result["header"];
+    $headings = $result["header"];  
 } catch (Exception $e) {
     // Just output it in big bold red, shouldn't happen so no CSS for this
     $html = "<br><b><font size='6'><style='color:red'>Exception from students_comparitive_grid: {$e}</style></font></b>";
     // Now let it send all that back
     $success = false;
 }
-if ($success && !isset($studentsComparitives) || count($studentsComparitives) == 0) {
+if ($success && (!isset($studentsComparitives) || count($studentsComparitives) == 0)) {
+
     $html = "<br><b><font size='+2'><style='color:blue'>No Active Students for this Selection Criteria</style></font></b>";
     // Now let it send all that back
     $success = false;
@@ -179,11 +184,7 @@ if ($success) {
     $studyStageCell = "<th class='students-clickable' style='min-width:75px' onclick='clickCohortHeading()'>Rank";
     $studyStageCell .= "<img src = $imageUrl style = 'max-height:20px' id='obula_cohort_sort'  name='obula_cohort_{$cohortSort}'>";
     $studyStageCell .= "</th>";
-    $imageUrl = get_image_url("Actions-go-" . $studentSort . "-view-icon");
-    // tip won't go away on click$studentCell = "<th class='students' style='min-width:75px' data-toggle='tooltip' title = 'Compared to Students Average (over 6 weeks)' onclick='clickStudentHeading()'>Trend";
-    $studentCell = "<th class='students-clickable' style='min-width:75px' onclick='clickStudentHeading()'>Trend";
-    $studentCell .= "<img src = $imageUrl style = 'max-height:20px' id='obula_student_sort' name='obula_student_{$studentSort}'>";
-    $studentCell .= "</th>";
+    $studentCell = "<th class='students-hideable' style='min-width:75px'>Trend</<th>";
     $html .= $studyStageCell;
     $html .= $studentCell;
     $html .= "<th class='students-hideable'>Alert</th>";
@@ -234,7 +235,7 @@ if ($success) {
         
         $loopCount++;
 
-        $imageUrlISP = get_image_url4Comparison("isp", 't');
+        $imageUrlISP = $util_odds->get_image_url4Comparison("isp", 't');
         if (($eStatus == 'EN' || $eStatus == 'EL') && $wStatus === null) {
             $cssClass = 'students-name';
         } else {
@@ -267,7 +268,7 @@ if ($success) {
         }
         $html .= '<td class="' . $class . '" title="Student Info" onclick="' . $onclick . '">info</td>';       // the info button, preview is good too
 
-        //$imageUrl = get_image_url4Comparison("sStage", $data["cohort_comparison"]);
+        //$imageUrl = $util_odds->get_image_url4Comparison("sStage", $data["cohort_comparison"]);
         $posText = '?';
         if ($data["student_engagement"] == 0) {
             $posText = "Zero";
@@ -289,10 +290,10 @@ if ($success) {
         //$studyStageCell .= " (" . sprintf('%.0f', $data["student_engagement"]) . "/" . sprintf('%.0f', $data["student_weighted_engagement"]) . ")";
         $studyStageCell .= "</td>";
 
-        $imageUrl0 = get_image_url4Comparison("student", $data["student_comparison_prev0"]);
-        $imageUrl1 = get_image_url4Comparison("student", $data["student_comparison_prev1"]);
-        $imageUrl2 = get_image_url4Comparison("student", $data["student_comparison_prev2"]);
-        $imageUrl3 = get_image_url4Comparison("student", $data["student_comparison_prev3"]);
+        $imageUrl0 = $util_odds->get_image_url4Comparison("student", $data["student_comparison_prev0"]);
+        $imageUrl1 = $util_odds->get_image_url4Comparison("student", $data["student_comparison_prev1"]);
+        $imageUrl2 = $util_odds->get_image_url4Comparison("student", $data["student_comparison_prev2"]);
+        $imageUrl3 = $util_odds->get_image_url4Comparison("student", $data["student_comparison_prev3"]);
         $studentCell = "<td class='students'>";
         // Simple hints for now TODO one using CSS
         $hint = $data['student_comparison_prev3_hint'];
@@ -425,37 +426,3 @@ function get_image_url(string $imageName)
     return $ret;
 }
 
-function get_image_url4Comparison($type, $colour)
-{
-    $imageName = "";
-
-    switch ($type) {
-        case 'sStage':
-            $imageName = $colour . "Circle";
-            break;
-        case 'isp':
-            $imageName = "tick";
-            break;
-            
-        default:
-        switch ($colour) {
-            case 'Red':
-                $imageName = "RedArrowDown";
-                break;
-            case 'Green':
-                $imageName = "GreenArrowUp";
-                break;
-            default:
-                $imageName = "BlueEquals";
-                break;
-        }
-            break;
-    }
-
-    // TODO I think there is an approved way of getting an url to an image that will then use cache etc
-    // But looking at the network traffic, the browser is already doing some optimisation
-    $ret = '../blocks/obu_learnanalytics/pix/' . $imageName . '.png';
-    //image_url($imageName, "obu_learnanalytics");
-    // or resolve_image_location
-    return $ret;
-}

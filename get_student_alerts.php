@@ -2,13 +2,15 @@
 ob_start();
 //echo __DIR__;
 require_once __DIR__ . '/../../config.php';
+require_once(__DIR__ . '/vendor/autoload.php');
+
 $util_odds = new \block_obu_learnanalytics\util\odds();
 $laRole = $util_odds->get_la_role();    // Protects against attacks, wrong roles and everything
 ?>
 
 <?php
 $util_dates = new \block_obu_learnanalytics\util\date_functions();
-$curl_common = new \block_obu_learnanalytics\curl\common();
+$curl_common = new \block_obu_learnanalytics\guzzle\common();
 
 // Drop down event posts the request so we can pick up parameters from the data
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -49,19 +51,11 @@ foreach ($studentAttendance as $attendance) {
 header('Content-type: application/json');
 $title = $sName;
 // TODO hunt for other languages
-$url = new moodle_url("/blocks/obu_learnanalytics/lang/en/student_alerts.html");
-//$popupbodyhtml = file_get_contents($url, false);
-// get it as an array so I can exclude lines
-$fileLines = file($url);
-$html = "";
-foreach ($fileLines as $line) {
-    if ($advisor != "" || !strpos($line, "id=obula_aaemail")) {
-        $html .= $line;
-    }
-}
+$url = "lang/en/student_alerts.html";
+$html = file_get_contents($url, false);
 
 // Next line does not use ", because we don't want PHP to try and replace the variables yet
-// If adding more detail then change student_info.html as well
+// If adding more detail then change student_alerts.html as well
 $from = array('{$alertRows}');
 $to = array($alertRows);
 $popupbodyhtml = str_replace($from, $to, $html);

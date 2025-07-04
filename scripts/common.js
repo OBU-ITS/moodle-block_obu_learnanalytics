@@ -70,7 +70,7 @@ function getStudentNameParameter() {
 /**
  * Handles click event to show Advisors page
  */
-function showAdvisees(mode) {
+function showAdvisees(mode, studentNumber) {
     if (mode != 'Back') {
         var tnode = event.target;
     }
@@ -83,12 +83,15 @@ function showAdvisees(mode) {
         if (!resp || resp.ccStatus.Status !== "OK") {
             return; // Exit here; do not proceed with show_advisees
         }
+        var data = {
+            "studentNumber": studentNumber
+        };
 
         // Ajax call re-written to use later .done/.fail functionality in case we need promises later
         $.ajax({
             type: 'POST',
             url: "../blocks/obu_learnanalytics/show_advisees.php",
-            // data: data,
+            data: data,
             beforeSend: function () {
                 $("#obula_error_row").hide();
             }

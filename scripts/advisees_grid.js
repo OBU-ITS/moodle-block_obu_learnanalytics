@@ -119,6 +119,7 @@ function renderAttendanceMatrix() {
     // Create the overlay element (modal background)
     var overlay = document.createElement('div');
     overlay.id = 'attendance-overlay';
+    overlay.style.display = 'none';
     // (Styling moved to styles.css)
     
     // Create the popover element
@@ -145,9 +146,32 @@ function renderAttendanceMatrix() {
     // Append the popover to the overlay and the overlay to the document body.
     overlay.appendChild(popover);
     document.body.appendChild(overlay);
+    $('#obula_launch_attendance_matrix').addClass('disabled');
+
+
+    var data = {
+        "semester": '000000', "username": '1931312'
+    };
+
+    $.ajax({
+        type: 'POST',
+        url: '../blocks/obu_learnanalytics/advisees_matrix.php',
+        data: data,
+        dataType: 'json'
+    })
+    .done(function (res) {
+        if (!res.success) {
+            $('#attendanceMatrixContainer').html(res.html);
+            return;
+        }
     
-    // Build the matrix inside our container using the provided data.
-    buildAttendanceMatrix();
+        _matrixDataCache = res.data;          // 🔹 cache raw data
+        buildAttendanceMatrix(res.data);                     // existing JS
+    })
+    .fail(function (_, __, err) {
+        alert('Advisees Matrix Failed: ' + err);
+    });
+    
 }
 
 
@@ -407,8 +431,11 @@ for (var studentId in studentData) {
     });
     
     table.appendChild(tbody);
-    
-    // Helper function: choose tile color based on attendance percentage.
+    console.log(_matrixDataCache);
+    $('#attendance-overlay').show();
+    $('#obula_launch_attendance_matrix').removeClass('disabled');
+
+    /* helper */
     function getAttendanceColor(p) {
         p = Math.max(0, Math.min(100, p));
         if (p > 75) {

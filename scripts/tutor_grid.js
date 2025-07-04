@@ -201,6 +201,7 @@ function renderChart(chart_type, studentName) {
         type: 'POST',
         url: M.cfg.wwwroot + '/blocks/obu_learnanalytics/students_graph_v2.php',
         data: data,
+        dataType: 'json',
         success: function (res) {
           chartHandler(res, chart_type, studentName, chart_style);
           resolve();  // <-- Resolve the Promise when done

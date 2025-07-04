@@ -199,9 +199,8 @@ function renderChart(chart_type, studentName) {
   
       $.ajax({
         type: 'POST',
-        url: "../blocks/obu_learnanalytics/students_graph_v2.php",
+        url: M.cfg.wwwroot + '/blocks/obu_learnanalytics/students_graph_v2.php',
         data: data,
-        dataType: 'json',
         success: function (res) {
           chartHandler(res, chart_type, studentName, chart_style);
           resolve();  // <-- Resolve the Promise when done

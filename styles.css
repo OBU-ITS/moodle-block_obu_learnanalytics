@@ -119,6 +119,22 @@
     border-collapse: collapse;
 }
 
+/* -------------- 1st frozen row – headings -------------- */
+/* .block_obu_learnanalytics tr.students-header > * { 
+    position: sticky;
+    top: 0;
+    z-index: 200;  
+    background: #fff;
+} */
+
+/* -------------- 2nd frozen row – filters / “Rank …” ---- */
+/* .block_obu_learnanalytics tr.students-filter > * {
+    position: sticky;
+    top: 2.6rem;
+    z-index: 199;
+    background: #fff;
+} */
+
 .block_obu_learnanalytics th.students, .block_obu_learnanalytics td.students {
     border: 1px solid black;
     padding: 0 4px 0 4px;
@@ -446,6 +462,11 @@ a.material-icons.nextprev:hover {
     outline: none;
     box-shadow: 0 0 0 3px rgba(100,150,250,0.5);
 }
+#obula_launch_attendance_matrix.disabled {
+    pointer-events: none;
+    opacity: 0.5;
+  }
+  
 
 /* Attendance Modal overlay styling */
 #attendance-overlay {
@@ -468,10 +489,12 @@ a.material-icons.nextprev:hover {
     height: 80%;
     background-color: #fff;
     border-radius: 5px;
-    padding: 20px;
+    padding: 0px 8px 8px 8px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     position: relative;
     overflow: auto;
+    max-height : 80vh;   /* keeps the pop‑over from growing off‑screen     */
+
 }
 
 /* Close button styling within the popover */
@@ -505,9 +528,16 @@ a.material-icons.nextprev:hover {
 #attendanceMatrixContainer #attendanceMatrixTable thead th {
     background: #f2f2f2;
     text-align: center;
-    padding: 8px;
+    padding: 0px 8px 8px 8px;
+    min-width: 75px;
     border-radius: 6px;
     vertical-align: middle;
+    white-space:pre-line;   /* honour \n as real line‑breaks */
+    position: sticky;       /* Freezes the header */
+    top: 0;             /* NEW – pin to the top edge of the scroll‑frame   */
+    z-index: 100;         /* NEW – sit above the body cells while scrolling */
+    box-shadow: 0 2px 5px rgba(0,0,0,.08);   /* nice visual edge – optional */
+
 }
 
 #attendanceMatrixContainer #attendanceMatrixTable td {
@@ -515,6 +545,26 @@ a.material-icons.nextprev:hover {
     padding: 0;
     vertical-align: middle;
 }
+
+/* light green → transparent */
+#attendanceMatrixContainer #attendanceMatrixTable thead
+th.overall-sort-asc:hover{
+    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+    filter: brightness(0.95);
+    cursor:pointer;
+}
+
+
+
+/* light red → transparent */
+#attendanceMatrixContainer #attendanceMatrixTable thead
+th.overall-sort-desc:hover{
+    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+    filter: brightness(0.95);
+    cursor:pointer;
+}
+
+
 
 /* Attendance cell content with hover effect */
 .attendanceMatrixCellContent {
@@ -549,8 +599,10 @@ a.material-icons.nextprev:hover {
     padding: 6px 10px;
     border-radius: 4px;
     font-size: 12px;
-    z-index: 999;
-    white-space: nowrap;
+    z-index: 106;
+    max-width: 320px;        /* raise the ceiling (or use width:auto)   */
+    min-width: 160px;        /* optional – keeps it from becoming tiny  */
+    white-space:pre-line;   /* honour \n as real line‑breaks */
 }
 .attendanceMatrixCellContent:hover .attendanceMatrixTooltip {
     display: block;
@@ -559,6 +611,8 @@ a.material-icons.nextprev:hover {
     transform: scale(1.15);
     box-shadow: 0 6px 15px rgba(0,0,0,0.15);
     filter: brightness(0.95);
+    z-index: 105;                /* higher than the header (100) */
+
 }
 .attendanceMatrixCellContent:hover::before {
     opacity: 1;
@@ -572,6 +626,9 @@ a.material-icons.nextprev:hover {
     padding: 16px;
     border: 1px solid transparent;
     cursor: pointer;
+    position: relative;     /* new stacking context */
+    z-index: 1;             /* lower than 100, higher than default */
+
 }
 .attendanceMatrixCellContent_studentName:hover {
     box-shadow: 0 6px 15px rgba(0,0,0,0.15);

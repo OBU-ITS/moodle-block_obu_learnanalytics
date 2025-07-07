@@ -32,7 +32,7 @@ function build_attendance_table(array $tree): string
     foreach ($tree as $stuNo => $stu) {
         $sName = $stu['student_name'] ?? '';
         foreach ($stu as $semKey => $semVal) {
-            if (in_array($semKey, ['student_person_id', 'student_name'])) continue;
+            if (in_array($semKey, ['person_id', 'student_name'])) continue;
             foreach ($semVal['weeks'] as $weekNo => $weekVal) {
                 foreach ($weekVal as $modId => $modVal) {
                     foreach ($modVal['sessions'] as $sess) {
@@ -62,7 +62,7 @@ function convert_to_matrix(array $tree): array
         $weekBlock = [];
 
         foreach ($stu as $semKey => $semVal) {
-            if (in_array($semKey, ['student_person_id', 'student_name'])) continue;
+            if (in_array($semKey, ['person_id', 'student_name'])) continue;
             // ── only keep Semester 1 for now ───────────────────────────────
             if ($semKey !== 'Semester 1') continue;
 

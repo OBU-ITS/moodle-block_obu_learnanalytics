@@ -65,7 +65,7 @@ switch ($studentNumber) {
         //$summaryMessage .= "   <a href='javascript:clearSSC() class='link-right''>Clear</a>";
         $summaryMessage .= "
                 <button onclick='collapseTutor()' class='link-right dashboardCloseButton'>
-                    <i class='fa-solid fa fa-close'><b>Close</b></i>
+                    <i class='fa-solid fa fa-close'><b> Close</b></i>
                 </button>";
     
 

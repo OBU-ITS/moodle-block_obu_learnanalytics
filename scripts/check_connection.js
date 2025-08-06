@@ -5,9 +5,30 @@ function check_connection() {
 
     return $.ajax({
         type: 'POST',
-        url: "../blocks/obu_learnanalytics/check_connection.php"
+        url: "../blocks/obu_learnanalytics/check_connection.php",
+        dataType: 'json'
+
     })
     .then(function(resp) {
+        if (!resp || typeof resp.success === 'undefined') {
+            console.error('Unexpected payload:', resp);
+            $('#obula_cc_errordiv')
+                .html('Unexpected response from server; check browser console.')
+                .show();
+            // re-enable buttons so the user can try again
+            $('#obula_show_pgm, #obula_show_stud_pgm, #obula_show_advisees').prop('disabled', false);
+            return $.Deferred().reject().promise();
+        }
+
+        if (resp.success === false) {
+            const err = resp.ccStatus || {};
+            $('#obula_cc_errordiv')
+                .html((err.problemMessageSml || 'Connection failed') + (err.popup || ''))
+                .show();
+            $('#obula_show_pgm, #obula_show_stud_pgm, #obula_show_advisees').prop('disabled', false);
+            return $.Deferred().reject(err).promise();
+        }
+
         if (resp.ccStatus.Status === "OK") {
             $('#obula_cc_errordiv').hide();
             $('#obula_show_pgm').prop("disabled", false);
@@ -31,5 +52,10 @@ function check_connection() {
         alert('check_connection post failed:' + errorThrown);
         // Optionally, reject the promise here as well.
         return $.Deferred().reject(errorThrown).promise();
-    });
+    }).fail(function(jqXHR, textStatus, errorThrown) {
+        // network or parse error
+        alert('Connection check failed: ' + errorThrown);
+        $('#obula_show_pgm, #obula_show_stud_pgm, #obula_show_advisees').prop('disabled', false);
+        return $.Deferred().reject(errorThrown).promise();
+    });;
 }

@@ -95,6 +95,10 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         
         $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=1.12.6');
         $outScripts = html_writer::script(null, $scriptUrl);
+        
+        // Bootstrap needed for our tooltip functionality
+        $scriptUrl = new moodle_url('https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js');
+        $outScripts .= html_writer::script(null, $scriptUrl);
         $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/staff_dashboard.js?version=1.12.6');
         $outScripts .= html_writer::script(null, $scriptUrl);
         $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/check_connection.js?version=1.12.6');
@@ -467,7 +471,6 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         // Now the main one that we always want to load
         $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/tutor_grid.js?version=1.12.6');
         $outScripts .= html_writer::script(null, $scriptUrl);
-
 
 
         // So now output some selection and sorting criteria

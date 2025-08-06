@@ -199,7 +199,7 @@ function renderChart(chart_type, studentName) {
   
       $.ajax({
         type: 'POST',
-        url: M.cfg.wwwroot + '/blocks/obu_learnanalytics/students_graph_v2.php',
+        url: '../blocks/obu_learnanalytics/students_graph_v2.php',
         data: data,
         dataType: 'json',
         success: function (res) {

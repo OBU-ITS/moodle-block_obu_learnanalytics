@@ -34,7 +34,7 @@ $summaryMessage = "<span class='tutor-title' id='obula_title'>Learning Analytics
 
 $summaryMessage .= "
 <button onclick='collapseTutor()' class='link-right dashboardCloseButton'>
-    <i class='fa-solid fa fa-close'><b>Close</b></i>
+    <i class='fa-solid fa fa-close'><b> Close</b></i>
 </button>";
 
 

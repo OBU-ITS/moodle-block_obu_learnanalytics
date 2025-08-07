@@ -182,7 +182,8 @@ function tutor_grid_done(fromReadyEvent, res, programme, modLevel, studentNumber
 function renderChart(chart_type, studentName) {
     return new Promise((resolve, reject) => {
       var currentWeek = $("#obula_currentweek").val() || "";
-  
+      var wwwroot = M.cfg && M.cfg.wwwroot || '';
+
       var chart_style = null;
       if (chart_type.includes('_')) {
         chart_style = chart_type.split('_')[1];
@@ -196,10 +197,10 @@ function renderChart(chart_type, studentName) {
         currentWeek: currentWeek,
         chartType: chart_type
       };
-  
+
       $.ajax({
         type: 'POST',
-        url: '../blocks/obu_learnanalytics/students_graph_v2.php',
+        url: wwwroot +'/blocks/obu_learnanalytics/students_graph_v2.php',
         data: data,
         dataType: 'json',
         success: function (res) {

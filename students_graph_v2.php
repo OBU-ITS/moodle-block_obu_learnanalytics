@@ -1,7 +1,6 @@
 <?php
 define('AJAX_SCRIPT', true);
 require_once(__DIR__ . '/../../config.php');
-$PAGE->set_url('/blocks/obu_learnanalytics/students_graph_v2.php');
 header('Content-Type: application/json; charset=UTF-8');
 
 try {

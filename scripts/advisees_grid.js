@@ -149,15 +149,15 @@ function renderAttendanceMatrix(semester, person_number) {
     overlay.appendChild(popover);
     document.body.appendChild(overlay);
     $('#obula_launch_attendance_matrix').addClass('disabled');
-
+    var wwwroot = M.cfg && M.cfg.wwwroot || '';
 
     var data = {
-        "semester": '000000', "username": '1931312'
+        "semester": '202409', "username": '1343801'
     };
 
     $.ajax({
         type: 'POST',
-        url: '../blocks/obu_learnanalytics/advisees_matrix.php',
+        url: wwwroot +'/blocks/obu_learnanalytics/advisees_matrix.php',
         data: data,
         dataType: 'json'
     })
@@ -166,12 +166,13 @@ function renderAttendanceMatrix(semester, person_number) {
             $('#attendanceMatrixContainer').html(res.html);
             return;
         }
-    
         _matrixDataCache = res.data;          // 🔹 cache raw data
         buildAttendanceMatrix(res.data);                     // existing JS
     })
     .fail(function (_, __, err) {
-        alert('Advisees Matrix Failed: ' + err);
+          console.error('HTTP', jqXHR.status, textStatus, errorThrown);
+            console.error('Response:', jqXHR.responseText);
+            alert('Advisees Matrix Failed: ' + errorThrown);
     });
     
 }

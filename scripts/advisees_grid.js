@@ -387,7 +387,6 @@ function buildAttendanceMatrix() {
     });
 
     table.appendChild(tbody);
-    console.log(_matrixDataCache);
     $('#attendance-overlay').show();
     $('#obula_launch_attendance_matrix').removeClass('disabled');
 

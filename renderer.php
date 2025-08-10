@@ -89,7 +89,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
      * New dashboard for all staff, SSCs, Tutors, Module leads and ??
      * NOT students
      */
-    public function staff_dashboard_summary()
+    public function staff_dashboard_summary($studentNumber)
     {
 
         
@@ -196,7 +196,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         if ($advisees != "0") {
             $temp = get_string("show-advisees", 'block_obu_learnanalytics');
             $temp_hint = get_string("show-advisees-hint", 'block_obu_learnanalytics');
-            $atts = array("type" => "button", "value" => $temp, "title" => $temp_hint, "class" => "summ-show-button", "id" => "obula_show_advisees", "onclick" => "showAdvisees('Show')");
+            $atts = array("type" => "button", "value" => $temp, "title" => $temp_hint, "class" => "summ-show-button", "id" => "obula_show_advisees", "onclick" => "showAdvisees('Show', '$studentNumber')");
             $advisee_button_html = html_writer::empty_tag($tag_name, $atts);
         }
         // Values for boxes
@@ -308,11 +308,11 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
      *
      * @return html
      */
-    public function advisor_dashboard()
+    public function advisor_dashboard($advisorStaffNumber)
     {
         $out = '';
         $out .= html_writer::start_tag("div");
-        $out .= self::advisees_grid();
+        $out .= self::advisees_grid($advisorStaffNumber);
         $out .= html_writer::end_tag("div");
 
         $out .= html_writer::empty_tag("br");
@@ -335,7 +335,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
      * @see ?? for the expected structure
      * @return string
      */
-    public function advisees_grid()
+    public function advisees_grid($staffNumber)
     {
         $util_dates = new \block_obu_learnanalytics\util\date_functions();
         $curl_common = new \block_obu_learnanalytics\guzzle\common();
@@ -363,22 +363,22 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         // ******* Placeholder for a later release ******* //
 
         // Build the URL for the image using Moodle's base URL.
-        // $imgurl = $CFG->wwwroot . '/blocks/obu_learnanalytics/pix/attendance_matrix.png';
-        // $img = html_writer::empty_tag('img', array(
-        //     'src'    => $imgurl,
-        //     'alt'    => 'Attendance Matrix Icon',
-        //     'title'  => 'View Attendance Matrix',  // Tooltip text.
-        //     'width'  => 50,
-        //     'height' => 50,
-        // ));
+        $imgurl = $CFG->wwwroot . '/blocks/obu_learnanalytics/pix/attendance_matrix.png';
+        $img = html_writer::empty_tag('img', array(
+            'src'    => $imgurl,
+            'alt'    => 'Attendance Matrix Icon',
+            'title'  => 'View Attendance Matrix',  // Tooltip text.
+            'width'  => 50,
+            'height' => 50,
+        ));
 
         // Wrap the image element in a div container
-        // $outParams .= html_writer::tag('div', $img, array(
-        //     'id'    => 'obula_launch_attendance_matrix',
-        //     'class' => 'parameters',
-        //     'onclick' => 'renderAttendanceMatrix();'
+        $outParams .= html_writer::tag('div', $img, array(
+            'id'    => 'obula_launch_attendance_matrix',
+            'class' => 'parameters',
+            'onclick' => "renderAttendanceMatrix('{$semester}','{$student}');"
 
-        // ));
+        ));
 
         $outParams .= html_writer::end_tag('div');
 

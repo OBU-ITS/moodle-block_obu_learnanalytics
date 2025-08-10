@@ -74,7 +74,7 @@ function showAdvisees(mode) {
     if (mode != 'Back') {
         var tnode = event.target;
     }
-
+    var wwwroot = M.cfg && M.cfg.wwwroot || '';
 
 
     check_connection()
@@ -87,7 +87,7 @@ function showAdvisees(mode) {
         // Ajax call re-written to use later .done/.fail functionality in case we need promises later
         $.ajax({
             type: 'POST',
-            url: "../blocks/obu_learnanalytics/show_advisees.php",
+            url: wwwroot + '/blocks/obu_learnanalytics/show_advisees.php',
             // data: data,
             beforeSend: function () {
                 $("#obula_error_row").hide();
@@ -96,11 +96,14 @@ function showAdvisees(mode) {
             .done(function (resp) {
                 // So we can get errors and successes back
                 //debugger;
+                console.log('HI')
+                console.log(resp)
                 if (resp.success) {
                     if (mode != 'Back') {
                         takeOverPage(tnode);
                         $("#obula_staff_heading").hide();
                     }
+                    console.log('YEP')
                     $('#obula_summary_cell').html(resp.summaryhtml);
                     $("#obula_summary_row").show();
                     $('#obula_dash_div').html(resp.dashboardhtml);
@@ -358,6 +361,7 @@ function showDateControls(option = 'getcurrent', dashboardFor = "Tutor", semeste
                         switch (dashboardFor) {
                             case "Tutor":
                                 $('#obula_semester_control_cell').html(resp.semesterControl);
+                                console.log(resp.semesterControl)
                                 break;
                             case "Advisor":
                                 $('#obula_semester_control_cell').html(resp.semesterControl);
@@ -505,19 +509,21 @@ function takeOverPage(tnode) {
 
 
             function handleContainerScroll() {
-                const scrollY = newParent.scrollTop;
-                const scrollableHeight = newParent.scrollHeight - newParent.clientHeight;
+                const scrollY = window.scrollY || document.documentElement.scrollTop;
+                const scrollableHeight =
+                    document.documentElement.scrollHeight - window.innerHeight;
                 const scrolledPercent = (scrollY / scrollableHeight) * 100;
-                
+
                 if (scrolledPercent > 5) {
-                scrollUp.style.display = "flex";
+                    scrollUp.style.display = "flex";
                 } else {
-                scrollUp.style.display = "none";
+                    scrollUp.style.display = "none";
                 }
             }
 
+
             // Listen to the window's scroll event
-            newParent.addEventListener("scroll", handleContainerScroll);
+            window.addEventListener("scroll", handleContainerScroll);
 
             // Also run it once on load, to handle the case
             // where the user might refresh mid-page

@@ -17,7 +17,6 @@ $laRole = $util_odds->get_la_role("TUTOR");    // Protects against attacks, wron
 // Click event posts the request so we can pick up parameters from the data
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Pick up any data if passed
-    $advisorStaffNumber = $_POST["studentNumber"]; // In JSON
 } else {
     exit("Brookes Learning Analytics - GET not supported");
 }
@@ -43,7 +42,7 @@ $summaryMessage .= "
 // Now let's get the renderer class so I can call functions from it
 $renderer = $PAGE->get_renderer('block_obu_learnanalytics');
 try {
-    $dashboard = $renderer->advisor_dashboard($advisorStaffNumber);
+    $dashboard = $renderer->advisor_dashboard();
 } catch (\Exception $ex) {
     header('HTTP/1.0 500 Internal Server Error');
     echo json_encode(array('success' => false, 'dashboardhtml' => 'BIGGG Bang :)'));

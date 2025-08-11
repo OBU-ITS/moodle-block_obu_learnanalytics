@@ -773,6 +773,17 @@ function eLibDownloadSizeLineChart(data, studentName) {
 }
 
 
+
+// **************************************************************
+// ************** Attendance Matrix
+// **************************************************************
+function AttendanceByModuleBarChart(data, studentName) {
+    test = attByModUnifiedDataFormat(data[studentName]);
+    console.log(data)
+    console.log(test);
+}
+
+
 /**
  * Flatten "Modules" + "GraphData" into an object-of-arrays for easy Chart.js usage.
  * 
@@ -838,6 +849,53 @@ function modgraphdataUnifiedDataFormat(data) {
     return unified_data;
 }
 
+function attByModUnifiedDataFormat(studentData) {
+    if (!studentData) return null;
+
+    // Find semester key
+    const semesterKey = Object.keys(studentData).find(k => /^\d+$/.test(k));
+    if (!semesterKey || !studentData[semesterKey]?.weeks) return null;
+
+    const weeks = studentData[semesterKey].weeks;
+
+    // Build Modules list from all weeks
+    const modulesData = {};
+    Object.values(weeks).forEach(weekObj => {
+        Object.entries(weekObj).forEach(([modId, modVal]) => {
+            modulesData[modId] = { course_fullname: modVal.module_name };
+        });
+    });
+
+    // Build GraphData structure
+    const graphData = {};
+    Object.entries(weeks).forEach(([weekNo, weekObj]) => {
+        const firstDay = null; // optional if you have real week start date
+        const year = studentData[semesterKey].academic_year || null;
+        
+        const modulesWeek = {};
+        Object.entries(weekObj).forEach(([modId, modVal]) => {
+            let attended = 0;
+            let missed = 0;
+            modVal.sessions.forEach(s => {
+                attended += s.attended || 0;
+                missed += s.non_attended || 0;
+            });
+            modulesWeek[modId] = {
+                attended_total: attended,
+                missed_total: missed
+            };
+        });
+
+        graphData[`week_${weekNo}`] = {
+            first_day_week: firstDay,
+            year: year,
+            week_number: parseInt(weekNo, 10),
+            modules: modulesWeek
+        };
+    });
+
+    return { Modules: modulesData, GraphData: graphData };
+}
 
 
 
@@ -882,7 +940,7 @@ function chartHandler(res, chart_type, studentName, chart_style) {
     const studentChartEngagementByModule = Chart.getChart('studentChartEngagementByModule');
     const studentChartAttendance = Chart.getChart('studentChartAttendance');
     const studentChartELibEngagement = Chart.getChart('studentChartELibEngagement');
-
+    const studentChartAttendanceByModule = Chart.getChart('studentChartAttendanceByModule');
     // If there is a specific chart_style we want then adjust the chart_type
     if(chart_style) {
         chart_type = chart_type + '_' + chart_style
@@ -951,6 +1009,14 @@ function chartHandler(res, chart_type, studentName, chart_style) {
                 studentChartELibEngagement.destroy();
             }
             eLibDownloadSizeLineChart(res, studentName);
+            break;
+
+        // **** Attendance Matrix ****/
+        case 'attbymod':
+            if (studentChartAttendanceByModule) {
+                studentChartAttendanceByModule.destroy();
+            }
+            AttendanceByModuleBarChart(res, studentName);
             break;
         default:
             console.warn(`Unknown chart_type: ${chart_type}`);

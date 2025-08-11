@@ -86,21 +86,18 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit('Brookes Learning Analytics - GET not supported for tutor grid');
 }
 
-$currentWeek = $_POST['currentWeek'] ?? '';
 $semester    = $_POST['semester']     ?? '';
-
-$current  = $util_dates->json_2_current_week($currentWeek);
-$semester = $current['semester'];
 
 global $USER;
 $today = new DateTime();
 set_user_preference('obula_last_tutor_grid_date', serialize($today));
 
+
 $success = true;
 try {
-    $params      = "tutor/adviseesmatrix/202501/1343801/";   // adjust if needed
+    $params      = "tutor/adviseesmatrix/$semester/$USER->username/";
     $curl_common = new \block_obu_learnanalytics\guzzle\common();
-    $results     = $curl_common->send_request($params);   // nested structure
+    $results     = $curl_common->send_request($params); 
 } catch (Exception $e) {
     $html    = "<p style='color:red;font-size:150%'>Exception: {$e}</p>";
     $success = false;

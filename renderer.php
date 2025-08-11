@@ -376,7 +376,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         $outParams .= html_writer::tag('div', $img, array(
             'id'    => 'obula_launch_attendance_matrix',
             'class' => 'parameters',
-            'onclick' => "renderAttendanceMatrix('{$semester}','{$student}');"
+            'onclick' => "renderAttendanceMatrix();"
 
         ));
 

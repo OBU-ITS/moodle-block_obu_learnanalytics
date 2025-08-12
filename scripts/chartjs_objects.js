@@ -777,6 +777,7 @@ function eLibDownloadSizeLineChart(data, studentName) {
 // **************************************************************
 // ************** Attendance Matrix
 // **************************************************************
+// Makes use of our dropdown to re-render our object based on if user selects by Module or by Day
 function AttendanceMatrixDetails(id) {
     const d = _matrixDetailsDataCache[String(id)];
     if (!d) return;
@@ -797,7 +798,7 @@ function AttendanceMatrixDetails(id) {
       // ← includes ALL modules, even if missed = 0
       const rows = Array.isArray(d.aggregate?.by_module) ? d.aggregate.by_module : [];
       // choose your label
-      labels   = rows.map(r => r.module_name || r.module_id);
+      labels = rows.map(r => `${r.module_name || r.module_id} (${r.module_id})`);
       attended = rows.map(r => Math.max(0, r.attended || 0));
       missed   = rows.map(r => Math.max(0, r.missed || 0));
     }
@@ -806,30 +807,55 @@ function AttendanceMatrixDetails(id) {
       canvas.replaceWith($(`<div style="padding:12px;">No sessions recorded.</div>`)[0]);
       return;
     }
-
     _attendanceCharts[id] = new Chart(canvas.getContext('2d'), {
-      type: 'bar',
-      data: {
+    type: 'bar',
+    data: {
         labels,
         datasets: [
-          { label: 'Attended', data: attended },
-          { label: 'Missed',   data: missed }
+        {
+            label: 'Attended',
+            data: attended,
+            backgroundColor: '#9daa23',
+            borderColor: '#9daa23'
+        },
+        {
+            label: 'Missed',
+            data: missed,
+            backgroundColor: '#bf2343',
+            borderColor: '#bf2343'
+        }
         ]
-      },
-      options: {
+    },
+    options: {
         responsive: true,
         maintainAspectRatio: false,
         indexAxis: 'y',
         scales: {
-          x: { stacked: true, beginAtZero: true, title: { display: true, text: 'Sessions' } },
-          y: { stacked: true }
+        x: { 
+            stacked: true, 
+            beginAtZero: true, 
+            title: { display: true, text: 'Sessions' } 
         },
-        plugins: { legend: { position: 'bottom' } }
-      }
+        y: { 
+            stacked: true,
+            ticks: {
+            color: '#222',     
+            font: {
+                weight: 'bold',   
+                size: 12    
+            }
+            }
+        }
+        },
+        plugins: {
+        legend: { position: 'bottom' }
+        }
+    }
     });
+
   };
 
-  renderChart('module');
+  renderChart('module'); // Default render by module
   $(`#attModFilter-${id}`).on('change', function () {
     renderChart(this.value === 'day' ? 'day' : 'module');
   });

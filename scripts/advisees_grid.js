@@ -100,7 +100,7 @@ function clickStudentAdvisee(studentNumber) {
 
 // function semesterChanged() {
 //     if (gridLoading) { return };
-//     unClickStudent();
+//     // unClickStudent();
 //     var element = document.getElementById("selSemester");
 //     if (element != null) {
 //         var semester = element.value;
@@ -152,7 +152,7 @@ function renderAttendanceMatrix() {
     $('#obula_launch_attendance_matrix').addClass('disabled');
     var wwwroot = M.cfg && M.cfg.wwwroot || '';
     var data = {
-        "semester": '202409'
+        "semester": semester
     };
 
     $.ajax({
@@ -164,6 +164,9 @@ function renderAttendanceMatrix() {
     .done(function (res) {
         if (!res.success) {
             $('#attendanceMatrixContainer').html(res.html);
+            $('#attendanceMatrixContainer').append('<div>There is currently no data available for this semester.</div>');
+            $('#attendance-overlay').show();
+            $('#obula_launch_attendance_matrix').removeClass('disabled');
             return;
         }
         _matrixDataCache = res.data;          // 🔹 cache raw data
@@ -189,9 +192,8 @@ var _matrixDataCache = null;        // holds the raw matrix JSON
 var _overallSortAsc  = true;        // current sort direction
 function AttendanceMatrix() {
 
-    if (!_matrixDataCache) return;          // nothing to build yet
+    if (!_matrixDataCache);          // nothing to build yet
     const studentData = _matrixDataCache;
-
     /* ─── 0. clear any previous table ─────────────────────────────── */
     const table = document.getElementById('attendanceMatrixTable');
     table.innerHTML = '';

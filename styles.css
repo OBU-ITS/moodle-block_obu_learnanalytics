@@ -408,7 +408,7 @@ a.material-icons.nextprev:hover {
 /* Styles for the scroll up button */
 #obu_learnanalytics_scrollup {
     /* Positioning */
-    position: absolute;
+    position: fixed;
     top: 10%;
     left: 50%;
     transform: translateX(-50%);

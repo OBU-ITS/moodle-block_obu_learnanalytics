@@ -100,7 +100,7 @@ function clickStudentAdvisee(studentNumber) {
 
 // function semesterChanged() {
 //     if (gridLoading) { return };
-//     unClickStudent();
+//     // unClickStudent();
 //     var element = document.getElementById("selSemester");
 //     if (element != null) {
 //         var semester = element.value;
@@ -115,7 +115,7 @@ function clickStudentAdvisee(studentNumber) {
  * passing the provided data.
  *
  */
-function renderAttendanceMatrix(semester, person_number) {
+function renderAttendanceMatrix() {
     // Create the overlay element (modal background)
     var overlay = document.createElement('div');
     overlay.id = 'attendance-overlay';
@@ -144,34 +144,39 @@ function renderAttendanceMatrix(semester, person_number) {
     // Add a heading and an empty table that will be populated by our matrix builder.
     matrixContainer.innerHTML = "<h3>Attendance Matrix</h3><table id='attendanceMatrixTable'></table>";
     popover.appendChild(matrixContainer);
-    
+    // Grab the semester from the selected dropdown
+    semester = document.getElementById('selSemester').value;
     // Append the popover to the overlay and the overlay to the document body.
     overlay.appendChild(popover);
     document.body.appendChild(overlay);
     $('#obula_launch_attendance_matrix').addClass('disabled');
-
-
+    var wwwroot = M.cfg && M.cfg.wwwroot || '';
     var data = {
-        "semester": '000000', "username": '1931312'
+        "semester": semester
     };
 
     $.ajax({
         type: 'POST',
-        url: '../blocks/obu_learnanalytics/advisees_matrix.php',
+        url: wwwroot +'/blocks/obu_learnanalytics/advisees_matrix.php',
         data: data,
         dataType: 'json'
     })
     .done(function (res) {
         if (!res.success) {
             $('#attendanceMatrixContainer').html(res.html);
+            $('#attendanceMatrixContainer').append('<div>There is currently no data available for this semester.</div>');
+            $('#attendance-overlay').show();
+            $('#obula_launch_attendance_matrix').removeClass('disabled');
             return;
         }
-    
         _matrixDataCache = res.data;          // 🔹 cache raw data
-        buildAttendanceMatrix(res.data);                     // existing JS
+        _matrixDetailsDataCache = res.matrixdetails;          // 🔹 cache details raw data
+        AttendanceMatrix(); 
     })
     .fail(function (_, __, err) {
-        alert('Advisees Matrix Failed: ' + err);
+          console.error('HTTP', jqXHR.status, textStatus, errorThrown);
+            console.error('Response:', jqXHR.responseText);
+            alert('Advisees Matrix Failed: ' + errorThrown);
     });
     
 }
@@ -185,11 +190,10 @@ function renderAttendanceMatrix(semester, person_number) {
  */
 var _matrixDataCache = null;        // holds the raw matrix JSON
 var _overallSortAsc  = true;        // current sort direction
-function buildAttendanceMatrix() {
+function AttendanceMatrix() {
 
-    if (!_matrixDataCache) return;          // nothing to build yet
+    if (!_matrixDataCache);          // nothing to build yet
     const studentData = _matrixDataCache;
-
     /* ─── 0. clear any previous table ─────────────────────────────── */
     const table = document.getElementById('attendanceMatrixTable');
     table.innerHTML = '';
@@ -264,7 +268,7 @@ function buildAttendanceMatrix() {
     /* toggle & rebuild on click */
     overallTh.onclick = () => {
         _overallSortAsc = !_overallSortAsc;   // flip direction
-        buildAttendanceMatrix();              // rebuild table
+        AttendanceMatrix();              // rebuild table
     };
     
     headerRow.appendChild(overallTh);
@@ -302,6 +306,7 @@ function buildAttendanceMatrix() {
 
         const progSpan = document.createElement('span');
         progSpan.textContent = `(${st.studentProgramme})`;
+        progSpan.style.fontSize = '12px'
         progSpan.style.display = 'block';
 
         const arrowSpan = document.createElement('span');
@@ -374,8 +379,8 @@ function buildAttendanceMatrix() {
                 detDiv.style.maxHeight = '0';
                 arrowSpan.innerHTML = '<i class="fa-solid fa fa-angle-down"></i>';
             } else {
-                renderDetailsContent(st.studentId);
-                detDiv.style.maxHeight = '200px';
+                renderAttendanceMatrixDetails(st.studentId);
+                detDiv.style.maxHeight = '80%';
                 arrowSpan.innerHTML = '<i class="fa-solid fa fa-angle-up"></i>';
             }
         };
@@ -398,10 +403,45 @@ function buildAttendanceMatrix() {
     }
 }
 
-function renderDetailsContent(id) {
-    // Temp function for rendering stuff inside our detail collapsible section
-    $(`.obula_att_matrix_row_details_${id} .detailsContainer`)
-        .html(`<p style="text-align:center;">Student Number: ${id}</p>`);
+// Details drop down section where we use some chartjs graphs and show extra information
+var _matrixDetailsDataCache = null;
+window._attendanceCharts = window._attendanceCharts || {};
+function renderAttendanceMatrixDetails (id) {
+    const $container = $(`.obula_att_matrix_row_details_${id} .detailsContainer`);
+    if (!$container.length || !_matrixDetailsDataCache) return;
+
+    const d = _matrixDetailsDataCache[String(id)];
+    if (!d) return;
+
+    $container.html(`
+        <div class="obula-details-grid" style="display:flex;max-width:900px;gap:20px;margin:0 auto;">
+        <div class="obula-details-left" style="flex:0 0 30%;">
+            <dl class="obula-kv" style="margin:0;">
+            <dt>Student Number</dt><dd>${(d.student_number || id)}</dd>
+            <dt>Name</dt><dd>${(d.name || 'Unknown')}</dd>
+            <dt>Programme</dt><dd>${(d.programme || 'Unknown programme')}</dd>
+            </dl>
+        </div>
+
+        <div class="obula-details-right" style="flex:1;">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+            <label for="attModFilter-${id}" style="display:flex; align-items:center; gap:8px;">
+                <span style="font-weight:600;">Filter:</span>
+                <select id="attModFilter-${id}" style="min-width:200px; padding:6px 8px;">
+                <option value="module" selected>By Module</option>
+                <option value="day">By Day</option>
+                </select>
+            </label>
+            </div>
+
+            <div id="studentAttendanceByModuleContainer-${id}"
+                style="width:100%; height:320px; display:flex; justify-content:left; align-items:stretch;">
+            <canvas id="studentChartAttendanceByModule-${id}" style="display:block; width:100%; height:100%;"></canvas>
+            </div>
+        </div>
+        </div>
+    `);
+    chartHandler(null, 'attbymod', id, null)
 }
 
 

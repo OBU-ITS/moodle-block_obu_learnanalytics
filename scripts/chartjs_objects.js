@@ -773,6 +773,97 @@ function eLibDownloadSizeLineChart(data, studentName) {
 }
 
 
+
+// **************************************************************
+// ************** Attendance Matrix
+// **************************************************************
+// Makes use of our dropdown to re-render our object based on if user selects by Module or by Day
+function AttendanceMatrixDetails(id) {
+    const d = _matrixDetailsDataCache[String(id)];
+    if (!d) return;
+  const renderChart = (mode) => {
+    const canvas = document.getElementById(`studentChartAttendanceByModule-${id}`);
+    if (!canvas || typeof Chart === 'undefined') return;
+    if (_attendanceCharts[id]) _attendanceCharts[id].destroy();
+
+    let labels = [], attended = [], missed = [];
+
+    if (mode === 'day') {
+      const order = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun','Unknown'];
+      const byDay = d.aggregate?.by_day || {};
+      labels   = order.filter(k => k in byDay);
+      attended = labels.map(k => byDay[k].attended || 0);
+      missed   = labels.map(k => byDay[k].missed || 0);
+    } else {
+      // ← includes ALL modules, even if missed = 0
+      const rows = Array.isArray(d.aggregate?.by_module) ? d.aggregate.by_module : [];
+      // choose your label
+      labels = rows.map(r => `${r.module_name || r.module_id} (${r.module_id})`);
+      attended = rows.map(r => Math.max(0, r.attended || 0));
+      missed   = rows.map(r => Math.max(0, r.missed || 0));
+    }
+
+    if (!labels.length) {
+      canvas.replaceWith($(`<div style="padding:12px;">No sessions recorded.</div>`)[0]);
+      return;
+    }
+    _attendanceCharts[id] = new Chart(canvas.getContext('2d'), {
+    type: 'bar',
+    data: {
+        labels,
+        datasets: [
+        {
+            label: 'Attended',
+            data: attended,
+            backgroundColor: '#9daa23',
+            borderColor: '#9daa23'
+        },
+        {
+            label: 'Missed',
+            data: missed,
+            backgroundColor: '#bf2343',
+            borderColor: '#bf2343'
+        }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: 'y',
+        scales: {
+        x: { 
+            stacked: true, 
+            beginAtZero: true, 
+            title: { display: true, text: 'Sessions' } 
+        },
+        y: { 
+            stacked: true,
+            ticks: {
+            color: '#222',     
+            font: {
+                weight: 'bold',   
+                size: 12    
+            }
+            }
+        }
+        },
+        plugins: {
+        legend: { position: 'bottom' }
+        }
+    }
+    });
+
+  };
+
+  renderChart('module'); // Default render by module
+  $(`#attModFilter-${id}`).on('change', function () {
+    renderChart(this.value === 'day' ? 'day' : 'module');
+  });
+}
+
+
+
+
 /**
  * Flatten "Modules" + "GraphData" into an object-of-arrays for easy Chart.js usage.
  * 
@@ -838,9 +929,6 @@ function modgraphdataUnifiedDataFormat(data) {
     return unified_data;
 }
 
-
-
-
 /**
  * Convert an object-of-objects into an object
  * whose keys are property names and values are arrays.
@@ -882,7 +970,7 @@ function chartHandler(res, chart_type, studentName, chart_style) {
     const studentChartEngagementByModule = Chart.getChart('studentChartEngagementByModule');
     const studentChartAttendance = Chart.getChart('studentChartAttendance');
     const studentChartELibEngagement = Chart.getChart('studentChartELibEngagement');
-
+    const studentChartAttendanceByModule = Chart.getChart('studentChartAttendanceByModule');
     // If there is a specific chart_style we want then adjust the chart_type
     if(chart_style) {
         chart_type = chart_type + '_' + chart_style
@@ -951,6 +1039,14 @@ function chartHandler(res, chart_type, studentName, chart_style) {
                 studentChartELibEngagement.destroy();
             }
             eLibDownloadSizeLineChart(res, studentName);
+            break;
+
+        // **** Attendance Matrix ****/
+        case 'attbymod':
+            if (studentChartAttendanceByModule) {
+                studentChartAttendanceByModule.destroy();
+            }
+            AttendanceMatrixDetails(studentName);
             break;
         default:
             console.warn(`Unknown chart_type: ${chart_type}`);

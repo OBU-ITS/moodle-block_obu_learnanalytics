@@ -350,7 +350,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
 
 
         $outParams = html_writer::start_tag('div');
-        $outParams = html_writer::start_tag('div', array("id" => "obula_control_params_parent", "class" => "parameters", style => "display: flex; align-items: center;"));
+        $outParams = html_writer::start_tag('div', array("id" => "obula_control_params_parent", "class" => "parameters", "style" => "display: flex; align-items: center;"));
 
         $outParams .= html_writer::start_tag('table id=obula-advisee-params-grid');
         // Placeholder for date_controls.php
@@ -376,7 +376,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         $outParams .= html_writer::tag('div', $img, array(
             'id'    => 'obula_launch_attendance_matrix',
             'class' => 'parameters',
-            'onclick' => "renderAttendanceMatrix('{$semester}','{$student}');"
+            'onclick' => "renderAttendanceMatrix();"
 
         ));
 

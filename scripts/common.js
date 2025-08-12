@@ -87,7 +87,7 @@ function showAdvisees(mode) {
         // Ajax call re-written to use later .done/.fail functionality in case we need promises later
         $.ajax({
             type: 'POST',
-            url: wwwroot + '/blocks/obu_learnanalytics/show_advisees.php',
+            url: wwwroot +'/blocks/obu_learnanalytics/show_advisees.php',
             // data: data,
             beforeSend: function () {
                 $("#obula_error_row").hide();
@@ -117,6 +117,8 @@ function showAdvisees(mode) {
                 // only way to trigger a fail is with a non 200 response, 404, 500 etc
                 // but that seems extreme for a simple validation
                 // So reserving this for exceptions
+
+
                 alert('showAdvisees exception\\n' + errorThrown);
             })
             // .always(function(resp) {

@@ -777,11 +777,65 @@ function eLibDownloadSizeLineChart(data, studentName) {
 // **************************************************************
 // ************** Attendance Matrix
 // **************************************************************
-function AttendanceByModuleBarChart(data, studentName) {
-    test = attByModUnifiedDataFormat(data[studentName]);
-    console.log(data)
-    console.log(test);
+function AttendanceMatrixDetails(id) {
+    const d = _matrixDetailsDataCache[String(id)];
+    if (!d) return;
+  const renderChart = (mode) => {
+    const canvas = document.getElementById(`studentChartAttendanceByModule-${id}`);
+    if (!canvas || typeof Chart === 'undefined') return;
+    if (_attendanceCharts[id]) _attendanceCharts[id].destroy();
+
+    let labels = [], attended = [], missed = [];
+
+    if (mode === 'day') {
+      const order = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun','Unknown'];
+      const byDay = d.aggregate?.by_day || {};
+      labels   = order.filter(k => k in byDay);
+      attended = labels.map(k => byDay[k].attended || 0);
+      missed   = labels.map(k => byDay[k].missed || 0);
+    } else {
+      // ← includes ALL modules, even if missed = 0
+      const rows = Array.isArray(d.aggregate?.by_module) ? d.aggregate.by_module : [];
+      // choose your label
+      labels   = rows.map(r => r.module_name || r.module_id);
+      attended = rows.map(r => Math.max(0, r.attended || 0));
+      missed   = rows.map(r => Math.max(0, r.missed || 0));
+    }
+
+    if (!labels.length) {
+      canvas.replaceWith($(`<div style="padding:12px;">No sessions recorded.</div>`)[0]);
+      return;
+    }
+
+    _attendanceCharts[id] = new Chart(canvas.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          { label: 'Attended', data: attended },
+          { label: 'Missed',   data: missed }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: 'y',
+        scales: {
+          x: { stacked: true, beginAtZero: true, title: { display: true, text: 'Sessions' } },
+          y: { stacked: true }
+        },
+        plugins: { legend: { position: 'bottom' } }
+      }
+    });
+  };
+
+  renderChart('module');
+  $(`#attModFilter-${id}`).on('change', function () {
+    renderChart(this.value === 'day' ? 'day' : 'module');
+  });
 }
+
+
 
 
 /**
@@ -848,56 +902,6 @@ function modgraphdataUnifiedDataFormat(data) {
 
     return unified_data;
 }
-
-function attByModUnifiedDataFormat(studentData) {
-    if (!studentData) return null;
-
-    // Find semester key
-    const semesterKey = Object.keys(studentData).find(k => /^\d+$/.test(k));
-    if (!semesterKey || !studentData[semesterKey]?.weeks) return null;
-
-    const weeks = studentData[semesterKey].weeks;
-
-    // Build Modules list from all weeks
-    const modulesData = {};
-    Object.values(weeks).forEach(weekObj => {
-        Object.entries(weekObj).forEach(([modId, modVal]) => {
-            modulesData[modId] = { course_fullname: modVal.module_name };
-        });
-    });
-
-    // Build GraphData structure
-    const graphData = {};
-    Object.entries(weeks).forEach(([weekNo, weekObj]) => {
-        const firstDay = null; // optional if you have real week start date
-        const year = studentData[semesterKey].academic_year || null;
-        
-        const modulesWeek = {};
-        Object.entries(weekObj).forEach(([modId, modVal]) => {
-            let attended = 0;
-            let missed = 0;
-            modVal.sessions.forEach(s => {
-                attended += s.attended || 0;
-                missed += s.non_attended || 0;
-            });
-            modulesWeek[modId] = {
-                attended_total: attended,
-                missed_total: missed
-            };
-        });
-
-        graphData[`week_${weekNo}`] = {
-            first_day_week: firstDay,
-            year: year,
-            week_number: parseInt(weekNo, 10),
-            modules: modulesWeek
-        };
-    });
-
-    return { Modules: modulesData, GraphData: graphData };
-}
-
-
 
 /**
  * Convert an object-of-objects into an object
@@ -1016,7 +1020,7 @@ function chartHandler(res, chart_type, studentName, chart_style) {
             if (studentChartAttendanceByModule) {
                 studentChartAttendanceByModule.destroy();
             }
-            AttendanceByModuleBarChart(res, studentName);
+            AttendanceMatrixDetails(studentName);
             break;
         default:
             console.warn(`Unknown chart_type: ${chart_type}`);

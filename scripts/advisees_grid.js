@@ -167,7 +167,8 @@ function renderAttendanceMatrix() {
             return;
         }
         _matrixDataCache = res.data;          // 🔹 cache raw data
-        buildAttendanceMatrix(res.data);                     // existing JS
+        _matrixDetailsDataCache = res.matrixdetails;          // 🔹 cache details raw data
+        AttendanceMatrix(); 
     })
     .fail(function (_, __, err) {
           console.error('HTTP', jqXHR.status, textStatus, errorThrown);
@@ -186,7 +187,7 @@ function renderAttendanceMatrix() {
  */
 var _matrixDataCache = null;        // holds the raw matrix JSON
 var _overallSortAsc  = true;        // current sort direction
-function buildAttendanceMatrix() {
+function AttendanceMatrix() {
 
     if (!_matrixDataCache) return;          // nothing to build yet
     const studentData = _matrixDataCache;
@@ -265,7 +266,7 @@ function buildAttendanceMatrix() {
     /* toggle & rebuild on click */
     overallTh.onclick = () => {
         _overallSortAsc = !_overallSortAsc;   // flip direction
-        buildAttendanceMatrix();              // rebuild table
+        AttendanceMatrix();              // rebuild table
     };
     
     headerRow.appendChild(overallTh);
@@ -303,6 +304,7 @@ function buildAttendanceMatrix() {
 
         const progSpan = document.createElement('span');
         progSpan.textContent = `(${st.studentProgramme})`;
+        progSpan.style.fontSize = '12px'
         progSpan.style.display = 'block';
 
         const arrowSpan = document.createElement('span');
@@ -375,8 +377,8 @@ function buildAttendanceMatrix() {
                 detDiv.style.maxHeight = '0';
                 arrowSpan.innerHTML = '<i class="fa-solid fa fa-angle-down"></i>';
             } else {
-                renderDetailsContent(st.studentId);
-                detDiv.style.maxHeight = '300px';
+                renderAttendanceMatrixDetails(st.studentId);
+                detDiv.style.maxHeight = '80%';
                 arrowSpan.innerHTML = '<i class="fa-solid fa fa-angle-up"></i>';
             }
         };
@@ -399,124 +401,46 @@ function buildAttendanceMatrix() {
     }
 }
 
-// one chart per student
+// Details drop down section where we use some chartjs graphs and show extra information
+var _matrixDetailsDataCache = null;
 window._attendanceCharts = window._attendanceCharts || {};
+function renderAttendanceMatrixDetails (id) {
+    const $container = $(`.obula_att_matrix_row_details_${id} .detailsContainer`);
+    if (!$container.length || !_matrixDetailsDataCache) return;
 
-function renderDetailsContent(id) {
-  const $container = $(`.obula_att_matrix_row_details_${id} .detailsContainer`);
-  if (!$container.length || !_matrixDataCache) return;
+    const d = _matrixDetailsDataCache[String(id)];
+    if (!d) return;
 
-  const stuObj = _matrixDataCache[String(id)];
-  if (!stuObj) return;
-
-  // pull name → programme → week block
-  const nameKey = Object.keys(stuObj)[0];
-  if (!nameKey) return;
-  const progObj = stuObj[nameKey] || {};
-  const progKey = Object.keys(progObj)[0];
-  if (!progKey) return;
-  const weekBlock = progObj[progKey] || {}; // { "Week 1": {attendance_percent, modules_missed}, ... }
-
-  // layout
-  $container.html(`
-    <div class="obula-details-grid" style="display:flex;max-width:900px;gap:20px;margin:0 auto;">
-      <div class="obula-details-left" style="flex:0 0 30%;">
-        <dl class="obula-kv" style="margin:0;">
-          <dt>Student Number</dt><dd>${id}</dd>
-          <dt>Name</dt><dd>${escapeHtml(nameKey)}</dd>
-          <dt>Programme</dt><dd>${escapeHtml(progKey)}</dd>
-        </dl>
-      </div>
-      <div class="obula-details-right" style="flex:1;">
-        <div id="studentAttendanceByModuleContainer-${id}"      style="width:100%; height:300px; display:flex; justify-content:left; align-items:left;">
-
-          <canvas id="studentChartAttendanceByModule-${id}" style="display:block;"></canvas>
+    $container.html(`
+        <div class="obula-details-grid" style="display:flex;max-width:900px;gap:20px;margin:0 auto;">
+        <div class="obula-details-left" style="flex:0 0 30%;">
+            <dl class="obula-kv" style="margin:0;">
+            <dt>Student Number</dt><dd>${(d.student_number || id)}</dd>
+            <dt>Name</dt><dd>${(d.name || 'Unknown')}</dd>
+            <dt>Programme</dt><dd>${(d.programme || 'Unknown programme')}</dd>
+            </dl>
         </div>
-      </div>
-    </div>
-  `);
 
-  // aggregate FROM MATRIX (modules with misses only)
-  const summary = buildModuleCountsFromMatrixWeekBlock(weekBlock);
-  if (!summary.length) {
-    // nothing to chart (likely perfect attendance everywhere)
-    return;
-  }
+        <div class="obula-details-right" style="flex:1;">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+            <label for="attModFilter-${id}" style="display:flex; align-items:center; gap:8px;">
+                <span style="font-weight:600;">Filter:</span>
+                <select id="attModFilter-${id}" style="min-width:200px; padding:6px 8px;">
+                <option value="module" selected>By Module</option>
+                <option value="day">By Day</option>
+                </select>
+            </label>
+            </div>
 
-  const labels = summary.map(x => x.label);
-  const attendedCounts = summary.map(x => x.attended);
-  const missedCounts = summary.map(x => x.missed);
-
-  const canvas = document.getElementById(`studentChartAttendanceByModule-${id}`);
-  if (!canvas || typeof Chart === 'undefined') return;
-
-  if (_attendanceCharts[id]) _attendanceCharts[id].destroy();
-
-  _attendanceCharts[id] = new Chart(canvas.getContext('2d'), {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [
-        { label: 'Attended', data: attendedCounts },
-        { label: 'Missed',   data: missedCounts }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      indexAxis: 'y', // horizontal bars
-      scales: {
-        x: { stacked: true, beginAtZero: true, title: { display: true, text: 'Sessions' } },
-        y: { stacked: true }
-      },
-      plugins: { legend: { position: 'bottom' } }
-    }
-  });
+            <div id="studentAttendanceByModuleContainer-${id}"
+                style="width:100%; height:320px; display:flex; justify-content:left; align-items:stretch;">
+            <canvas id="studentChartAttendanceByModule-${id}" style="display:block; width:100%; height:100%;"></canvas>
+            </div>
+        </div>
+        </div>
+    `);
+    chartHandler(null, 'attbymod', id, null)
 }
-
-// Parse the matrix week block (NOT raw payload)
-// weekBlock = { "Week 1": { modules_missed: { MODID: "missed/total" }, ... }, ... }
-function buildModuleCountsFromMatrixWeekBlock(weekBlock) {
-  const byModule = {}; // MODID -> { total, missed }
-
-  Object.values(weekBlock).forEach(entry => {
-    const mm = entry && entry.modules_missed ? entry.modules_missed : null;
-    if (!mm || typeof mm !== 'object') return;
-
-    Object.entries(mm).forEach(([modId, ratio]) => {
-      // ratio like "2/5"
-      let missed = 0, total = 0;
-      const parts = String(ratio).split('/');
-      if (parts.length === 2) {
-        missed = parseInt(parts[0], 10) || 0;
-        total  = parseInt(parts[1], 10) || 0;
-      }
-      if (!byModule[modId]) byModule[modId] = { total: 0, missed: 0 };
-      byModule[modId].missed += missed;
-      byModule[modId].total  += total;
-    });
-  });
-
-  // build rows
-  const rows = Object.entries(byModule).map(([modId, m]) => ({
-    modId,
-    label: modId, // your module "name" is the BMGT… string
-    attended: Math.max(0, m.total - m.missed),
-    missed: m.missed
-  }));
-
-  // Sort however you prefer
-  rows.sort((a, b) => a.modId.localeCompare(b.modId));
-  return rows;
-}
-
-function escapeHtml(s) {
-  return String(s)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
-
 
 
 

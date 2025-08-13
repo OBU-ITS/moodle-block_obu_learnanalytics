@@ -103,17 +103,21 @@ function tutor_grid_done(fromReadyEvent, res, programme, modLevel, studentNumber
             // But only hide if we have been sent a full dataset (not sure how a non full dataset happens now)
             // - see https://stackoverflow.com/questions/9234830/how-to-hide-a-option-in-a-select-menu-with-css
             $("#selModLevel option").each(function () {
-                if (($(this).val() == '*' && mlevels.length > 1) || mlevels.includes($(this).val())) {
+                if ($(this).val() == '*' || mlevels.includes($(this).val())) {
                     $(this).show();
-                } else {
-                    if (res.full_data_set == 1) {
-                        $(this).hide()
-                    }
-                }
-                if (mlevels.length == 1) {
-                    $("#selModLevel").val(mlevels[0]);
+                } else if (res.full_data_set == 1) {
+                    $(this).hide();
                 }
             });
+
+            if ($("#selModLevel").val() !== modLevel) {
+                if ($("#selModLevel option[value='" + modLevel + "']").is(":visible")) {
+                    $("#selModLevel").val(modLevel);
+                } else {
+                    $("#selModLevel").val('*');
+                }
+            }
+
             stypes = res.study_types.split('|');
             stypes.pop();          // Last element is empty
             $("#selStudyType option").each(function () {
@@ -985,7 +989,7 @@ function reloadTutorGrid(option = null, p2 = null, currentWeek = null) {
     })
         .done(function (res) {
             //debugger;
-            tutor_grid_done(false, res, programme, modLevel, '', refreshChart);
+            tutor_grid_done(false, res, programme, modLevel, '', refreshChart);            
         })
         .fail(function (jqXHR, textStatus, errorThrown) {
             //debugger;

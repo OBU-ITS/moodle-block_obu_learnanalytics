@@ -338,6 +338,7 @@ function showDateControls(option = 'getcurrent', semester = "", load_grid = fals
     // See if it's already loaded/visible, because if it's not it will need the control loaded
     // but if a new date has been passed it need's updating
     //debugger;
+    dashboardFor = "Tutor"
     var title = document.getElementById("obula_weekdate");
     var invisible = (title == null) || (title.style.display == 'none');
 
@@ -349,7 +350,6 @@ function showDateControls(option = 'getcurrent', semester = "", load_grid = fals
     } else if (document.getElementById("obula_advisee_grid_div")) {
         dashboardFor = "Advisor";
     }
-
 
     if (option != null || invisible) {
         var data = {
@@ -458,14 +458,11 @@ function semesterChanged() {
     if (gridLoading) { return; }
 
     var element = document.getElementById("selSemester");
-    if (!element) {
-        return;
-    }
-
-    var semester = element.value;
-    showDateControls('semester', semester, true);
-    // reloadTutorGrid('semester', semester); // The grid reloads are called within showDateControls
-    
+    if (element != null) {
+        var semester = element.value;
+        showDateControls('semester', semester, true);
+        // done in showDateControls        reloadTutorGrid('semester', semester);
+    }       
 }
 
 

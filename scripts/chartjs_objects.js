@@ -789,7 +789,7 @@ function AttendanceMatrixDetails(id) {
     let labels = [], attended = [], missed = [];
 
     if (mode === 'day') {
-      const order = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun','Unknown'];
+      const order = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
       const byDay = d.aggregate?.by_day || {};
       labels   = order.filter(k => k in byDay);
       attended = labels.map(k => byDay[k].attended || 0);

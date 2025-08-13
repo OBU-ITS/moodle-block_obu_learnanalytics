@@ -321,6 +321,7 @@ function AttendanceMatrix() {
         overallDiv.className = 'attendanceMatrixCellContent';
         overallDiv.textContent = st.overallPct + '%';
         overallDiv.style.setProperty('--tile-color', getAttendanceColor(st.overallPct));
+
         overallTd.appendChild(overallDiv);
         mainRow.appendChild(overallTd);
 

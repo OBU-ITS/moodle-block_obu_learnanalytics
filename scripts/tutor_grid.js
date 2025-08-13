@@ -26,7 +26,7 @@ $(document).ready(function () {
     // var stElement = document.getElementById("selStudyType");
     // var studyType = (stElement == null) ? '*' : stElement.value;
 
-    showDateControls("getcurrent", "Tutor", "", true);
+    showDateControls("getcurrent", "", true);
     // It used to load the tutor grid here, but as the showDateControls calculates week, semester let it do it
 });             // End of inline function
 
@@ -517,16 +517,7 @@ function hideOtherMarksChanged() {
     }
 };
 
-function semesterChanged() {
-    if (gridLoading) { return };
-    unClickStudent();
-    var element = document.getElementById("selSemester");
-    if (element != null) {
-        var semester = element.value;
-        showDateControls('semester', "Tutor", semester, true);
-// done in showDateControls        reloadTutorGrid('semester', semester);
-    }
-}
+
 
 function checkRefreshStudentBits() {
     // So we need to work out what's showing and if that student is still valid

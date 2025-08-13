@@ -8,7 +8,7 @@ $(document).ready(function () {
     //debugger;
     set_gridLoading(true);
     // showDateControls will call reloadAdvisorGrid
-    showDateControls("getcurrent", "Advisor", "", true);
+    showDateControls("getcurrent", "", true);
 });             // End of inline function
 
 function set_gridLoading(state) {
@@ -100,11 +100,10 @@ function clickStudentAdvisee(studentNumber) {
 
 // function semesterChanged() {
 //     if (gridLoading) { return };
-//     // unClickStudent();
 //     var element = document.getElementById("selSemester");
 //     if (element != null) {
 //         var semester = element.value;
-//         showDateControls('semester', "Tutor", semester, true);
+//         showDateControls('semester', "Advisor", semester, true);
 // // done in showDateControls        reloadTutorGrid('semester', semester);
 //     }
 // }

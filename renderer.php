@@ -340,6 +340,12 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         $util_dates = new \block_obu_learnanalytics\util\date_functions();
         $curl_common = new \block_obu_learnanalytics\guzzle\common();
         $outScripts = "";
+
+        
+        // Shared reload functions
+        $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/tutor_grid.js?version=1.12.6');
+		$outScripts .= html_writer::script(null, $scriptUrl);
+
 		$scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=1.12.6');
 		$outScripts .= html_writer::script(null, $scriptUrl);
 

@@ -334,12 +334,23 @@ function showStudentInfo(studentNumber, sname, advisor, estatus, wstatus) {
         ;           // End of .ajax 'line'
 }
 
-function showDateControls(option = 'getcurrent', dashboardFor = "Tutor", semester = "", load_grid = false) {
+function showDateControls(option = 'getcurrent', semester = "", load_grid = false) {
     // See if it's already loaded/visible, because if it's not it will need the control loaded
     // but if a new date has been passed it need's updating
     //debugger;
     var title = document.getElementById("obula_weekdate");
     var invisible = (title == null) || (title.style.display == 'none');
+
+    // Detect which grid will need to reload
+    var dashboardFor = null;
+    if (document.getElementById("obula_tutor_grid_div")) {
+        dashboardFor = "Tutor";
+        unClickStudent();
+    } else if (document.getElementById("obula_advisee_grid_div")) {
+        dashboardFor = "Advisor";
+    }
+
+
     if (option != null || invisible) {
         var data = {
             "option": option,
@@ -441,6 +452,20 @@ function showDataCurrency() {
     } else {
         $('#obula_footer').show();
     }
+}
+
+function semesterChanged() {
+    if (gridLoading) { return; }
+
+    var element = document.getElementById("selSemester");
+    if (!element) {
+        return;
+    }
+
+    var semester = element.value;
+    showDateControls('semester', semester, true);
+    // reloadTutorGrid('semester', semester); // The grid reloads are called within showDateControls
+    
 }
 
 

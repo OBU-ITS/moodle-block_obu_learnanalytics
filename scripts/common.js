@@ -74,7 +74,7 @@ function showAdvisees(mode) {
     if (mode != 'Back') {
         var tnode = event.target;
     }
-
+    var wwwroot = M.cfg && M.cfg.wwwroot || '';
 
 
     check_connection()
@@ -87,7 +87,7 @@ function showAdvisees(mode) {
         // Ajax call re-written to use later .done/.fail functionality in case we need promises later
         $.ajax({
             type: 'POST',
-            url: "../blocks/obu_learnanalytics/show_advisees.php",
+            url: wwwroot +'/blocks/obu_learnanalytics/show_advisees.php',
             // data: data,
             beforeSend: function () {
                 $("#obula_error_row").hide();
@@ -117,6 +117,8 @@ function showAdvisees(mode) {
                 // only way to trigger a fail is with a non 200 response, 404, 500 etc
                 // but that seems extreme for a simple validation
                 // So reserving this for exceptions
+
+
                 alert('showAdvisees exception\\n' + errorThrown);
             })
             // .always(function(resp) {
@@ -332,12 +334,23 @@ function showStudentInfo(studentNumber, sname, advisor, estatus, wstatus) {
         ;           // End of .ajax 'line'
 }
 
-function showDateControls(option = 'getcurrent', dashboardFor = "Tutor", semester = "", load_grid = false) {
+function showDateControls(option = 'getcurrent', semester = "", load_grid = false) {
     // See if it's already loaded/visible, because if it's not it will need the control loaded
     // but if a new date has been passed it need's updating
     //debugger;
     var title = document.getElementById("obula_weekdate");
     var invisible = (title == null) || (title.style.display == 'none');
+
+    // Detect which grid will need to reload
+    var dashboardFor = null;
+    if (document.getElementById("obula_tutor_grid_div")) {
+        dashboardFor = "Tutor";
+        unClickStudent();
+    } else if (document.getElementById("obula_advisee_grid_div")) {
+        dashboardFor = "Advisor";
+    }
+
+
     if (option != null || invisible) {
         var data = {
             "option": option,
@@ -441,6 +454,20 @@ function showDataCurrency() {
     }
 }
 
+function semesterChanged() {
+    if (gridLoading) { return; }
+
+    var element = document.getElementById("selSemester");
+    if (!element) {
+        return;
+    }
+
+    var semester = element.value;
+    showDateControls('semester', semester, true);
+    // reloadTutorGrid('semester', semester); // The grid reloads are called within showDateControls
+    
+}
+
 
 /**
  * Hides nav bar and main panel (if it's not in main panel)
@@ -505,19 +532,21 @@ function takeOverPage(tnode) {
 
 
             function handleContainerScroll() {
-                const scrollY = newParent.scrollTop;
-                const scrollableHeight = newParent.scrollHeight - newParent.clientHeight;
+                const scrollY = window.scrollY || document.documentElement.scrollTop;
+                const scrollableHeight =
+                    document.documentElement.scrollHeight - window.innerHeight;
                 const scrolledPercent = (scrollY / scrollableHeight) * 100;
-                
+
                 if (scrolledPercent > 5) {
-                scrollUp.style.display = "flex";
+                    scrollUp.style.display = "flex";
                 } else {
-                scrollUp.style.display = "none";
+                    scrollUp.style.display = "none";
                 }
             }
 
+
             // Listen to the window's scroll event
-            newParent.addEventListener("scroll", handleContainerScroll);
+            window.addEventListener("scroll", handleContainerScroll);
 
             // Also run it once on load, to handle the case
             // where the user might refresh mid-page

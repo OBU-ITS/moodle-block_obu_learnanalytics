@@ -88,10 +88,10 @@ class block_obu_learnanalytics extends block_base
         $this->content->footer = "<div id='obula_footer' style='display:none'>Data Currency</div>";
         switch ($laRole) {
             case ("SSC"):
-                $this->content->text = $renderer->staff_dashboard_summary();
+                $this->content->text = $renderer->staff_dashboard_summary($USER->username);
                 break;
             case ("TUTOR"):
-                $this->content->text = $renderer->staff_dashboard_summary();
+                $this->content->text = $renderer->staff_dashboard_summary($USER->username);
                 break;
             case ("STUDENT"):
                 // This code is duplicated (nearly) in become_student.php

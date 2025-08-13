@@ -39,8 +39,7 @@ try {
     $semesterHTML = "";
     $semesters = $util_dates->get_semesters();
     $semesterHTML .= "<label for='selSemester' style='min-width:150px'>Semester</label>";
-    $disabled = ($dashboardFor == 'Advisor' ? "disabled" : "");
-    $semesterHTML .= "<select {$disabled} name='semester' id='selSemester' onchange='semesterChanged()' style='min-width:100px'>";
+    $semesterHTML .= "<select name='semester' id='selSemester' onchange='semesterChanged()' style='min-width:100px'>";
     // Loop through the semesters
     $current = null;
     foreach ($semesters as $semesterRow) {

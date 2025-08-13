@@ -8,7 +8,7 @@ $(document).ready(function () {
     //debugger;
     set_gridLoading(true);
     // showDateControls will call reloadAdvisorGrid
-    showDateControls("getcurrent", "Advisor", "", true);
+    showDateControls("getcurrent", "", true);
 });             // End of inline function
 
 function set_gridLoading(state) {
@@ -100,11 +100,10 @@ function clickStudentAdvisee(studentNumber) {
 
 // function semesterChanged() {
 //     if (gridLoading) { return };
-//     unClickStudent();
 //     var element = document.getElementById("selSemester");
 //     if (element != null) {
 //         var semester = element.value;
-//         showDateControls('semester', "Tutor", semester, true);
+//         showDateControls('semester', "Advisor", semester, true);
 // // done in showDateControls        reloadTutorGrid('semester', semester);
 //     }
 // }
@@ -119,11 +118,13 @@ function renderAttendanceMatrix() {
     // Create the overlay element (modal background)
     var overlay = document.createElement('div');
     overlay.id = 'attendance-overlay';
+    overlay.style.display = 'none';
     // (Styling moved to styles.css)
-    
+
     // Create the popover element
     var popover = document.createElement('div');
     popover.id = 'attendance-popover';
+
     // (Styling moved to styles.css)
     
     // Create and append the close button for the popover
@@ -131,6 +132,7 @@ function renderAttendanceMatrix() {
     closeButton.innerHTML = '<i class="fa-solid fa fa-close" style="font-size:20px; "></i>';
     closeButton.addEventListener('click', function() {
         document.body.removeChild(overlay);
+        _matrixDataCache = null;    // Clear down the cache after we are done.
     });
     popover.appendChild(closeButton);
     
@@ -141,290 +143,306 @@ function renderAttendanceMatrix() {
     // Add a heading and an empty table that will be populated by our matrix builder.
     matrixContainer.innerHTML = "<h3>Attendance Matrix</h3><table id='attendanceMatrixTable'></table>";
     popover.appendChild(matrixContainer);
-    
+    // Grab the semester from the selected dropdown
+    semester = document.getElementById('selSemester').value;
     // Append the popover to the overlay and the overlay to the document body.
     overlay.appendChild(popover);
     document.body.appendChild(overlay);
+    $('#obula_launch_attendance_matrix').addClass('disabled');
+    var wwwroot = M.cfg && M.cfg.wwwroot || '';
+    var data = {
+        "semester": semester
+    };
+
+    $.ajax({
+        type: 'POST',
+        url: wwwroot +'/blocks/obu_learnanalytics/advisees_matrix.php',
+        data: data,
+        dataType: 'json'
+    })
+    .done(function (res) {
+        if (!res.success) {
+            $('#attendanceMatrixContainer').html(res.html);
+            $('#attendanceMatrixContainer').append('<div>There is currently no data available for this semester.</div>');
+            $('#attendance-overlay').show();
+            $('#obula_launch_attendance_matrix').removeClass('disabled');
+            return;
+        }
+        _matrixDataCache = res.data;          // 🔹 cache raw data
+        _matrixDetailsDataCache = res.matrixdetails;          // 🔹 cache details raw data
+        AttendanceMatrix(); 
+    })
+    .fail(function (_, __, err) {
+          console.error('HTTP', jqXHR.status, textStatus, errorThrown);
+            console.error('Response:', jqXHR.responseText);
+            alert('Advisees Matrix Failed: ' + errorThrown);
+    });
     
-    // Build the matrix inside our container using the provided data.
-    buildAttendanceMatrix();
 }
 
 
 /**
- * This function builds an attendance matrix table in the container with
- * id "attendanceMatrixTable", using the provided studentData.
+ * Build (or rebuild) the attendance matrix table.
  *
+ * @param {object} studentData  matrix JSON from PHP
+ *        shape: studentNo → studentName → programme → Week n { attendance_percent, modules_missed }
  */
-function buildAttendanceMatrix() {
+var _matrixDataCache = null;        // holds the raw matrix JSON
+var _overallSortAsc  = true;        // current sort direction
+function AttendanceMatrix() {
 
-    // TEMP sample data.
-    const studentData = {
-        "0089128": {
-            "Alice Walker": {
-                "BSc Hons Psychology": {
-                    "Week 1": { "attendance_percent": "75",  "modules_missed": { "CRIM5009 (202409:1)": "1/4" } },
-                    "Week 2": { "attendance_percent": "25",  "modules_missed": { "PSYC6002 (202409:1)": "3/4" } },
-                    "Week 3": { "attendance_percent": "90",  "modules_missed": {} },
-                    "Week 4": { "attendance_percent": "40",  "modules_missed": { "CRIM5009 (202409:1)": "2/4" } },
-                    "Week 5": { "attendance_percent": "60",  "modules_missed": { "PSYC6002 (202409:1)": "2/4" } },
-                    "Week 6": { "attendance_percent": "100", "modules_missed": {} },
-                    "Week 7": { "attendance_percent": "85",  "modules_missed": { "PSYC6002 (202409:1)": "1/4" } },
-                    "Week 8": { "attendance_percent": "55",  "modules_missed": { "CRIM5009 (202409:1)": "2/4" } },
-                    "Week 9": { "attendance_percent": "0",   "modules_missed": { "PSYC6002 (202409:1)": "4/4" } },
-                    "Week 10": { "attendance_percent": "100", "modules_missed": {} },
-                    "Week 11": { "attendance_percent": "65",  "modules_missed": { "CRIM5009 (202409:1)": "1/4" } },
-                    "Week 12": { "attendance_percent": "75",  "modules_missed": {} }
-                }
-            }
-        },
-        "0011223": {
-            "Bob Jones": {
-                "BSc Hons Psychology": {
-                    "Week 1": { "attendance_percent": "100", "modules_missed": {} },
-                    "Week 2": { "attendance_percent": "50",  "modules_missed": { "CRIM5009 (202409:1)": "2/4" } },
-                    "Week 3": { "attendance_percent": "35",  "modules_missed": { "PSYC6002 (202409:1)": "3/4" } },
-                    "Week 4": { "attendance_percent": "20",  "modules_missed": { "CRIM5009 (202409:1)": "3/4" } },
-                    "Week 5": { "attendance_percent": "40",  "modules_missed": { "PSYC6002 (202409:1)": "2/4" } },
-                    "Week 6": { "attendance_percent": "60",  "modules_missed": {} },
-                    "Week 7": { "attendance_percent": "80",  "modules_missed": {} },
-                    "Week 8": { "attendance_percent": "85",  "modules_missed": { "CRIM5009 (202409:1)": "1/4" } },
-                    "Week 9": { "attendance_percent": "75",  "modules_missed": { "PSYC6002 (202409:1)": "1/4" } },
-                    "Week 10": { "attendance_percent": "30",  "modules_missed": { "CRIM5009 (202409:1)": "3/4" } },
-                    "Week 11": { "attendance_percent": "55",  "modules_missed": { "PSYC6002 (202409:1)": "2/4" } },
-                    "Week 12": { "attendance_percent": "100", "modules_missed": {} }
-                }
-            }
-        },
-        "0077665": {
-            "Carol Smith": {
-                "BSc Hons Psychology": {
-                    "Week 1": { "attendance_percent": "10",  "modules_missed": { "CRIM5009 (202409:1)": "3/4" } },
-                    "Week 2": { "attendance_percent": "30",  "modules_missed": { "PSYC6002 (202409:1)": "2/4" } },
-                    "Week 3": { "attendance_percent": "100", "modules_missed": {} },
-                    "Week 4": { "attendance_percent": "90",  "modules_missed": {} },
-                    "Week 5": { "attendance_percent": "0",   "modules_missed": { "CRIM5009 (202409:1)": "4/4" } },
-                    "Week 6": { "attendance_percent": "75",  "modules_missed": {} },
-                    "Week 7": { "attendance_percent": "20",  "modules_missed": { "PSYC6002 (202409:1)": "3/4" } },
-                    "Week 8": { "attendance_percent": "40",  "modules_missed": { "CRIM5009 (202409:1)": "2/4" } },
-                    "Week 9": { "attendance_percent": "55",  "modules_missed": {} },
-                    "Week 10": { "attendance_percent": "60",  "modules_missed": { "CRIM5009 (202409:1)": "1/4" } },
-                    "Week 11": { "attendance_percent": "40",  "modules_missed": { "PSYC6002 (202409:1)": "2/4" } },
-                    "Week 12": { "attendance_percent": "70",  "modules_missed": {} }
-                }
-            }
+    if (!_matrixDataCache);          // nothing to build yet
+    const studentData = _matrixDataCache;
+    /* ─── 0. clear any previous table ─────────────────────────────── */
+    const table = document.getElementById('attendanceMatrixTable');
+    table.innerHTML = '';
+
+    /* ─── 1. flatten for easy looping  ────────────────────────────── */
+    const students = [];
+    const allWeeks = new Set();
+
+    for (const studentId in studentData) {
+        if (!studentData.hasOwnProperty(studentId)) continue;
+
+        const nameObj     = studentData[studentId] || {};
+        const studentName = Object.keys(nameObj)[0] || 'Unknown';
+
+        /* programme block could be missing */
+        const programmeObj     = nameObj[studentName] || {};
+        const studentProgramme = Object.keys(programmeObj)[0] || 'Unknown programme';
+
+        /* weeks block could be missing */
+        const weeksObj = programmeObj[studentProgramme] || {};   // ← never undefined
+
+        /* overall % across available weeks */
+        let sumPct = 0, weekCount = 0;
+        for (const w in weeksObj) {
+            if (!weeksObj.hasOwnProperty(w)) continue;
+            sumPct += parseInt(weeksObj[w].attendance_percent, 10) || 0;
+            weekCount++;
+            allWeeks.add(w);                 // safe because weeksObj is now an object
         }
-    };
-    
-// Flatten data for table creation.
-var students = [];
-var allWeeks = new Set();
+        const overallPct = weekCount ? Math.round(sumPct / weekCount) : 0;
 
-for (var studentId in studentData) {
-    if (!studentData.hasOwnProperty(studentId)) continue;
-
-    // Get the student name. In our structure, studentData[studentId] 
-    // has only one key for the student name.
-    var nameObj = studentData[studentId];
-    var studentName = Object.keys(nameObj)[0];
-
-    // Get the programme object.
-    // This object should have a single key—the student programme.
-    var programmeObj = nameObj[studentName];
-    var studentProgramme = Object.keys(programmeObj)[0];
-
-    // Now, the weeks object is inside the programme object.
-    var weeksObj = programmeObj[studentProgramme];
-
-    // Push the flattened student data, including studentProgramme.
-    students.push({ 
-        studentId: studentId, 
-        studentName: studentName, 
-        studentProgramme: studentProgramme,
-        weeksObj: weeksObj 
-    });
-
-    // Add all week labels.
-    for (var w in weeksObj) {
-        if (weeksObj.hasOwnProperty(w)) {
-            allWeeks.add(w);
-        }
+        students.push({ studentId, studentName, studentProgramme, weeksObj, overallPct });
     }
-}
+
 
     
-    // Sort week labels numerically (assuming names like "Week 1", "Week 2", etc.)
-    var weekLabels = Array.from(allWeeks).sort(function(a, b) {
-        var numA = parseInt(a.replace(/\D+/g, ""), 10);
-        var numB = parseInt(b.replace(/\D+/g, ""), 10);
-        return numA - numB;
-    });
-    
-    // Build table header with a legend in the top-left cell.
-    var table = document.getElementById("attendanceMatrixTable");
-    var thead = document.createElement("thead");
-    var headerRow = document.createElement("tr");
-    
-    var cornerTh = document.createElement("th");
+    // ── NEW: sort by overallPct ───────────────────────────────────
+    students.sort((a, b) =>
+        _overallSortAsc ? b.overallPct - a.overallPct
+                        : a.overallPct - b.overallPct);
+
+    const weekLabels = Array.from(allWeeks).sort((a, b) =>
+        parseInt(a.replace(/\D+/g, ''), 10) - parseInt(b.replace(/\D+/g, ''), 10)
+    );
+
+    /* ─── 2. header with legend + Overall column ──────────────────── */
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+
+    const cornerTh = document.createElement('th');
     cornerTh.innerHTML = `
         <div class="myLegend">
-            <div class="legendItem">
-                <span class="legendSquare" style="background-color:#9eab05;"></span> > 75%
-            </div>
-            <div class="legendItem">
-                <span class="legendSquare" style="background-color:#db7c12;"></span> 25–75%
-            </div>
-            <div class="legendItem">
-                <span class="legendSquare" style="background-color:#c70540;"></span> < 25%
-            </div>
-        </div>
-    `;
+            <div class="legendItem"><span class="legendSquare" style="background:#9eab05"></span> &gt; 75%</div>
+            <div class="legendItem"><span class="legendSquare" style="background:#db7c12"></span> 25–75%</div>
+            <div class="legendItem"><span class="legendSquare" style="background:#c70540"></span> &lt; 25%</div>
+        </div>`;
     headerRow.appendChild(cornerTh);
+
+    const overallTh = document.createElement('th');
+    /*  add the class that controls the gradient  */
+    overallTh.classList.add(_overallSortAsc ? 'overall-sort-desc'
+        : 'overall-sort-asc');
+
     
-    weekLabels.forEach(function(week) {
-        var th = document.createElement("th");
-        th.textContent = week;
+    const icon = document.createElement('i');
+    icon.className = _overallSortAsc ? 'fa fa-caret-down'   // ▲
+                                     : 'fa fa-caret-up';// ▼
+    icon.style.marginRight = '4px';
+    
+    overallTh.append('Overall ', icon);
+    
+    /* toggle & rebuild on click */
+    overallTh.onclick = () => {
+        _overallSortAsc = !_overallSortAsc;   // flip direction
+        AttendanceMatrix();              // rebuild table
+    };
+    
+    headerRow.appendChild(overallTh);
+    
+    weekLabels.forEach(w => {
+        const th = document.createElement('th');
+    
+        // split into ["Week", "1"], then join with a newline
+        const [label, num] = w.split(' ');
+        th.textContent = `${label}\n${num}`;
+    
         headerRow.appendChild(th);
     });
+    
+
     thead.appendChild(headerRow);
     table.appendChild(thead);
-    
-    // Build table body.
-    var tbody = document.createElement("tbody");
-    
-    students.forEach(function(stObj) {
-        // Create the main row for student data.
-        var mainRow = document.createElement("tr");
-        mainRow.className = "obula_att_matrix_row_" + stObj.studentId;
-        
-        // Create left cell: Student Name and ID.
-        var nameCell = document.createElement("td");
-        var nameDiv = document.createElement("div");
-        nameDiv.className = "attendanceMatrixCellContent_studentName";
-        // Attach an onclick event on the name cell.
-        nameDiv.onclick = function() {
-            // Render HTML for details container, change arrow and expand
-            if (detailsContainer.style.maxHeight === "0px" || detailsContainer.style.maxHeight === "") {
-                renderDetailsContent(stObj.studentId);
-                detailsContainer.style.maxHeight = "200px"; // Expand (adjust height as needed)
-                infoSpan.innerHTML = '<i class="fa-solid fa fa-angle-up"></i>';
-            } else {
-                // Empty the details container, switch the arrow and collapse
-                $(".obula_att_matrix_row_details_" + stObj.studentId + " .detailsContainer").empty();
-                detailsContainer.style.maxHeight = "0";
-                infoSpan.innerHTML = '<i class="fa-solid fa fa-angle-down"></i>';
 
+    /* ─── 3. body ─────────────────────────────────────────────────── */
+    const tbody = document.createElement('tbody');
+
+    students.forEach(st => {
+        /* main row */
+        const mainRow = document.createElement('tr');
+        mainRow.className = `obula_att_matrix_row_${st.studentId}`;
+
+        /* name / programme cell with arrow */
+        const nameTd  = document.createElement('td');
+        const nameDiv = document.createElement('div');
+        nameDiv.className = 'attendanceMatrixCellContent_studentName';
+
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = st.studentName;
+        nameSpan.style.fontWeight = 'bold';
+
+        const progSpan = document.createElement('span');
+        progSpan.textContent = `(${st.studentProgramme})`;
+        progSpan.style.fontSize = '12px'
+        progSpan.style.display = 'block';
+
+        const arrowSpan = document.createElement('span');
+        arrowSpan.innerHTML = '<i class="fa-solid fa fa-angle-down"></i>';
+
+        nameDiv.append(nameSpan, progSpan, arrowSpan);
+        nameTd.appendChild(nameDiv);
+        mainRow.appendChild(nameTd);
+
+        /* overall % cell */
+        const overallTd  = document.createElement('td');
+        const overallDiv = document.createElement('div');
+        overallDiv.className = 'attendanceMatrixCellContent';
+        overallDiv.textContent = st.overallPct + '%';
+        overallDiv.style.setProperty('--tile-color', getAttendanceColor(st.overallPct));
+        overallTd.appendChild(overallDiv);
+        mainRow.appendChild(overallTd);
+
+        /* week cells */
+        weekLabels.forEach(week => {
+            const td  = document.createElement('td');
+            const div = document.createElement('div');
+            div.className = 'attendanceMatrixCellContent';
+
+            const entry = st.weeksObj[week];
+            if (entry) {
+                const pct = parseInt(entry.attendance_percent, 10) || 0;
+                div.textContent = pct + '%';
+                div.style.setProperty('--tile-color', getAttendanceColor(pct));
+
+                const tip = document.createElement('div');
+                tip.className = 'attendanceMatrixTooltip';
+
+                const missed = entry.modules_missed || {};
+                tip.textContent = Object.keys(missed).length
+                    ? 'Lectures Not Attended:\n' + Object.entries(missed).map(([m,v]) => `${m} → ${v}`).join('\n')
+                    : 'Full Attendance';
+
+                div.appendChild(tip);
+            } else {
+                div.textContent = '--';
+                div.style.background = '#eee';
+            }
+
+            td.appendChild(div);
+            mainRow.appendChild(td);
+        });
+
+        tbody.appendChild(mainRow);
+
+        /* details row (collapsed) */
+        const detRow  = document.createElement('tr');
+        detRow.className = `obula_att_matrix_row_details_${st.studentId}`;
+
+        const detTd   = document.createElement('td');
+        detTd.colSpan = weekLabels.length + 2;          // name + overall + weeks
+
+        const detDiv  = document.createElement('div');
+        detDiv.className = 'detailsContainer';
+
+        detTd.appendChild(detDiv);
+        detRow.appendChild(detTd);
+        tbody.appendChild(detRow);
+
+        /* expand / collapse logic (shared by name & tiles) */
+        const toggleDetails = () => {
+            const open = detDiv.style.maxHeight && detDiv.style.maxHeight !== '0px';
+            if (open) {
+                $(`.obula_att_matrix_row_details_${st.studentId} .detailsContainer`).empty();
+                detDiv.style.maxHeight = '0';
+                arrowSpan.innerHTML = '<i class="fa-solid fa fa-angle-down"></i>';
+            } else {
+                renderAttendanceMatrixDetails(st.studentId);
+                detDiv.style.maxHeight = '80%';
+                arrowSpan.innerHTML = '<i class="fa-solid fa fa-angle-up"></i>';
             }
         };
-        
-        // Create student name and ID elements.
-        var nameSpan = document.createElement("span");
-        nameSpan.textContent = stObj.studentName;
-        nameSpan.style.fontWeight = 'bold';
-        
-        var idSpan = document.createElement("span");
-        idSpan.textContent = "(" + stObj.studentProgramme + ")";
-        idSpan.style.display = "block"; // Force on new line
-        
-        // (Optional) Include an info icon inline if desired.
-        var infoSpan = document.createElement("span");
-        infoSpan.innerHTML = '<i class="fa-solid fa fa-angle-down"></i>';
-        // You can style this further via CSS if needed.
-        
-        // Append the spans to the name container.
-        nameDiv.appendChild(nameSpan);
-        nameDiv.appendChild(idSpan);
-        nameDiv.appendChild(infoSpan);
-        
-        nameCell.appendChild(nameDiv);
-        mainRow.appendChild(nameCell);
-        
-        // Create cells for each week.
-        weekLabels.forEach(function(week) {
-            var cell = document.createElement("td");
-            var cellDiv = document.createElement("div");
-            cellDiv.className = "attendanceMatrixCellContent";
-            // Attach an onclick event on the name cell.
-            cellDiv.onclick = function() {
-                // Render HTML for details container, change arrow and expand
-                if (detailsContainer.style.maxHeight === "0px" || detailsContainer.style.maxHeight === "") {
-                    renderDetailsContent(stObj.studentId);
-                    detailsContainer.style.maxHeight = "200px"; // Expand (adjust height as needed)
-                    infoSpan.innerHTML = '<i class="fa-solid fa fa-angle-up"></i>';
 
-                } else {
-                    // Empty the details container, switch the arrow and collapse
-                    $(".obula_att_matrix_row_details_" + stObj.studentId + " .detailsContainer").empty();
-                    detailsContainer.style.maxHeight = "0";
-                    infoSpan.innerHTML = '<i class="fa-solid fa fa-angle-down"></i>';
-
-                }
-            };
-
-            var entry = stObj.weeksObj[week];
-            if (entry) {
-                var attendanceNum = parseInt(entry.attendance_percent, 10) || 0;
-                cellDiv.textContent = attendanceNum + "%";
-                // Set cell color.
-                cellDiv.style.setProperty("--tile-color", getAttendanceColor(attendanceNum));
-                
-                // Add tooltip with module details.
-                var tooltip = document.createElement("div");
-                tooltip.className = "attendanceMatrixTooltip";
-                var missed = entry.modules_missed || {};
-                if (Object.keys(missed).length === 0) {
-                    tooltip.textContent = "No modules missed";
-                } else {
-                    var lines = ["Modules missed:\n"];
-                    for (var mod in missed) {
-                        if (missed.hasOwnProperty(mod)) {
-                            lines.push(mod + " → " + missed[mod]);
-                        }
-                    }
-                    tooltip.textContent = lines.join("\n");
-                }
-                cellDiv.appendChild(tooltip);
-            } else {
-                cellDiv.textContent = "--";
-                cellDiv.style.backgroundColor = "#eee";
-            }
-            cell.appendChild(cellDiv);
-            mainRow.appendChild(cell);
+        nameDiv.onclick = toggleDetails;
+        mainRow.querySelectorAll('.attendanceMatrixCellContent').forEach(div => {
+            div.onclick = toggleDetails;
         });
-        
-        tbody.appendChild(mainRow);
-        
-        // Create a details row below the main row.
-        var detailsRow = document.createElement("tr");
-        detailsRow.className = "obula_att_matrix_row_details_" + stObj.studentId;
-        var detailsCell = document.createElement("td");
-        detailsCell.colSpan = weekLabels.length + 1;
-        var detailsContainer = document.createElement("div");
-        detailsContainer.className = "detailsContainer";
-        detailsCell.appendChild(detailsContainer);
-        detailsRow.appendChild(detailsCell);
-        tbody.appendChild(detailsRow);
     });
-    
+
     table.appendChild(tbody);
-    
-    // Helper function: choose tile color based on attendance percentage.
+    $('#attendance-overlay').show();
+    $('#obula_launch_attendance_matrix').removeClass('disabled');
+
+    /* helper */
     function getAttendanceColor(p) {
-        p = Math.max(0, Math.min(100, p));
-        if (p > 75) {
-            return "#9eab05";   // > 75%
-        } else if (p < 25) {
-            return "#c70540";   // < 25%
-        } else {
-            return "#db7c12";   // 25–75%
-        }
+        if (p > 75) return '#9eab05';
+        if (p < 25) return '#c70540';
+        return '#db7c12';
     }
 }
 
-function renderDetailsContent(student_id) {
-    $(".obula_att_matrix_row_details_" + student_id + " .detailsContainer")
-    .html("<p style='text-align:center;'>Hello " + student_id + "</p>");
+// Details drop down section where we use some chartjs graphs and show extra information
+var _matrixDetailsDataCache = null;
+window._attendanceCharts = window._attendanceCharts || {};
+function renderAttendanceMatrixDetails (id) {
+    const $container = $(`.obula_att_matrix_row_details_${id} .detailsContainer`);
+    if (!$container.length || !_matrixDetailsDataCache) return;
+
+    const d = _matrixDetailsDataCache[String(id)];
+    if (!d) return;
+
+    $container.html(`
+        <div class="obula-details-grid" style="display:flex;max-width:900px;gap:20px;margin:0 auto;">
+        <div class="obula-details-left" style="flex:0 0 30%;">
+            <dl class="obula-kv" style="margin:0;">
+            <dt>Student Number</dt><dd>${(d.student_number || id)}</dd>
+            <dt>Name</dt><dd>${(d.name || 'Unknown')}</dd>
+            <dt>Programme</dt><dd>${(d.programme || 'Unknown programme')}</dd>
+            </dl>
+        </div>
+
+        <div class="obula-details-right" style="flex:1;">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+            <label for="attModFilter-${id}" style="display:flex; align-items:center; gap:8px;">
+                <span style="font-weight:600;">Filter:</span>
+                <select id="attModFilter-${id}" style="min-width:200px; padding:6px 8px;">
+                <option value="module" selected>By Module</option>
+                <option value="day">By Day</option>
+                </select>
+            </label>
+            </div>
+
+            <div id="studentAttendanceByModuleContainer-${id}"
+                style="width:100%; height:320px; display:flex; justify-content:left; align-items:stretch;">
+            <canvas id="studentChartAttendanceByModule-${id}" style="display:block; width:100%; height:100%;"></canvas>
+            </div>
+        </div>
+        </div>
+    `);
+    chartHandler(null, 'attbymod', id, null)
 }
+
 
 
 

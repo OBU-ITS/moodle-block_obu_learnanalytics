@@ -4,6 +4,8 @@
 
 require_once './jpgraph/src/jpgraph.php';
 require_once './jpgraph/src/jpgraph_bar.php';
+require_once(__DIR__ . '/vendor/autoload.php');
+
 //echo __DIR__;
 //require_once '../../config.php';
 require_once __DIR__ . '/../../config.php';
@@ -34,7 +36,7 @@ if ($laRole == "STUDENT" && $sid != $USER->username) {
 
 $simpleCurrent = $util_dates->createSimpleCurrentParam($current);
 $params = "student/modgraphdata/$sid/$simpleCurrent/";
-$curl_common = new \block_obu_learnanalytics\curl\common();
+$curl_common = new \block_obu_learnanalytics\guzzle\common();
 $studentModuleData = $curl_common->send_request($params);
 if ($studentModuleData == null) {
     header('Content-type: application/json');

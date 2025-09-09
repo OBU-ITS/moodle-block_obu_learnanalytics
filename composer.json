@@ -1,0 +1,9 @@
+{
+    "name": "moodle/obu_learnanalytics",
+    "description": "Moodle block plugin that uses Guzzle for HTTP requests",
+    "type": "project",
+    "require": {
+      "guzzlehttp/guzzle": "^7.0"
+    }
+  }
+  

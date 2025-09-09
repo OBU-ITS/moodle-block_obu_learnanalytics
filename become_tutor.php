@@ -31,7 +31,13 @@ header('Content-type: application/json');
 global $DB;
 global $PAGE;
 $summaryMessage = "<span class='tutor-title' id='obula_title'>Learning Analytics</span>";
-$summaryMessage .= "<a href='javascript:collapseTutor()' class = 'link-right'>Close</a></h5>";
+
+$summaryMessage .= "
+<button onclick='collapseTutor()' class='link-right dashboardCloseButton'>
+    <i class='fa-solid fa fa-close'><b> Close</b></i>
+</button>";
+
+
 
 // TODO find way to pick up programme for Tutor or last viewed
 $userPrefs = get_user_preferences();
@@ -44,7 +50,7 @@ if (array_key_exists("obula_last_tutor_grid_pgm", $userPrefs)) {
 // Now let's get the renderer class so I can call functions from it
 $renderer = $PAGE->get_renderer('block_obu_learnanalytics');
 try {
-    $dashboard = $renderer->tutor_dashboard($pgm, true, null, 'T');
+        $dashboard = $renderer->tutor_dashboard($pgm, true, null, 'T');
 } catch (\Exception $ex) {
     header('HTTP/1.0 500 Internal Server Error');
     echo json_encode(array('success' => false, 'dashboardhtml' => 'BIGGG Bang :)'));

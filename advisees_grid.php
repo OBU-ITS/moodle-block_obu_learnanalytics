@@ -2,6 +2,8 @@
 ob_start();
 //echo __DIR__;
 require_once __DIR__ . '/../../config.php';
+require_once(__DIR__ . '/vendor/autoload.php');
+
 $util_odds = new \block_obu_learnanalytics\util\odds();
 $laRole = $util_odds->get_la_role();    // Protects against attacks, wrong roles and everything
 if ($laRole == "STUDENT") {
@@ -55,7 +57,7 @@ set_user_preference('obula_last_tutor_grid_date', serialize($today));
 $success = true;        // Hopefully
 try {
     $params = "tutor/adviseesgrid/$semester/$USER->username/";
-    $curl_common = new \block_obu_learnanalytics\curl\common();
+    $curl_common = new \block_obu_learnanalytics\guzzle\common();
     $results = $curl_common->send_request($params);
 } catch (Exception $e) {
     // Just output it in big bold red, shouldn't happen so no CSS for this

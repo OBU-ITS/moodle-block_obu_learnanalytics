@@ -3,6 +3,8 @@
  * Creates the HTML for Learning Analytics
  * NOTE - Unlike report plugins, blocks does not use Index.php, instead needs this main block
  */
+require_once(__DIR__ . '/vendor/autoload.php');
+
 class block_obu_learnanalytics extends block_base
 {
 
@@ -86,15 +88,15 @@ class block_obu_learnanalytics extends block_base
         $this->content->footer = "<div id='obula_footer' style='display:none'>Data Currency</div>";
         switch ($laRole) {
             case ("SSC"):
-                $this->content->text = $renderer->staff_dashboard_summary();
+                $this->content->text = $renderer->staff_dashboard_summary($USER->username);
                 break;
             case ("TUTOR"):
-                $this->content->text = $renderer->staff_dashboard_summary();
+                $this->content->text = $renderer->staff_dashboard_summary($USER->username);
                 break;
             case ("STUDENT"):
                 // This code is duplicated (nearly) in become_student.php
                 $params = "student/programmes/$USER->username/";
-                $curl_common = new \block_obu_learnanalytics\curl\common();
+                $curl_common = new \block_obu_learnanalytics\guzzle\common();
                 $pgms = $curl_common->send_request($params);
                 $pgm = $pgms[0]["programme_code"]; // TODO cope with zero and > 1
                 $sname = $USER->firstname . ' ' . $USER->lastname;
@@ -104,7 +106,6 @@ class block_obu_learnanalytics extends block_base
                     $this->content->text = $renderer->students_dashboard(false, $USER->username, $USER->firstname, $sname, $pgm);
                 } catch (\Exception $ex) {
                     $this->content->text = $renderer->error_page('Error Creating Student Dashboard get_content', $ex);
-                    return;      // $this->content;
                 }
                 break;
             default:

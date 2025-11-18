@@ -56,8 +56,8 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         $out .= html_writer::start_tag("div", array("class" => "modal-dialog modal-lg"));
         $out .= html_writer::start_tag("div", array("class" => "modal-content"));
         $out .= html_writer::start_tag("div", array("class" => "obula-modal-header modal-header"));
-        $out .= html_writer::tag("button", "&times;", array("type" => "button", "class" => "close",  "data-dismiss" => "modal"));
         $out .= html_writer::tag("h5", "Header", array("id" => "obula_modal_popup_title", "class" => "obula-modal-title modal-title"));
+        $out .= html_writer::tag("button", "&times;", array("type" => "button", "class" => "close",  "data-dismiss" => "modal"));
         $out .= html_writer::end_tag("div");
         $out .= html_writer::start_tag("div", array("id" => "obula_modal_body", "class" => "modal-body"));
         $out .= html_writer::tag("p", "Working.....");
@@ -96,9 +96,6 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/common.js?version=1.12.6');
         $outScripts = html_writer::script(null, $scriptUrl);
         
-        // Bootstrap needed for our tooltip functionality
-        $scriptUrl = new moodle_url('https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js');
-        $outScripts .= html_writer::script(null, $scriptUrl);
         $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/staff_dashboard.js?version=1.12.6');
         $outScripts .= html_writer::script(null, $scriptUrl);
         $scriptUrl = new moodle_url('/blocks/obu_learnanalytics/scripts/check_connection.js?version=1.12.6');

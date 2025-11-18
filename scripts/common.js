@@ -319,7 +319,10 @@ function showStudentInfo(studentNumber, sname, advisor, estatus, wstatus) {
                 $('#obula_modal_cancel').hide();
                 $("#obula_modal_footer_text").text("");
                 $('#obula_modal_footer_text').removeAttr('title');
-                $('#obula_modal_popup').modal('show');
+                // Required due to Bootstrap 4.5 -> 5.0 upgrade
+                require(['jquery', 'theme_boost/bootstrap/modal'], function($) {
+                    $('#obula_modal_popup').modal('show');
+                });
             }
         })
         .fail(function (resp) {
@@ -767,18 +770,25 @@ function showHelp(helpType) {
     })
         .done(function (resp) {
             if (resp != null && resp.success) {
+                const $modal = $('#obula_modal_popup');
+
+                // Move modal element under <body> BEFORE showing
+                // Modal sits 
+                if ($modal.parent()[0] !== document.body) {
+                    $modal.appendTo('body');
+                }
                 $('#obula_modal_popup_title').html(resp.title);
-                $('.modal-body').html(resp.popupbodyhtml);
-                // Display Modal, but make sure correct buttons will show
+                $('#obula_modal_body').html(resp.popupbodyhtml);
                 $('#obula_modal_body').removeClass('popup-pgm-search');
-                $('#obula_modal_close').show();
-                $('#obula_modal_close').prop('disabled', false);
-                $('#obula_modal_ok').hide();
-                $('#obula_modal_ok').prop('disabled', true);
+                $('#obula_modal_close').show().prop('disabled', false);
+                $('#obula_modal_ok').hide().prop('disabled', true);
                 $('#obula_modal_cancel').hide();
-                $("#obula_modal_footer_text").text("");
-                $('#obula_modal_footer_text').removeAttr('title');
-                $('#obula_modal_popup').modal('show');
+                $('#obula_modal_footer_text').text('').removeAttr('title');
+                
+                // Required due to Bootstrap 4.5 -> 5.0 upgrade
+                require(['jquery', 'theme_boost/bootstrap/modal'], function($) {
+                    $('#obula_modal_popup').modal('show');
+                });
             }
         })
         .fail(function (resp) {

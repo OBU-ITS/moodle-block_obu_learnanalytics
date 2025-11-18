@@ -56,8 +56,8 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         $out .= html_writer::start_tag("div", array("class" => "modal-dialog modal-lg"));
         $out .= html_writer::start_tag("div", array("class" => "modal-content"));
         $out .= html_writer::start_tag("div", array("class" => "obula-modal-header modal-header"));
-        $out .= html_writer::tag("button", "&times;", array("type" => "button", "class" => "close",  "data-dismiss" => "modal"));
         $out .= html_writer::tag("h5", "Header", array("id" => "obula_modal_popup_title", "class" => "obula-modal-title modal-title"));
+        $out .= html_writer::tag("button", "&times;", array("type" => "button", "class" => "close",  "data-dismiss" => "modal"));
         $out .= html_writer::end_tag("div");
         $out .= html_writer::start_tag("div", array("id" => "obula_modal_body", "class" => "modal-body"));
         $out .= html_writer::tag("p", "Working.....");

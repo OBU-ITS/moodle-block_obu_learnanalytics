@@ -361,7 +361,10 @@ function showStudentAlerts(studentNumber) {
                     $('#obula_modal_cancel').hide();
                     $("#obula_modal_footer_text").text("");
                     $('#obula_modal_footer_text').removeAttr('title');
-                    $('#obula_modal_popup').modal('show');
+                    // Required due to Bootstrap 4.5 -> 5.0 upgrade
+                    require(['jquery', 'theme_boost/bootstrap/modal'], function($) {
+                        $('#obula_modal_popup').modal('show');
+                    });
                 }
             })
             .fail(function (resp) {
@@ -717,7 +720,12 @@ function clickSearchProgramme() {
                 $('#obula_modal_popup').on('shown.bs.modal', function () {
                     $('#obula_search_str').focus();
                 });
-                $('#obula_modal_popup').modal('show');
+                // Required due to Bootstrap 4.5 -> 5.0 upgrade
+                require(['jquery', 'theme_boost/bootstrap/modal'], function($) {
+                    $('#obula_modal_popup').modal('show');
+                });
+
+
                 // won't work for bootstrap modal popup, see above on event $('#obula_search_str').focus();
             }
         })
@@ -835,7 +843,10 @@ function pickPGMCode(code, dblClick = false) {
     //$('#obula_modal_ok').attr('default');
     if (dblClick) {
         clickSearchPGMOK();
-        $('#obula_modal_popup').modal('hide');
+        // Required due to Bootstrap 4.5 -> 5.0 upgrade
+        require(['jquery', 'theme_boost/bootstrap/modal'], function($) {
+            $('#obula_modal_popup').modal('hide');
+        });
     }
 }
 

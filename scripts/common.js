@@ -319,7 +319,10 @@ function showStudentInfo(studentNumber, sname, advisor, estatus, wstatus) {
                 $('#obula_modal_cancel').hide();
                 $("#obula_modal_footer_text").text("");
                 $('#obula_modal_footer_text').removeAttr('title');
-                $('#obula_modal_popup').modal('show');
+                // Required due to Bootstrap 4.5 -> 5.0 upgrade
+                require(['jquery', 'theme_boost/bootstrap/modal'], function($) {
+                    $('#obula_modal_popup').modal('show');
+                });
             }
         })
         .fail(function (resp) {
@@ -782,7 +785,10 @@ function showHelp(helpType) {
                 $('#obula_modal_cancel').hide();
                 $('#obula_modal_footer_text').text('').removeAttr('title');
                 
-                $modal.modal('show');
+                // Required due to Bootstrap 4.5 -> 5.0 upgrade
+                require(['jquery', 'theme_boost/bootstrap/modal'], function($) {
+                    $('#obula_modal_popup').modal('show');
+                });
             }
         })
         .fail(function (resp) {

@@ -281,7 +281,16 @@ function changeChartTypeRB(chartType, chartNo) {
  */
 function showStudentInfo(studentNumber, sname, advisor, estatus, wstatus) {
     //debugger;
+
+    // This work for now to get an advisor number on the showStudentInfo
+    // But this will need revisiting when we add AA impersonation
+    if (advisor == null) {
+        // This needs revisitng as the advisor will be null for most students Semester 1 - need to pass a var that indicates
+        // if showStudentInfo is being triggered by advisorgrid or tutorgrid
+        advisor =  document.getElementById("obula_show_advisees").getAttribute("onclick").match(/'([pP]\d+)'/)[1] ?? null;
+    }
     var element = document.getElementById("selSemester");
+
     var semester;
     if (element == null) {
             alert('showStudentInfo exception - No Semester found');

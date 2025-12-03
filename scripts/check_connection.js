@@ -37,17 +37,45 @@ function check_connection() {
             $('#obula_show_stud_pgm').prop("disabled", false);
             $('#obula_show_advisees').prop("disabled", false);
             $('#obula_show_stud_pgm').show();
-            // Resolve with the response if connection is OK.
+
+
+        if (!$('#obula_default_semester').val()) {
+            defaultSemPromise = $.ajax({
+                type: "POST",
+                url: "../blocks/obu_learnanalytics/get_semesters.php"
+            }).then(function (list) {
+
+                if (Array.isArray(list)) {
+                    var defaultSem = list.find(function (s) {
+                        return s.default === true || s.default === "true";
+                    });
+
+                    if (defaultSem) {
+                        $('#obula_default_semester').val(defaultSem.code);
+                    } else {
+                        console.warn("No default semester found.");
+                    }
+                } else {
+                    console.error("Unexpected get_semesters response:", list);
+                }
+
+            });
+
+        }
+        // Wait before resolving check_connection()
+        return defaultSemPromise.then(function () {
             return resp;
+        });
+
         } else {
             $('#obula_cc_errordiv').html(resp.ccStatus.problemMessageSml + resp.ccStatus.popup);
             $('#obula_cc_errordiv').show();
             $('#obula_show_pgm').prop("disabled", false);
             $('#obula_show_stud_pgm').prop("disabled", false);
             $('#obula_show_advisees').prop("disabled", false);
-            // Return a rejected promise to stop further processing.
             return $.Deferred().reject(resp).promise();
         }
+
     }, function(jqXHR, textStatus, errorThrown) {
         alert('check_connection post failed:' + errorThrown);
         // Optionally, reject the promise here as well.

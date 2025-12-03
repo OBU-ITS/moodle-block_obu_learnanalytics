@@ -261,7 +261,7 @@ if ($success) {
         $html .= "true)";
         $html .= '">'; // Note the closing "
         $html .= "{$sname}</a></td>";
-        $onclick = "showStudentInfo('{$studentKey}','{$urlName}','{$advisor}','{$eStatus}','{$wStatus}')";
+        $onclick = "showStudentInfo('{$studentKey}','{$urlName}','{$advisor}','{$eStatus}','{$wStatus}', 'Tutor')";
         $class = "material-icons students-info";
         if ($advisor == "") {
             $class .= " students-warning";

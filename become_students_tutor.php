@@ -7,6 +7,7 @@
 ob_start();
 //echo __DIR__;
 require_once __DIR__ . '/../../config.php';
+require_once(__DIR__ . '/vendor/autoload.php');
 $util_odds = new \block_obu_learnanalytics\util\odds();
 $laRole = $util_odds->get_la_role();    // Protects against attacks, wrong roles and everything
 ?>
@@ -61,12 +62,16 @@ switch ($studentNumber) {
             $summaryMessage .= "   <a href='javascript:backToAdvisorGrid()' class='link-right'>Back</a>";
         } else {
             // not sure we need clear - see if anyone complains $summaryMessage .= "   <a href='javascript:clearSSC()' class='link-right'>Clear</a>";
-            $summaryMessage .= "   <a href='javascript:collapseDetail()' class='link-right'>Close</a>";
+            $summaryMessage .= "
+            <button onclick='collapseTutor()' class='link-right dashboardCloseButton'>
+                <i class='fa-solid fa fa-close'><b> Close</b></i>
+            </button>";
+        
         }
 
         // Now work out the programme (code nearly the same code in block_obu_learnanalytics.php and elsewhere)
         $params = "student/programmes/$studentNumber/";
-        $curl_common = new \block_obu_learnanalytics\curl\common();
+        $curl_common = new \block_obu_learnanalytics\guzzle\common();
         $pgms = $curl_common->send_request($params);
         if ($pgms == null || count($pgms) == 0) {
             header('Content-type: application/json');

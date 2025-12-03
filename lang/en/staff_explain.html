@@ -3,73 +3,83 @@
 <head>
 <meta http-equiv=Content-Type content="text/html; charset=utf-8">
 <meta name=Generator content="Microsoft Word 15 (filtered)">
+
 <style>
-<!--
- /* Font Definitions */
- @font-face
-	{font-family:"Cambria Math";
-	panose-1:2 4 5 3 5 4 6 3 2 4;}
-@font-face
-	{font-family:"Calibri Light";
-	panose-1:2 15 3 2 2 2 4 3 2 4;}
-@font-face
-	{font-family:Calibri;
-	panose-1:2 15 5 2 2 2 4 3 2 4;}
-@font-face
-	{font-family:Consolas;
-	panose-1:2 11 6 9 2 2 4 3 2 4;}
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin-top:0cm;
-	margin-right:0cm;
-	margin-bottom:8.0pt;
-	margin-left:0cm;
-	line-height:106%;
-	font-size:11.0pt;
-	font-family:"Calibri",sans-serif;}
-h1
-	{mso-style-link:"Heading 1 Char";
-	margin-top:12.0pt;
-	margin-right:0cm;
-	margin-bottom:0cm;
-	margin-left:0cm;
-	margin-bottom:.0001pt;
-	line-height:106%;
-	page-break-after:avoid;
-	font-size:16.0pt;
-	font-family:"Calibri Light",sans-serif;
-	color:#2E74B5;
-	font-weight:normal;}
-p.MsoPlainText, li.MsoPlainText, div.MsoPlainText
-	{mso-style-link:"Plain Text Char";
-	margin:0cm;
-	margin-bottom:.0001pt;
-	font-size:10.5pt;
-	font-family:Consolas;}
-span.Heading1Char
-	{mso-style-name:"Heading 1 Char";
-	mso-style-link:"Heading 1";
-	font-family:"Calibri Light",sans-serif;
-	color:#2E74B5;}
-p.msonormal0, li.msonormal0, div.msonormal0
-	{mso-style-name:msonormal;
-	margin-right:0cm;
-	margin-left:0cm;
-	font-size:12.0pt;
-	font-family:"Times New Roman",serif;}
-span.PlainTextChar
-	{mso-style-name:"Plain Text Char";
-	mso-style-link:"Plain Text";
-	font-family:Consolas;}
-.MsoChpDefault
-	{font-size:10.0pt;
-	font-family:"Calibri",sans-serif;}
-@page WordSection1
-	{size:595.3pt 841.9pt;
-	margin:72.0pt 66.75pt 72.0pt 66.7pt;}
-div.WordSection1
-	{page:WordSection1;}
--->
+/* SCOPE EVERYTHING TO JUST THIS AREA */
+.word-doc * {
+    all: revert; /* Clears inherited Moodle/theme styling */
+}
+
+/* Font Definitions */
+@font-face {
+    font-family: "Cambria Math";
+    panose-1: 2 4 5 3 5 4 6 3 2 4;
+}
+@font-face {
+    font-family: "Calibri Light";
+    panose-1: 2 15 3 2 2 2 4 3 2 4;
+}
+@font-face {
+    font-family: Calibri;
+    panose-1: 2 15 5 2 2 2 4 3 2 4;
+}
+@font-face {
+    font-family: Consolas;
+    panose-1: 2 11 6 9 2 2 4 3 2 4;
+}
+
+/* Paragraph styles */
+.word-doc p.MsoNormal,
+.word-doc li.MsoNormal,
+.word-doc div.MsoNormal {
+    margin-top: 0cm;
+    margin-bottom: 8.0pt;
+    line-height: 106%;
+    font-size: 11.0pt;
+    font-family: "Calibri", sans-serif;
+}
+
+.help-heading {
+    margin-top: 12pt;
+    margin-bottom: 0;
+    line-height: 106%;
+    font-size: 20pt;
+    font-family: "Calibri Light", sans-serif;
+    color: #2E74B5;   /* the original Word blue */
+    font-weight: normal;
+}
+
+.word-doc p.MsoPlainText,
+.word-doc li.MsoPlainText,
+.word-doc div.MsoPlainText {
+    font-size: 10.5pt;
+    font-family: Consolas;
+}
+
+.word-doc span.Heading1Char {
+    font-family: "Calibri Light", sans-serif;
+    color: #2E74B5;
+}
+
+.word-doc p.msonormal0,
+.word-doc li.msonormal0,
+.word-doc div.msonormal0 {
+    font-size: 12pt;
+    font-family: "Times New Roman", serif;
+}
+
+.word-doc span.PlainTextChar {
+    font-family: Consolas;
+}
+
+.word-doc .MsoChpDefault {
+    font-size: 10pt;
+    font-family: "Calibri", sans-serif;
+}
+
+.word-doc div.WordSection1 {
+    page: WordSection1;
+}
 </style>
 
 </head>
@@ -78,7 +88,7 @@ div.WordSection1
 
 <div class=WordSection1>
 
-<h1>Oxford Brookes Learning Analytics</h1>
+<h1 class="help-heading">Oxford Brookes Learning Analytics</h1>
 <p class=MsoNormal style='margin-top:6.0pt;margin-right:0cm;margin-bottom:
 0cm;margin-left:0cm;margin-bottom:.0001pt;line-height:normal;background:white'><span
 style='color:#343A40'>The aim of the system is to use students’ digital
@@ -109,7 +119,7 @@ learning and instead use the&nbsp; information to stimulate effective tutorial
 and academic discussions.&nbsp;</span></p>
 
 <p class=MsoBold style='font-size:20px;margin-top:6.0pt;margin-bottom:0cm;margin-bottom:.0001pt;line-height:
-normal;background:white'><span style='color:#343A40'>For more information and guides to using the dashboard click <a href="https://sites.google.com/brookes.ac.uk/scap/ISRBI/learning-analytics">here.</a></span></p>
+normal;background:white'><span style='color:#343A40'>For more information and guides to using the dashboard click <a href="https://sites.google.com/brookes.ac.uk/scap/ISRBI/learning-analytics" target="_blank">here.</a></span></p>
 </div>
 
 </body>

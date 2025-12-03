@@ -74,46 +74,58 @@ function showAdvisees(mode) {
     if (mode != 'Back') {
         var tnode = event.target;
     }
-    // Ajax call re-written to use later .done/.fail functionality in case we need promises later
-    $.ajax({
-        type: 'POST',
-        url: "../blocks/obu_learnanalytics/show_advisees.php",
-        // data: data,
-        beforeSend: function () {
-            $("#obula_error_row").hide();
+    var wwwroot = M.cfg && M.cfg.wwwroot || '';
+
+
+    check_connection()
+    .done(function(resp) {
+        // Check the connection response and handle errors
+        if (!resp || resp.ccStatus.Status !== "OK") {
+            return; // Exit here; do not proceed with show_advisees
         }
-    })
-        .done(function (resp) {
-            // So we can get errors and successes back
-            //debugger;
-            if (resp.success) {
-                if (mode != 'Back') {
-                    takeOverPage(tnode);
-                    $("#obula_staff_heading").hide();
-                }
-                $('#obula_summary_cell').html(resp.summaryhtml);
-                $("#obula_summary_row").show();
-                $('#obula_dash_div').html(resp.dashboardhtml);
-                $("#obula_dash_row").show();
-                // Now the data currency
-                showDataCurrency();
-            } else {
-                $('#obula_error_cell').html(resp.message);
-                $("#obula_error_row").show();
-                $('#obula_footer').hide();
+
+        // Ajax call re-written to use later .done/.fail functionality in case we need promises later
+        $.ajax({
+            type: 'POST',
+            url: wwwroot +'/blocks/obu_learnanalytics/show_advisees.php',
+            // data: data,
+            beforeSend: function () {
+                $("#obula_error_row").hide();
             }
         })
-        .fail(function (jqXHR, textStatus, errorThrown) {
-            // only way to trigger a fail is with a non 200 response, 404, 500 etc
-            // but that seems extreme for a simple validation
-            // So reserving this for exceptions
-            alert('showAdvisees exception\\n' + errorThrown);
-        })
-        // .always(function(resp) {
-        //         // Code will always get executed after done or fail, like a try/catch finally
-        //     })
-        ;           // End of .ajax 'line'
+            .done(function (resp) {
+                // So we can get errors and successes back
+                //debugger;
+                if (resp.success) {
+                    if (mode != 'Back') {
+                        takeOverPage(tnode);
+                        $("#obula_staff_heading").hide();
+                    }
+                    $('#obula_summary_cell').html(resp.summaryhtml);
+                    $("#obula_summary_row").show();
+                    $('#obula_dash_div').html(resp.dashboardhtml);
+                    $("#obula_dash_row").show();
+                    // Now the data currency
+                    showDataCurrency();
+                } else {
+                    $('#obula_error_cell').html(resp.message);
+                    $("#obula_error_row").show();
+                    $('#obula_footer').hide();
+                }
+            })
+            .fail(function (jqXHR, textStatus, errorThrown) {
+                // only way to trigger a fail is with a non 200 response, 404, 500 etc
+                // but that seems extreme for a simple validation
+                // So reserving this for exceptions
 
+
+                alert('showAdvisees exception\\n' + errorThrown);
+            })
+            // .always(function(resp) {
+            //         // Code will always get executed after done or fail, like a try/catch finally
+            //     })
+            ;           // End of .ajax 'line'
+    });
 }
 
 /**
@@ -122,38 +134,52 @@ function showAdvisees(mode) {
 function showTutorFull() {
     //debugger;
     var tnode = event.target;
-    // Ajax call re-written to use later .done/.fail functionality in case we need promises later
-    $.ajax({
-        type: 'POST',
-        url: "../blocks/obu_learnanalytics/become_tutor.php",
-        // data: data,
-        beforeSend: function () {
-            $("#obula_error_row").hide();
-        }
-    })
-        .done(function (resp) {
-            // So we can get errors and successes back
-            if (resp.success) {
-                takeOverPage(tnode);
-                $("#obula_staff_heading").hide();
-                $('#obula_summary_cell').html(resp.summaryhtml);
-                $("#obula_summary_row").show();
-                $('#obula_dash_div').html(resp.dashboardhtml);
-                $("#obula_dash_row").show();
-                // Now the data currency
-                showDataCurrency();
-            } else {
-                $('#obula_error_cell').html(resp.message);
-                $("#obula_error_row").show();
-                $('#obula_footer').hide();
-            }
-        })
-        .fail(function (jqXHR, textStatus, errorThrown) {
-            // only way to trigger a fail is with a non 200 response, 404, 500 etc
-            // but that seems extreme for a simple validation
-            // So reserving this for exceptions
-            alert('common showTutorFull exception\\n' + errorThrown);
-        })
+   // First, perform the connection check
+   check_connection()
+   .done(function(resp) {
+       // Check the connection response and handle errors
+       if (!resp || resp.ccStatus.Status !== "OK") {
+           return; // Exit here; do not proceed with become_tutor
+       }
+       
+       // Ajax call re-written to use later .done/.fail functionality in case we need promises later
+       $.ajax({
+           type: 'POST',
+           url: "../blocks/obu_learnanalytics/become_tutor.php",
+           // data: data,
+           beforeSend: function () {
+               $("#obula_error_row").hide();
+           }
+       })
+           .done(function (resp) {
+               // So we can get errors and successes back
+               if (resp.success) {
+                   takeOverPage(tnode);
+                   $("#obula_staff_heading").hide();
+                   $('#obula_summary_cell').html(resp.summaryhtml);
+                   $("#obula_summary_row").show();
+                   $('#obula_dash_div').html(resp.dashboardhtml);
+                   $("#obula_dash_row").show();
+                   // Now the data currency
+                   showDataCurrency();
+               } else {
+                   $('#obula_error_cell').html(resp.message);
+                   $("#obula_error_row").show();
+                   $('#obula_footer').hide();
+                   return;
+               }
+           })
+           .fail(function (jqXHR, textStatus, errorThrown) {
+               // only way to trigger a fail is with a non 200 response, 404, 500 etc
+               // but that seems extreme for a simple validation
+               // So reserving this for exceptions
+               alert('common showTutorFull exception\\n' + errorThrown);
+           })        
+           // .always(function(resp) {
+           //         // Code will always get executed after done or fail, like a try/catch finally
+           //     })
+           ;           // End of .ajax 'line'
+   })
         // .always(function(resp) {
         //         // Code will always get executed after done or fail, like a try/catch finally
         //     })
@@ -293,7 +319,10 @@ function showStudentInfo(studentNumber, sname, advisor, estatus, wstatus) {
                 $('#obula_modal_cancel').hide();
                 $("#obula_modal_footer_text").text("");
                 $('#obula_modal_footer_text').removeAttr('title');
-                $('#obula_modal_popup').modal('show');
+                // Required due to Bootstrap 4.5 -> 5.0 upgrade
+                require(['jquery', 'theme_boost/bootstrap/modal'], function($) {
+                    $('#obula_modal_popup').modal('show');
+                });
             }
         })
         .fail(function (resp) {
@@ -308,12 +337,23 @@ function showStudentInfo(studentNumber, sname, advisor, estatus, wstatus) {
         ;           // End of .ajax 'line'
 }
 
-function showDateControls(option = 'getcurrent', dashboardFor = "Tutor", semester = "", load_grid = false) {
+function showDateControls(option = 'getcurrent', semester = "", load_grid = false) {
     // See if it's already loaded/visible, because if it's not it will need the control loaded
     // but if a new date has been passed it need's updating
     //debugger;
+    dashboardFor = "Tutor"
     var title = document.getElementById("obula_weekdate");
     var invisible = (title == null) || (title.style.display == 'none');
+
+    // Detect which grid will need to reload
+    var dashboardFor = null;
+    if (document.getElementById("obula_tutor_grid_div")) {
+        dashboardFor = "Tutor";
+        unClickStudent();
+    } else if (document.getElementById("obula_advisee_grid_div")) {
+        dashboardFor = "Advisor";
+    }
+
     if (option != null || invisible) {
         var data = {
             "option": option,
@@ -417,6 +457,17 @@ function showDataCurrency() {
     }
 }
 
+function semesterChanged() {
+    if (gridLoading) { return; }
+
+    var element = document.getElementById("selSemester");
+    if (element != null) {
+        var semester = element.value;
+        showDateControls('semester', semester, true);
+        // done in showDateControls        reloadTutorGrid('semester', semester);
+    }       
+}
+
 
 /**
  * Hides nav bar and main panel (if it's not in main panel)
@@ -462,7 +513,47 @@ function takeOverPage(tnode) {
         // Tried with jquery because I hate mixing it, but failed as the jquery append despite the documentation isn't the same
         var newParent = document.getElementById("page");
         var myBlock = document.getElementById(laBlockId);
-        newParent.appendChild(myBlock);
+        newParent.prepend(myBlock);     // We changed to prepend so that the page-footer sits below our objects
+
+
+        if (!document.getElementById("obu_learnanalytics_scrollup")) {
+
+            // Create the scroll up button
+            const scrollUp = document.createElement("button");
+            scrollUp.id = "obu_learnanalytics_scrollup";
+            scrollUp.innerHTML = '<i class="fa-solid fa fa-arrow-up" style="color:#d10373"></i>'; 
+
+            // Append to the document body so it’s fixed relative to the viewport
+            document.body.appendChild(scrollUp);
+            // 4. On click, smoothly scroll to the top of our block
+            scrollUp.addEventListener("click", () => {
+                document.querySelector('[data-block="obu_learnanalytics"]').scrollIntoView({ behavior: 'smooth' });
+            });
+
+
+            function handleContainerScroll() {
+                const scrollY = window.scrollY || document.documentElement.scrollTop;
+                const scrollableHeight =
+                    document.documentElement.scrollHeight - window.innerHeight;
+                const scrolledPercent = (scrollY / scrollableHeight) * 100;
+
+                if (scrolledPercent > 5) {
+                    scrollUp.style.display = "flex";
+                } else {
+                    scrollUp.style.display = "none";
+                }
+            }
+
+
+            // Listen to the window's scroll event
+            window.addEventListener("scroll", handleContainerScroll);
+
+            // Also run it once on load, to handle the case
+            // where the user might refresh mid-page
+            handleContainerScroll();
+        }
+          
+          
     }
 }
 
@@ -471,6 +562,7 @@ function giveBackPage(type) {
     $("#obula_summary_row").hide();
     $("#obula_dash_row").hide();
     $('#obula_footer').hide();
+    $('#obu_learnanalytics_scrollup').remove();     // Remove the scrollup function so it doesn't appear outside our plugin
 
     // Get the info we stored earlier for this
     var host = $("#obula_host").val();
@@ -497,6 +589,10 @@ function giveBackPage(type) {
     $("#topofscroll").show();
     $("#topofscroll").attr("aria-hidden", "false");
     $("#obula_page_taken").val('N');
+
+    // Now the Footer
+    // $('#page-footer').show();
+    // document.getElementById("page-footer").css('display', 'block');
 
     // Now the Nav
     var rightDrawerDA = $("#obula_navbar_rightDrawerDA").val();
@@ -674,18 +770,25 @@ function showHelp(helpType) {
     })
         .done(function (resp) {
             if (resp != null && resp.success) {
+                const $modal = $('#obula_modal_popup');
+
+                // Move modal element under <body> BEFORE showing
+                // Modal sits 
+                if ($modal.parent()[0] !== document.body) {
+                    $modal.appendTo('body');
+                }
                 $('#obula_modal_popup_title').html(resp.title);
-                $('.modal-body').html(resp.popupbodyhtml);
-                // Display Modal, but make sure correct buttons will show
+                $('#obula_modal_body').html(resp.popupbodyhtml);
                 $('#obula_modal_body').removeClass('popup-pgm-search');
-                $('#obula_modal_close').show();
-                $('#obula_modal_close').prop('disabled', false);
-                $('#obula_modal_ok').hide();
-                $('#obula_modal_ok').prop('disabled', true);
+                $('#obula_modal_close').show().prop('disabled', false);
+                $('#obula_modal_ok').hide().prop('disabled', true);
                 $('#obula_modal_cancel').hide();
-                $("#obula_modal_footer_text").text("");
-                $('#obula_modal_footer_text').removeAttr('title');
-                $('#obula_modal_popup').modal('show');
+                $('#obula_modal_footer_text').text('').removeAttr('title');
+                
+                // Required due to Bootstrap 4.5 -> 5.0 upgrade
+                require(['jquery', 'theme_boost/bootstrap/modal'], function($) {
+                    $('#obula_modal_popup').modal('show');
+                });
             }
         })
         .fail(function (resp) {
@@ -699,6 +802,24 @@ function showHelp(helpType) {
         //     })
         ;           // End of .ajax 'line'
 }
+var gridLoading = true;
+function whileLoading(studentNumber, maxSeconds=15, elapsedSeconds=0) {
+    // Check every second.
+    const intervalId = setInterval(() => {
+        elapsedSeconds++;
+        // If gridLoading is false OR we've waited 15 seconds, stop checking.
+        if (!gridLoading || elapsedSeconds >= maxSeconds) {
+            clearInterval(intervalId);
+
+            // If we timed out (still true after 15 seconds), you might handle that differently.
+            // For now, we'll call highlightStudentRow in either case.
+            highlightStudentRow(studentNumber, '#obula_tutor_grid_table');
+            return;
+        }
+    }, 1000); // 1000ms = 1 second
+    gridLoading = true;
+}
+
 
 /**
  * Handles click event to show SSC a Students or Tutors eye view
@@ -706,60 +827,65 @@ function showHelp(helpType) {
  * Types = S-Student, T-Tutor, A-Tutor from AA dash
  */
 function showBecomeView(type, controlId) {
-    // As there were 2 inputs with the same id we used the class
-    var studentNumber = document.getElementById(controlId).value;
-    // Now some crude SQL injection protection
-    if (studentNumber.match(/^[0-9]{8}$/) == null) {
+      var studentNumber = document.getElementById(controlId).value;
+  
+      // Basic validation: Student number must be 8 digits
+      if (!/^[0-9]{8}$/.test(studentNumber)) {
         $('#obula_error_cell').html("Invalid Format for Student Number - must be 8 digits");
         $("#obula_error_row").show();
         $('#obula_footer').hide();
+        //return error("Invalid Student Number Format");
         return;
-    }
-    var data = {
-        "studentNumber": studentNumber
-        , "type": type
-    };
-    $("#obula_ssc_student").val(studentNumber);
-    var tnode = event.target;
-    var urlpage = (type == "S") ? "become_student" : "become_students_tutor";
-    // Ajax call re-written to use later .done/.fail functionality in case we need promises later
-    $.ajax({
+      }
+  
+      var data = {
+        studentNumber: studentNumber,
+        type: type
+      };
+      $("#obula_ssc_student").val(studentNumber);
+  
+      var tnode = (typeof event !== 'undefined') ? event.target : null;
+      var urlpage = (type === "S") ? "become_student" : "become_students_tutor";
+  
+    check_connection()
+    .done(function(resp) {
+        if (!resp || resp.ccStatus.Status !== "OK") {
+            return; // Exit here; do not proceed with become_tutor
+        }
+
+      $.ajax({
         type: 'POST',
         url: "../blocks/obu_learnanalytics/" + urlpage + ".php",
         data: data,
         beforeSend: function () {
-            $("#obula_error_row").hide();
+          $("#obula_error_row").hide();
         }
-    })
-        .done(function (resp) {
-            // So we can get errors and successes back
-            if (resp.success) {
-                takeOverPage(tnode);
-                $("#obula_staff_heading").hide();
-                $('#obula_summary_cell').html(resp.summaryhtml);
-                $("#obula_summary_row").show();
-                $('#obula_dash_div').html(resp.dashboardhtml);
-                $("#obula_dash_row").show();
-                // Now the data currency
-                showDataCurrency();
-            } else {
-                $('#obula_error_cell').html(resp.message);
-                $("#obula_error_row").show();
-                $('#obula_footer').hide();
-            }
-        })
-        .fail(function (jqXHR, textStatus, errorThrown) {
-            // only way to trigger a fail is with a non 200 response, 404, 500 etc
-            // but that seems extreme for a simple validation
-            // So reserving this for exceptions
-            alert('common showBecomeView exception\\n' + errorThrown);
-        })
-        // .always(function(resp) {
-        //         // Code will always get executed after done or fail, like a try/catch finally
-        //     })
-        ;           // End of .ajax 'line'
-        
-}
+      })
+      .done(function (resp) {
+        if (resp.success) {
+          // Perform your DOM updates
+          takeOverPage(tnode);
+          $("#obula_staff_heading").hide();
+          $('#obula_summary_cell').html(resp.summaryhtml);
+          $("#obula_summary_row").show();
+          $('#obula_dash_div').html(resp.dashboardhtml);
+          $("#obula_dash_row").show();
+          showDataCurrency();
+        } else {
+          $('#obula_error_cell').html(resp.message);
+          $("#obula_error_row").show();
+          $('#obula_footer').hide();
+          return;
+        }
+      })
+      .fail(function (jqXHR, textStatus, errorThrown) {
+      });
+
+      whileLoading(studentNumber);
+    });
+  }
+  
+
 
 /**
  * Written to get back from Showing students tutor view to Advisor dash
@@ -798,4 +924,23 @@ $.ajax({
 ;           // End of .ajax 'line'
 }
 
+function highlightStudentRow(studentNumber, tableId) {
+    var table = $(tableId);
+    if (table.length > 0) {        // Safety code - should not be zero
+        //TODO$("#obula_tutor_grid_table").find('tr').removeClass('selected');
+        // $("tr.students").removeAttr('selected');
+        // So now find row (would like to do it within table TODO)
+        var rowsid = '#sid_' + studentNumber;
+        $("tr.students").removeAttr('selected');
 
+        if ($(rowsid).length) {
+            $(rowsid).attr('selected', 'selected');
+            var studentRow = document.getElementById('sid_' + studentNumber);
+            studentRow.scrollIntoView(false);           // true is going too far
+          } else {
+            console.error("Element " + rowsid + " does not exist.");
+          }
+          
+
+    }
+}

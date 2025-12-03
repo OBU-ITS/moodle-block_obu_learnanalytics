@@ -227,7 +227,7 @@ function outputGrid($results, $util_odds, $gridNo)
         $html .= ")";
         $html .= '">'; // Note the closing "
         $html .= "{$sname}</a></td>";
-        $onclick = "showStudentInfo('{$studentKey}','{$urlName}','{$advisor}','{$eStatus}','{$wStatus}')";
+        $onclick = "showStudentInfo('{$studentKey}','{$urlName}','{$advisor}','{$eStatus}','{$wStatus}', 'Advisor')";
         $class = "material-icons students-info";
         $html .= '<td class="' . $class . '" title="Student Info" onclick="' . $onclick . '">info</td>';       // the info button, preview is good too
 

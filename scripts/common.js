@@ -279,9 +279,16 @@ function changeChartTypeRB(chartType, chartNo) {
  * @param sname The student's name
  * @param advisor The advisor's p number 
  */
-function showStudentInfo(studentNumber, sname, advisor, estatus, wstatus) {
+function showStudentInfo(studentNumber, sname, advisor, estatus, wstatus, view_type) {
     //debugger;
+
+    // This work for now to get an advisor number on the showStudentInfo for the Advisor view
+    // But this will need revisiting when we add AA impersonation
+    if (advisor == null || view_type == 'Advisor') {
+        advisor =  document.getElementById("obula_show_advisees").getAttribute("onclick").match(/'([pP]\d+)'/)[1] ?? null;
+    }
     var element = document.getElementById("selSemester");
+
     var semester;
     if (element == null) {
             alert('showStudentInfo exception - No Semester found');
@@ -827,63 +834,83 @@ function whileLoading(studentNumber, maxSeconds=15, elapsedSeconds=0) {
  * Types = S-Student, T-Tutor, A-Tutor from AA dash
  */
 function showBecomeView(type, controlId) {
-      var studentNumber = document.getElementById(controlId).value;
-  
-      // Basic validation: Student number must be 8 digits
-      if (!/^[0-9]{8}$/.test(studentNumber)) {
-        $('#obula_error_cell').html("Invalid Format for Student Number - must be 8 digits");
+  var studentNumber = document.getElementById(controlId).value;
+
+  // Basic validation: Student number must be 8 digits
+  if (!/^[0-9]{8}$/.test(studentNumber)) {
+    $('#obula_error_cell').html("Invalid Format for Student Number - must be 8 digits");
+    $("#obula_error_row").show();
+    $('#obula_footer').hide();
+    //return error("Invalid Student Number Format");
+    return;
+  }
+
+  var tnode = (typeof event !== 'undefined') ? event.target : null;
+  var urlpage = (type === "S") ? "become_student" : "become_students_tutor";
+
+  // First: get the default semester
+  get_default_semester()
+    .done(function (defaultSemObj) {
+      if (!defaultSemObj) {
+        $('#obula_error_cell').html("No default semester found");
         $("#obula_error_row").show();
         $('#obula_footer').hide();
-        //return error("Invalid Student Number Format");
         return;
       }
-  
+
       var data = {
         studentNumber: studentNumber,
-        type: type
+        type: type,
+        semester: defaultSemObj.code
       };
       $("#obula_ssc_student").val(studentNumber);
-  
-      var tnode = (typeof event !== 'undefined') ? event.target : null;
-      var urlpage = (type === "S") ? "become_student" : "become_students_tutor";
-  
-    check_connection()
-    .done(function(resp) {
-        if (!resp || resp.ccStatus.Status !== "OK") {
+
+      // Then: check the connection *before* calling the become_* PHP
+      check_connection()
+        .done(function (resp) {
+          if (!resp || resp.ccStatus.Status !== "OK") {
             return; // Exit here; do not proceed with become_tutor
-        }
+          }
 
-      $.ajax({
-        type: 'POST',
-        url: "../blocks/obu_learnanalytics/" + urlpage + ".php",
-        data: data,
-        beforeSend: function () {
-          $("#obula_error_row").hide();
-        }
-      })
-      .done(function (resp) {
-        if (resp.success) {
-          // Perform your DOM updates
-          takeOverPage(tnode);
-          $("#obula_staff_heading").hide();
-          $('#obula_summary_cell').html(resp.summaryhtml);
-          $("#obula_summary_row").show();
-          $('#obula_dash_div').html(resp.dashboardhtml);
-          $("#obula_dash_row").show();
-          showDataCurrency();
-        } else {
-          $('#obula_error_cell').html(resp.message);
-          $("#obula_error_row").show();
-          $('#obula_footer').hide();
-          return;
-        }
-      })
-      .fail(function (jqXHR, textStatus, errorThrown) {
-      });
+          $.ajax({
+            type: 'POST',
+            url: "../blocks/obu_learnanalytics/" + urlpage + ".php",
+            data: data,
+            beforeSend: function () {
+              $("#obula_error_row").hide();
+            }
+          })
+          .done(function (resp) {
+            if (resp.success) {
+              // Perform your DOM updates
+              takeOverPage(tnode);
+              $("#obula_staff_heading").hide();
+              $('#obula_summary_cell').html(resp.summaryhtml);
+              $("#obula_summary_row").show();
+              $('#obula_dash_div').html(resp.dashboardhtml);
+              $("#obula_dash_row").show();
+              showDataCurrency();
+            } else {
+              $('#obula_error_cell').html(resp.message);
+              $("#obula_error_row").show();
+              $('#obula_footer').hide();
+              return;
+            }
+          })
+          .fail(function (jqXHR, textStatus, errorThrown) {
+          });
 
-      whileLoading(studentNumber);
+          whileLoading(studentNumber);
+        })
+        .fail(function (jqXHR, textStatus, errorThrown) {
+          // check_connection failed; do nothing extra for now
+        });
+    })
+    .fail(function (jqXHR, textStatus, errorThrown) {
+      // get_default_semester failed; do nothing extra for now
     });
-  }
+}
+
   
 
 
@@ -944,3 +971,27 @@ function highlightStudentRow(studentNumber, tableId) {
 
     }
 }
+
+
+function get_default_semester() {
+    return $.ajax({
+        type: 'POST',
+        url: "../blocks/obu_learnanalytics/get_semesters.php"
+    }).then(function (resp) {
+        // If PHP echoes JSON, jQuery will normally parse it.
+        // But if resp is still a string, try to parse it.
+        if (typeof resp === 'string') {
+            try {
+                resp = JSON.parse(resp);
+            } catch (e) {
+                return $.Deferred().reject(e);
+            }
+        }
+        var defaultSem = resp.find(function (s) {
+            return s.default === true || s.default === "true";
+        });
+
+        return defaultSem || null;
+    });
+}
+

@@ -9,12 +9,14 @@ require_once __DIR__ . '/../../config.php';
 require_once(__DIR__ . '/vendor/autoload.php');
 
 $util_odds = new \block_obu_learnanalytics\util\odds();
+
 $laRole = $util_odds->get_la_role("SSC");    // Protects against attacks, wrong roles and everything
 ?>
 <?php
 // Click event posts the request so we can pick up parameters from the data
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $studentNumber = $_POST["studentNumber"];
+    $semester = $_POST["semester"];
 } else {
     exit("Brookes Learning Analytics - GET not supported");
 }
@@ -72,7 +74,7 @@ switch ($studentNumber) {
         // Now let's get the renderer class so I can call functions from it
         $renderer = $PAGE->get_renderer('block_obu_learnanalytics');
         // Now work out the programme (code nearly the same code in block_obu_learnanalytics.php)
-        $params = "student/programmes/$studentNumber/";
+        $params = "student/programmes/$studentNumber/$semester/";
         $curl_common = new \block_obu_learnanalytics\guzzle\common();
         $pgms = $curl_common->send_request($params);
     

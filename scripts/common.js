@@ -978,6 +978,15 @@ function get_default_semester() {
         type: 'POST',
         url: "../blocks/obu_learnanalytics/get_semesters.php"
     }).then(function (resp) {
+        // If PHP echoes JSON, jQuery will normally parse it.
+        // But if resp is still a string, try to parse it.
+        if (typeof resp === 'string') {
+            try {
+                resp = JSON.parse(resp);
+            } catch (e) {
+                return $.Deferred().reject(e);
+            }
+        }
         var defaultSem = resp.find(function (s) {
             return s.default === true || s.default === "true";
         });

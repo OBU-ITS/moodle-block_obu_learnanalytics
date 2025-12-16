@@ -866,6 +866,7 @@ function AttendanceMatrixDetails(id) {
 
 /**
  * Flatten "Modules" + "GraphData" into an object-of-arrays for easy Chart.js usage.
+ *  Needed because the format/structure of this endpoint is different from the usual for student graphs
  * 
  * @param {Object} data - The entire object containing { Modules, GraphData }.
  * @returns {Object} 
@@ -883,12 +884,14 @@ function modgraphdataUnifiedDataFormat(data) {
     // Separate the two main parts
     const modulesData = data.Modules;   // e.g. { "70709": {course_fullname, ...}, ... }
     const graphData = data.GraphData;   // e.g. { "2023_24": { first_day_week, modules: {...} }, ... }
+
     // Our flattened result
     const unified_data = {
         first_day_week: [],
         year: [],
         week_number: []
     };
+
     // Get all module IDs from the "Modules" object
     // We'll create one array per module for "duration_total" values
     const moduleIDs = Object.keys(modulesData);
@@ -899,14 +902,13 @@ function modgraphdataUnifiedDataFormat(data) {
         unified_data[`${mid}_duration_total`] = [];
     });
 
-    // Sort the keys of GraphData (e.g. "2023_24", "2023_25", etc.)
-    // so we push arrays in consistent date/week order
-    const sortedKeys = Object.keys(graphData).sort();
+    // Convert graphData object into an array and sort by first_day_week
+    const sortedWeeks = Object.values(graphData).sort((a, b) => {
+        return new Date(a.first_day_week) - new Date(b.first_day_week);
+    });
 
-    // Iterate each week's data
-    sortedKeys.forEach(outerKey => {
-        const row = graphData[outerKey];
-        
+    // Iterate each week's data (now in proper date order)
+    sortedWeeks.forEach(row => {
         // Push the standard properties
         unified_data.first_day_week.push(row.first_day_week || null);
         unified_data.year.push(row.year || null);
@@ -914,7 +916,7 @@ function modgraphdataUnifiedDataFormat(data) {
 
         // For each module in the global modules list,
         // see if there's a matching "duration_total" in this week's row.
-        // If not present, use 0 (or null, if you prefer).
+        // If not present, use 0
         moduleIDs.forEach(mid => {
             let val = 0;
             const moduleEntry = row.modules ? row.modules[mid] : null;
@@ -928,6 +930,7 @@ function modgraphdataUnifiedDataFormat(data) {
 
     return unified_data;
 }
+
 
 /**
  * Convert an object-of-objects into an object

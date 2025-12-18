@@ -37,13 +37,12 @@ function advisees_grid_done(res) {
     //debugger;
     // Fix the Bootstrap Tooltip behavior (it wasn't closing if you clicked on the hovered control)
     document.querySelectorAll('[data-toggle="ztooltip"]').forEach(el => {
-        const existing = bootstrap.Tooltip.getInstance(el);
-        if (existing) existing.dispose();
-
-        new bootstrap.Tooltip(el, {
-            trigger: 'hover',
-            container: 'body'
-        });
+        if (!bootstrap.Tooltip.getInstance(el)) {
+            new bootstrap.Tooltip(el, {
+                trigger: 'hover',
+                container: 'body'
+            });
+        }
     });
 
     $('#obula_advisee_grid_div').html(res.html).delay(100);

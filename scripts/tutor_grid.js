@@ -189,10 +189,12 @@ function tutor_grid_done(fromReadyEvent, res, programme, modLevel, studentNumber
 }
 
 
+// We use this function to handle our new chartJS graphing package without having to change much of our older architecture
 function renderChart(chart_type, studentName) {
     return new Promise((resolve, reject) => {
       var currentWeek = $("#obula_currentweek").val() || "";
       var wwwroot = M.cfg && M.cfg.wwwroot || '';
+      var sem =  $('#obula_default_semester').val();
 
       var chart_style = null;
       if (chart_type.includes('_')) {
@@ -205,7 +207,8 @@ function renderChart(chart_type, studentName) {
         studentNumber: getStudentNumberParameter(),
         sStage: getModLevelParameter(),
         currentWeek: currentWeek,
-        chartType: chart_type
+        chartType: chart_type,
+        sem: sem
       };
 
       $.ajax({

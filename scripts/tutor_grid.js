@@ -82,13 +82,12 @@ function set_somethingLoading(state) {
 function tutor_grid_done(fromReadyEvent, res, programme, modLevel, studentNumber, refreshChart = false) {
     // Fix the Bootstrap Tooltip behavior (it wasn't closing if you clicked on the hovered control)
     document.querySelectorAll('[data-toggle="ztooltip"]').forEach(el => {
-        const existing = bootstrap.Tooltip.getInstance(el);
-        if (existing) existing.dispose();
-
-        new bootstrap.Tooltip(el, {
-            trigger: 'hover',
-            container: 'body'
-        });
+        if (!bootstrap.Tooltip.getInstance(el)) {
+            new bootstrap.Tooltip(el, {
+                trigger: 'hover',
+                container: 'body'
+            });
+        }
     });
 
     $('#obula_tutor_grid_div').html(res.html).delay(100);
@@ -190,10 +189,12 @@ function tutor_grid_done(fromReadyEvent, res, programme, modLevel, studentNumber
 }
 
 
+// We use this function to handle our new chartJS graphing package without having to change much of our older architecture
 function renderChart(chart_type, studentName) {
     return new Promise((resolve, reject) => {
       var currentWeek = $("#obula_currentweek").val() || "";
       var wwwroot = M.cfg && M.cfg.wwwroot || '';
+      var sem =  $('#obula_default_semester').val();
 
       var chart_style = null;
       if (chart_type.includes('_')) {
@@ -206,7 +207,8 @@ function renderChart(chart_type, studentName) {
         studentNumber: getStudentNumberParameter(),
         sStage: getModLevelParameter(),
         currentWeek: currentWeek,
-        chartType: chart_type
+        chartType: chart_type,
+        sem: sem
       };
 
       $.ajax({

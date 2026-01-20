@@ -172,6 +172,7 @@ class block_obu_learnanalytics_renderer extends plugin_renderer_base
         $out .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_lablockid', "value" => '?'));
         $out .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_nextblockid', "value" => '?'));
         $out .= html_writer::tag('input', '', array("type" => 'hidden', "id" => 'obula_parentblockid', "value" => '?'));
+        $out .= html_writer::tag('input', '', ["type" => "hidden","id"   => "obula_default_semester","value" => ""]);
 
         // Links for Help and Feedback
         $links = html_writer::tag("a", "Help", array("href" => "javascript:showHelp('staff')", "class" => "link-right link-help"));

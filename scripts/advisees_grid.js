@@ -58,9 +58,11 @@ function clickStudentAdvisee(studentNumber) {
     //stolen from showBecomeView
     //debugger;
     set_gridLoading(true);
+    var semester =  $('#obula_default_semester').val();
     var data = {
         "studentNumber": studentNumber,
-        "type": "A"
+        "type": "A",
+        "semester": semester
     };
     $("#obula_ssc_student").val(studentNumber);
     //var tnode = event.target;

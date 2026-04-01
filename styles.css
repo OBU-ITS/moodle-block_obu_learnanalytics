@@ -381,6 +381,10 @@ a.material-icons.nextprev:hover {
     min-width: 90%;      
 }
 
+.block_obu_learnanalytics #obula_show_advisees {
+    min-width: 85%;
+}
+
 .block_obu_learnanalytics .summ-show-id {
     /* float: right; */
     margin-left: 5px;

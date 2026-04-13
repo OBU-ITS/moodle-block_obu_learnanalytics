@@ -81,9 +81,15 @@ function set_somethingLoading(state) {
 
 function tutor_grid_done(fromReadyEvent, res, programme, modLevel, studentNumber, refreshChart = false) {
     // Fix the Bootstrap Tooltip behavior (it wasn't closing if you clicked on the hovered control)
-    $('[data-toggle="ztooltip"]').tooltip({
-        trigger: 'hover'
-    })
+    document.querySelectorAll('[data-toggle="ztooltip"]').forEach(el => {
+        if (!bootstrap.Tooltip.getInstance(el)) {
+            new bootstrap.Tooltip(el, {
+                trigger: 'hover',
+                container: 'body'
+            });
+        }
+    });
+
     $('#obula_tutor_grid_div').html(res.html).delay(100);
     //debugger;
     store_parameters(programme, modLevel, null, null);
@@ -183,10 +189,12 @@ function tutor_grid_done(fromReadyEvent, res, programme, modLevel, studentNumber
 }
 
 
+// We use this function to handle our new chartJS graphing package without having to change much of our older architecture
 function renderChart(chart_type, studentName) {
     return new Promise((resolve, reject) => {
       var currentWeek = $("#obula_currentweek").val() || "";
       var wwwroot = M.cfg && M.cfg.wwwroot || '';
+      var sem =  $('#obula_default_semester').val();
 
       var chart_style = null;
       if (chart_type.includes('_')) {
@@ -199,7 +207,8 @@ function renderChart(chart_type, studentName) {
         studentNumber: getStudentNumberParameter(),
         sStage: getModLevelParameter(),
         currentWeek: currentWeek,
-        chartType: chart_type
+        chartType: chart_type,
+        sem: sem
       };
 
       $.ajax({
@@ -354,7 +363,10 @@ function showStudentAlerts(studentNumber) {
                     $('#obula_modal_cancel').hide();
                     $("#obula_modal_footer_text").text("");
                     $('#obula_modal_footer_text').removeAttr('title');
-                    $('#obula_modal_popup').modal('show');
+                    // Required due to Bootstrap 4.5 -> 5.0 upgrade
+                    require(['jquery', 'theme_boost/bootstrap/modal'], function($) {
+                        $('#obula_modal_popup').modal('show');
+                    });
                 }
             })
             .fail(function (resp) {
@@ -710,7 +722,12 @@ function clickSearchProgramme() {
                 $('#obula_modal_popup').on('shown.bs.modal', function () {
                     $('#obula_search_str').focus();
                 });
-                $('#obula_modal_popup').modal('show');
+                // Required due to Bootstrap 4.5 -> 5.0 upgrade
+                require(['jquery', 'theme_boost/bootstrap/modal'], function($) {
+                    $('#obula_modal_popup').modal('show');
+                });
+
+
                 // won't work for bootstrap modal popup, see above on event $('#obula_search_str').focus();
             }
         })
@@ -828,7 +845,10 @@ function pickPGMCode(code, dblClick = false) {
     //$('#obula_modal_ok').attr('default');
     if (dblClick) {
         clickSearchPGMOK();
-        $('#obula_modal_popup').modal('hide');
+        // Required due to Bootstrap 4.5 -> 5.0 upgrade
+        require(['jquery', 'theme_boost/bootstrap/modal'], function($) {
+            $('#obula_modal_popup').modal('hide');
+        });
     }
 }
 
@@ -889,7 +909,10 @@ function clickCohortHeading() {
 function clickHeading(column) {
     if (gridLoading) { return };
     // Dismiss any hover tip see https://stackoverflow.com/questions/33584392/bootstraps-tooltip-doesnt-disappear-after-button-click-mouseleave
-    $(this).tooltip('hide');
+    const tooltipInstance = bootstrap.Tooltip.getInstance(this);
+    if (tooltipInstance) {
+        tooltipInstance.hide();
+    }
     unClickStudent();
     // So swap the sort
     //debugger;

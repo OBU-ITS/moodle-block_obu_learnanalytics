@@ -36,9 +36,15 @@ function set_somethingLoading(state) {
 function advisees_grid_done(res) {
     //debugger;
     // Fix the Bootstrap Tooltip behavior (it wasn't closing if you clicked on the hovered control)
-    $('[data-toggle="ztooltip"]').tooltip({
-        trigger: 'hover'
-    })
+    document.querySelectorAll('[data-toggle="ztooltip"]').forEach(el => {
+        if (!bootstrap.Tooltip.getInstance(el)) {
+            new bootstrap.Tooltip(el, {
+                trigger: 'hover',
+                container: 'body'
+            });
+        }
+    });
+
     $('#obula_advisee_grid_div').html(res.html).delay(100);
     $('#obula_advisee_grid2_div').html(res.html2).delay(100);
 
@@ -51,9 +57,12 @@ function advisees_grid_done(res) {
 function clickStudentAdvisee(studentNumber) {
     //stolen from showBecomeView
     //debugger;
+    set_gridLoading(true);
+    var semester =  $('#obula_default_semester').val();
     var data = {
         "studentNumber": studentNumber,
-        "type": "A"
+        "type": "A",
+        "semester": semester
     };
     $("#obula_ssc_student").val(studentNumber);
     //var tnode = event.target;
@@ -75,6 +84,7 @@ function clickStudentAdvisee(studentNumber) {
                 $("#obula_summary_row").show();
                 $('#obula_dash_div').html(resp.dashboardhtml);
                 $("#obula_dash_row").show();
+                // set_gridLoading(false);
                 // Now the data currency
                 showDataCurrency();
             } else {
@@ -82,17 +92,14 @@ function clickStudentAdvisee(studentNumber) {
                 $("#obula_error_row").show();
                 $('#obula_footer').hide();
             }
+            set_gridLoading(false);
         })
         .fail(function (jqXHR, textStatus, errorThrown) {
             // only way to trigger a fail is with a non 200 response, 404, 500 etc
             // but that seems extreme for a simple validation
             // So reserving this for exceptions
             alert('clickStudentAdvisee exception\\n' + errorThrown);
-        })
-        // .always(function(resp) {
-        //         // Code will always get executed after done or fail, like a try/catch finally
-        //     })
-        ;           // End of .ajax 'line'
+        });
         highlightStudentRow(studentNumber, '#obula_advisee_parent_grid');
         whileLoading(studentNumber);
 }

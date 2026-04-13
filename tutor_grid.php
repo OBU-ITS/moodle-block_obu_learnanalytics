@@ -261,7 +261,7 @@ if ($success) {
         $html .= "true)";
         $html .= '">'; // Note the closing "
         $html .= "{$sname}</a></td>";
-        $onclick = "showStudentInfo('{$studentKey}','{$urlName}','{$advisor}','{$eStatus}','{$wStatus}')";
+        $onclick = "showStudentInfo('{$studentKey}','{$urlName}','{$advisor}','{$eStatus}','{$wStatus}', 'Tutor')";
         $class = "material-icons students-info";
         if ($advisor == "") {
             $class .= " students-warning";
@@ -285,9 +285,9 @@ if ($success) {
                     break;
             }
         }
-        $studyStageCell = "<td class='students' data-toggle='tooltip' title = '$hint'>"; // Simple hint for now TODO one using CSS
+        $hint = $data["cohort_comparison_hint"];
+        $studyStageCell = "<td class='students' data-toggle='tooltip' title = '$hint'>";
         $studyStageCell .= $posText;
-        //$studyStageCell .= " (" . sprintf('%.0f', $data["student_engagement"]) . "/" . sprintf('%.0f', $data["student_weighted_engagement"]) . ")";
         $studyStageCell .= "</td>";
 
         $imageUrl0 = $util_odds->get_image_url4Comparison("student", $data["student_comparison_prev0"]);

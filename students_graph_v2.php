@@ -31,6 +31,7 @@ try {
         $programme   = $_POST['programme']     ?? '';
         $bandingCalc = $_POST['bandingCalc']   ?? 'MED???';
         $studyStage  = $_POST['sStage']        ?? '*';
+        $sem         = $_POST['sem']        ?? '';
     } else {
         exit(json_encode([ 'success' => false, 'error' => 'GET not supported for student graph' ]));
     }
@@ -86,7 +87,7 @@ try {
         }
 
         $enc_pgm = htmlspecialchars(urlencode(str_replace('/', '~', $programme)));
-        $params  = "student/pgmgraphdata/{$sid}/{$enc_pgm}/{$sStage}/{$simpleCurrent}/median/{$column}/";
+        $params  = "student/pgmgraphdata/{$sid}/{$enc_pgm}/{$sStage}/{$simpleCurrent}/median/{$column}/$sem/";
 
         try {
             $curl_common       = new \block_obu_learnanalytics\guzzle\common();

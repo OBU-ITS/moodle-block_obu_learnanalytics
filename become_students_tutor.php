@@ -15,6 +15,7 @@ $laRole = $util_odds->get_la_role();    // Protects against attacks, wrong roles
 // Click event posts the request so we can pick up parameters from the data
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $studentNumber = $_POST["studentNumber"];
+    $semester = $_POST["semester"];
     $type = $_POST["type"];
 } else {
     exit("Brookes Learning Analytics - GET not supported");
@@ -70,7 +71,7 @@ switch ($studentNumber) {
         }
 
         // Now work out the programme (code nearly the same code in block_obu_learnanalytics.php and elsewhere)
-        $params = "student/programmes/$studentNumber/";
+        $params = "student/programmes/$studentNumber/$semester/";
         $curl_common = new \block_obu_learnanalytics\guzzle\common();
         $pgms = $curl_common->send_request($params);
         if ($pgms == null || count($pgms) == 0) {
